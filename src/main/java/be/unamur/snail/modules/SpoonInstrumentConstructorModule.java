@@ -8,7 +8,6 @@ import be.unamur.snail.stages.InstrumentConstructorsStage;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SpoonInstrumentConstructorModule implements Module {
     private final List<Stage> stages = Arrays.asList(

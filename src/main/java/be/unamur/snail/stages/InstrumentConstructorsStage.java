@@ -1,5 +1,6 @@
 package be.unamur.snail.stages;
 
+import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 
@@ -12,9 +13,9 @@ import spoon.Launcher;
 public class InstrumentConstructorsStage implements Stage {
     @Override
     public void execute(Context context) throws Exception {
-        System.out.println("hello");
-        String projectPath = context.get("projectPath");
-        String outputDir = context.get("outputDir");
+        Config config = Config.getInstance();
+        String projectPath = config.getProject().getProjectPath();
+        String outputDir = config.getOutputDir();
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(projectPath);

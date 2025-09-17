@@ -42,6 +42,14 @@ public class Config {
         this.project = project;
     }
 
+    @Override
+    public String toString() {
+        return "Config{" +
+                "outputDir='" + outputDir + '\'' +
+                ", project=" + project +
+                '}';
+    }
+
     public static class ProjectConfig {
         @JsonProperty("classpath-command")
         private String classPathCommand;
@@ -63,6 +71,14 @@ public class Config {
 
         public void setProjectPath(String projectPath) {
             this.projectPath = projectPath;
+        }
+
+        @Override
+        public String toString() {
+            return "ProjectConfig{" +
+                    "classPathCommand='" + classPathCommand + '\'' +
+                    ", projectPath='" + projectPath + '\'' +
+                    '}';
         }
     }
 }

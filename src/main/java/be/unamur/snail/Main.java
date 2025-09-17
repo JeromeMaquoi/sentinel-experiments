@@ -19,7 +19,6 @@ public class Main {
 
         // Select module based on CLI argument
         Module module;
-        Object config;
         switch (moduleArg) {
             case "instrumentconstructor":
                 module = new SpoonInstrumentConstructorModule();

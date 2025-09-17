@@ -7,6 +7,7 @@ import be.unamur.snail.core.Stage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class BuildClassPathStage implements Stage {
 
         System.out.println("Classpath built with " + classpathList.size() + " entries.");
         context.put("classpath", classpathList);
+        System.out.println(context);
     }
 
     private String buildMavenClasspath(File projectDir) throws Exception {
@@ -55,27 +57,20 @@ public class BuildClassPathStage implements Stage {
     }
 
     private String buildGradleClasspath(File projectDir) throws Exception {
-        // Runs: ./gradlew printClasspath
-        // Needs a simple task defined in build.gradle:
-        // task printClasspath { doLast { println sourceSets.main.runtimeClasspath.asPath } }
+        Config config = Config.getInstance();
+        String classpathCommand = config.getProject().getClassPathCommand();
         ProcessBuilder pb = new ProcessBuilder(
-                projectDir.getAbsolutePath() + "/gradlew", "writeClasspath"
+                "./gradlew", classpathCommand
         );
         pb.directory(projectDir);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
-        StringBuilder output = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
-            }
-        }
-
         int exit = process.waitFor();
         if (exit != 0) throw new RuntimeException("Gradle classpath build failed");
+        File cpFile = new File(projectDir, "classpath.txt");
+        if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
 
-        return output.toString().trim();
+        return Files.readString(cpFile.toPath()).trim();
     }
 }

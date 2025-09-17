@@ -10,15 +10,11 @@ import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
 import spoon.Launcher;
 
 public class InstrumentConstructorsStage implements Stage {
-    private final String outputDir;
-
-    public InstrumentConstructorsStage(Map<String, Object> params) {
-        this.outputDir = (String) params.get("outputDir");
-    }
-
     @Override
     public void execute(Context context) throws Exception {
+        System.out.println("hello");
         String projectPath = context.get("projectPath");
+        String outputDir = context.get("outputDir");
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(projectPath);

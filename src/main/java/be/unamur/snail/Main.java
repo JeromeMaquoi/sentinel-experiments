@@ -1,26 +1,34 @@
 package be.unamur.snail;
 
+import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Context;
+import be.unamur.snail.core.Module;
+import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
+
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (args.length < 2) {
             System.err.println("Usage: sentinel-experiments <module-type> --config <path>");
             System.exit(1);
         }
-        String requestedModuleType = args[0].toLowerCase();
-        String configPath = null;
+        String moduleArg = args[0];
+        String configPath = args[2];
 
-        for (int i = 1; i < args.length; i++) {
-            if (args[i].equals("--config") && i + 1 < args.length) {
-                configPath = args[i + 1];
+        // Load YAML config file
+        Config.load(configPath);
+
+        // Select module based on CLI argument
+        Module module;
+        Object config;
+        switch (moduleArg) {
+            case "instrumentconstructor":
+                module = new SpoonInstrumentConstructorModule();
                 break;
-            }
+            default:
+                throw new IllegalArgumentException("Unsupported module type: " + moduleArg);
         }
 
-        if (configPath == null) {
-            System.err.println("Error: missing config path");
-            System.exit(1);
-        }
-
-        
+        Context context = new Context();
+        module.run(context);
     }
 }

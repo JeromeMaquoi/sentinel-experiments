@@ -1,5 +1,6 @@
 package be.unamur.snail.stages;
 
+import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 
@@ -8,21 +9,14 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class BuildClassPathStage implements Stage {
-    private final String projectPath;
-
-    public BuildClassPathStage(Map<String, Object> params) {
-        this.projectPath = (String) params.get("projectPath");
-        if (this.projectPath == null) {
-            throw new IllegalArgumentException("projectPath cannot be null");
-        }
-    }
 
     @Override
     public void execute(Context context) throws Exception {
+        Config config = Config.getInstance();
+        String projectPath = config.getProject().getProjectPath();
+
         File projectDir = new File(projectPath);
         if (!projectDir.exists()) throw new IllegalArgumentException("project directory does not exist");
 

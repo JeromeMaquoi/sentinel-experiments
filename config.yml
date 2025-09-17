@@ -1,0 +1,4 @@
+output-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/test/spring-boot-experiments"
+project:
+  classpath-command: "spring-boot-project:spring-boot:writeClassPath"
+  project-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/test/spring-boot"

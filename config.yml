@@ -1,4 +1,7 @@
 output-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/test/spring-boot-experiments"
 project:
   classpath-command: "spring-boot-project:spring-boot:writeClassPath"
-  project-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/test/spring-boot"
+repo:
+  url: "https://github.com/spring-projects/spring-boot"
+  commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot-clone"

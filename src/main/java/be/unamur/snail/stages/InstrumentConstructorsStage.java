@@ -11,7 +11,7 @@ public class InstrumentConstructorsStage implements Stage {
     @Override
     public void execute(Context context) {
         Config config = Config.getInstance();
-        String projectPath = config.getProject().getProjectPath();
+        String projectPath = config.getRepo().getTargetDir();
         String inputPath = projectPath + "/src/main/java/";
         String outputDir = config.getOutputDir() + "/src/main/java/";
 

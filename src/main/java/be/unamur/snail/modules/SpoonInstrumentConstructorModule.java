@@ -4,6 +4,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Module;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.stages.BuildClassPathStage;
+import be.unamur.snail.stages.CloneAndCheckoutRepositoryStage;
 import be.unamur.snail.stages.InstrumentConstructorsStage;
 
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.List;
 
 public class SpoonInstrumentConstructorModule implements Module {
     private final List<Stage> stages = Arrays.asList(
+        //new CloneAndCheckoutRepositoryStage(),
         new BuildClassPathStage(),
         new InstrumentConstructorsStage()
     );

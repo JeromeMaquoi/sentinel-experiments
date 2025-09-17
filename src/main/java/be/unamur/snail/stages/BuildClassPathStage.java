@@ -12,7 +12,7 @@ public class BuildClassPathStage implements Stage {
     @Override
     public void execute(Context context) throws Exception {
         Config config = Config.getInstance();
-        String projectPath = config.getProject().getProjectPath();
+        String projectPath = config.getRepo().getTargetDir();
 
         File projectDir = new File(projectPath);
         if (!projectDir.exists()) throw new IllegalArgumentException("project directory does not exist");
@@ -59,6 +59,8 @@ public class BuildClassPathStage implements Stage {
         if (exit != 0) throw new RuntimeException("Gradle classpath build failed");
         File cpFile = new File(projectDir, "classpath.txt");
         if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
+
+        System.out.println(Files.readAllLines(cpFile.toPath()).size());
 
         return Files.readAllLines(cpFile.toPath()).toArray(new String[0]);
     }

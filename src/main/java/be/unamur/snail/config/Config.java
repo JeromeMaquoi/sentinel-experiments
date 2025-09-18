@@ -12,6 +12,7 @@ public class Config {
     private String outputDir;
     private ProjectConfig project;
     private RepoConfig repo;
+    private LogConfig log;
 
     private Config() {}
 
@@ -39,12 +40,17 @@ public class Config {
         return repo;
     }
 
+    public LogConfig getLog() {
+        return log;
+    }
+
     @Override
     public String toString() {
         return "Config{" +
                 "outputDir='" + outputDir + '\'' +
                 ", project=" + project +
                 ", repo=" + repo +
+                ", log=" + log +
                 '}';
     }
 
@@ -88,6 +94,21 @@ public class Config {
                     "url='" + url + '\'' +
                     ", commit='" + commit + '\'' +
                     ", targetDir='" + targetDir + '\'' +
+                    '}';
+        }
+    }
+
+    public static class LogConfig {
+        private String level;
+
+        public String getLevel() {
+            return level;
+        }
+
+        @Override
+        public String toString() {
+            return "LogConfig{" +
+                    "level='" + level + '\'' +
                     '}';
         }
     }

@@ -3,16 +3,19 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
 
 public class BuildClassPathStage implements Stage {
+    private static Logger log = LoggerFactory.getLogger(BuildClassPathStage.class);
 
     @Override
     public void execute(Context context) throws Exception {
         Config config = Config.getInstance();
-        String projectPath = config.getProject().getProjectPath();
+        String projectPath = config.getRepo().getTargetDir();
 
         File projectDir = new File(projectPath);
         if (!projectDir.exists()) throw new IllegalArgumentException("project directory does not exist");
@@ -24,7 +27,7 @@ public class BuildClassPathStage implements Stage {
             classPath = buildGradleClasspath(projectDir);
         } else throw new IllegalArgumentException("project directory does not exist");
 
-        System.out.println("Classpath built with " + classPath.length + " entries.");
+        log.info("Classpath built with {} entries", classPath.length);
         context.put("classPath", classPath);
     }
 
@@ -42,6 +45,7 @@ public class BuildClassPathStage implements Stage {
         File cpFile = new File(projectDir, "cp.txt");
         if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
 
+        log.info("Maven classpath built");
         return Files.readAllLines(cpFile.toPath()).toArray(new String[0]);
     }
 
@@ -59,6 +63,8 @@ public class BuildClassPathStage implements Stage {
         if (exit != 0) throw new RuntimeException("Gradle classpath build failed");
         File cpFile = new File(projectDir, "classpath.txt");
         if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
+
+        log.info("Gradle classpath built");
 
         return Files.readAllLines(cpFile.toPath()).toArray(new String[0]);
     }

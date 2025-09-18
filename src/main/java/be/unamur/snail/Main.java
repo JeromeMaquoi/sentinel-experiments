@@ -3,12 +3,17 @@ package be.unamur.snail;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Module;
+import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+    private static Logger log = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.err.println("Usage: sentinel-experiments <module-type> --config <path>");
+            log.error("Usage: sentinel-experiments <module-type> --config <path>");
             System.exit(1);
         }
         String moduleArg = args[0];
@@ -16,6 +21,11 @@ public class Main {
 
         // Load YAML config file
         Config.load(configPath);
+
+        // Override log level from config file params
+        Config config = Config.getInstance();
+        System.setProperty("log.level", config.getLog().getLevel());
+        log = LoggerFactory.getLogger(Main.class);
 
         // Select module based on CLI argument
         Module module;
@@ -28,6 +38,11 @@ public class Main {
         }
 
         Context context = new Context();
-        module.run(context);
+        try {
+            module.run(context);
+        } catch (ModuleException e) {
+            log.error("Pipeline failed: {}", e.getMessage(), e);
+            System.exit(1);
+        }
     }
 }

@@ -11,6 +11,8 @@ public class Config {
     @JsonProperty("output-dir")
     private String outputDir;
     private ProjectConfig project;
+    private RepoConfig repo;
+    private LogConfig log;
 
     private Config() {}
 
@@ -30,16 +32,16 @@ public class Config {
         return outputDir;
     }
 
-    public void setOutputDir(String outputDir) {
-        this.outputDir = outputDir;
-    }
-
     public ProjectConfig getProject() {
         return project;
     }
 
-    public void setProject(ProjectConfig project) {
-        this.project = project;
+    public RepoConfig getRepo() {
+        return repo;
+    }
+
+    public LogConfig getLog() {
+        return log;
     }
 
     @Override
@@ -47,6 +49,8 @@ public class Config {
         return "Config{" +
                 "outputDir='" + outputDir + '\'' +
                 ", project=" + project +
+                ", repo=" + repo +
+                ", log=" + log +
                 '}';
     }
 
@@ -54,30 +58,57 @@ public class Config {
         @JsonProperty("classpath-command")
         private String classPathCommand;
 
-        @JsonProperty("project-path")
-        private String projectPath;
-
         public String getClassPathCommand() {
             return classPathCommand;
-        }
-
-        public void setClassPathCommand(String classPathCommand) {
-            this.classPathCommand = classPathCommand;
-        }
-
-        public String getProjectPath() {
-            return projectPath;
-        }
-
-        public void setProjectPath(String projectPath) {
-            this.projectPath = projectPath;
         }
 
         @Override
         public String toString() {
             return "ProjectConfig{" +
                     "classPathCommand='" + classPathCommand + '\'' +
-                    ", projectPath='" + projectPath + '\'' +
+                    '}';
+        }
+    }
+
+    public static class RepoConfig {
+        private String url;
+        private String commit;
+        @JsonProperty("target-dir")
+        private String targetDir;
+
+        public String getUrl() {
+            return url;
+        }
+
+        public String getCommit() {
+            return commit;
+        }
+
+        public String getTargetDir() {
+            return targetDir;
+        }
+
+        @Override
+        public String toString() {
+            return "RepoConfig{" +
+                    "url='" + url + '\'' +
+                    ", commit='" + commit + '\'' +
+                    ", targetDir='" + targetDir + '\'' +
+                    '}';
+        }
+    }
+
+    public static class LogConfig {
+        private String level;
+
+        public String getLevel() {
+            return level;
+        }
+
+        @Override
+        public String toString() {
+            return "LogConfig{" +
+                    "level='" + level + '\'' +
                     '}';
         }
     }

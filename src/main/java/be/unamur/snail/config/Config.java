@@ -57,16 +57,15 @@ public class Config {
     public static class ProjectConfig {
         @JsonProperty("classpath-command")
         private String classPathCommand;
+        @JsonProperty("sub-project")
+        private String subProject;
 
         public String getClassPathCommand() {
             return classPathCommand;
         }
 
-        @Override
-        public String toString() {
-            return "ProjectConfig{" +
-                    "classPathCommand='" + classPathCommand + '\'' +
-                    '}';
+        public String getSubProject() {
+            return subProject;
         }
     }
 

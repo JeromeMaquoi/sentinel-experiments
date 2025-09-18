@@ -3,11 +3,15 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
+import be.unamur.snail.exceptions.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.util.List;
 
 public class BuildClassPathStage implements Stage {
     private static Logger log = LoggerFactory.getLogger(BuildClassPathStage.class);
@@ -20,19 +24,19 @@ public class BuildClassPathStage implements Stage {
         File projectDir = new File(projectPath);
         if (!projectDir.exists()) throw new IllegalArgumentException("project directory does not exist");
 
-        String[] classPath;
+        List<String> classPath;
         if (new File(projectDir, "pom.xml").exists()) {
             classPath = buildMavenClasspath(projectDir);
         } else if (new File(projectDir, "build.gradle").exists()) {
             classPath = buildGradleClasspath(projectDir);
         } else throw new IllegalArgumentException("project directory does not exist");
 
-        log.info("Classpath built with {} entries", classPath.length);
+        log.info("Classpath built with {} entries", classPath.size());
         log.debug("Classpath : {}", classPath);
         context.put("classPath", classPath);
     }
 
-    private String[] buildMavenClasspath(File projectDir) throws Exception {
+    private List<String> buildMavenClasspath(File projectDir) throws Exception {
         // Runs: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt
         ProcessBuilder pb = new ProcessBuilder(
                 "mvn", "dependency:build-classpath", "-Dmdep.outputFile=classpath.txt"
@@ -47,26 +51,71 @@ public class BuildClassPathStage implements Stage {
         if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
 
         log.info("Maven classpath built");
-        return Files.readAllLines(cpFile.toPath()).toArray(new String[0]);
+        return Files.readAllLines(cpFile.toPath());
     }
 
-    private String[] buildGradleClasspath(File projectDir) throws Exception {
+
+    private List<String> buildGradleClasspath(File projectDir) throws Exception {
         Config config = Config.getInstance();
-        String classpathCommand = config.getProject().getClassPathCommand();
+
+        // Determine task scope (root or sub-project)
+        String subProject = config.getProject().getSubProject();
+        String gradleTaskPath = "exportRuntimeClasspath";
+        if (subProject != null && !subProject.isBlank()) {
+            gradleTaskPath = subProject.replaceAll("^/|/$", "").replace("/", ":") + ":exportRuntimeClasspath";
+        }
+
+        // Create a temporary init script with the task definition
+        File initScript = File.createTempFile("sentinel-export-classpath", ".gradle");
+        String gradleTaskContent = """
+        allprojects {
+            tasks.register("exportRuntimeClasspath") {
+                doLast {
+                    def f = new File(project.projectDir, "classpath.txt")
+                    if (configurations.findByName("runtimeClasspath") != null) {
+                        f.text = configurations.runtimeClasspath.files.collect { it.absolutePath }.join('\\n')
+                    } else {
+                        f.text = ""
+                    }
+                }
+            }
+        }
+        """;
+        Files.writeString(initScript.toPath(), gradleTaskContent);
+        log.info("Temporary Gradle init script created at {}", initScript.getAbsolutePath());
+
         ProcessBuilder pb = new ProcessBuilder(
-                "./gradlew", classpathCommand
+                "./gradlew", gradleTaskPath, "-I", initScript.getAbsolutePath()
         );
+//        ProcessBuilder pb = new ProcessBuilder(
+//                "./gradlew", classpathCommand
+//        );
         pb.directory(projectDir);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
+        // log all Gradle output
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.debug("[gradle] {}", line);
+            }
+        }
+
         int exit = process.waitFor();
-        if (exit != 0) throw new RuntimeException("Gradle classpath build failed");
+        if (exit != 0) {
+            log.error("Gradle classpath generation failed");
+            throw new ModuleException("Gradle classpath generation failed");
+        }
         File cpFile = new File(projectDir, "classpath.txt");
-        if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
+        if (!cpFile.exists()) {
+            log.error("Classpath file not found: " + cpFile.getAbsolutePath());
+            throw new ModuleException("Classpath file not found: " + cpFile.getAbsolutePath());
+        }
 
         log.info("Gradle classpath built");
+        log.debug("Classpath: {}", Files.readAllLines(cpFile.toPath()));
 
-        return Files.readAllLines(cpFile.toPath()).toArray(new String[0]);
+        return Files.readAllLines(cpFile.toPath());
     }
 }

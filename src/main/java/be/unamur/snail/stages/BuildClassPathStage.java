@@ -55,7 +55,7 @@ public class BuildClassPathStage implements Stage {
     }
 
 
-    private List<String> buildGradleClasspath(File projectDir) throws Exception {
+    private List<String> buildGradleClasspath(File projectRootDir) throws Exception {
         Config config = Config.getInstance();
 
         // Determine task scope (root or sub-project)
@@ -90,7 +90,7 @@ public class BuildClassPathStage implements Stage {
 //        ProcessBuilder pb = new ProcessBuilder(
 //                "./gradlew", classpathCommand
 //        );
-        pb.directory(projectDir);
+        pb.directory(projectRootDir);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
@@ -107,9 +107,15 @@ public class BuildClassPathStage implements Stage {
             log.error("Gradle classpath generation failed");
             throw new ModuleException("Gradle classpath generation failed");
         }
-        File cpFile = new File(projectDir, "classpath.txt");
+        // classpath.txt is written inside the subproject (if given), else root project
+        File cpFile;
+        if (subProject != null && !subProject.isBlank()) {
+            cpFile = new File(new File(projectRootDir, subProject), "classpath.txt");
+        } else {
+            cpFile = new File(projectRootDir, "classpath.txt");
+        }
         if (!cpFile.exists()) {
-            log.error("Classpath file not found: " + cpFile.getAbsolutePath());
+            log.error("Classpath file not found: {}", cpFile.getAbsolutePath());
             throw new ModuleException("Classpath file not found: " + cpFile.getAbsolutePath());
         }
 

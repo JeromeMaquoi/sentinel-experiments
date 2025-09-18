@@ -4,17 +4,31 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.exceptions.ModuleException;
+import be.unamur.snail.utils.gradle.DefaultGradleService;
+import be.unamur.snail.utils.gradle.GradleService;
+import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.List;
 
 public class BuildClassPathStage implements Stage {
     private static Logger log = LoggerFactory.getLogger(BuildClassPathStage.class);
+
+    private final GradleService gradleService;
+    private final InitScriptGenerator initScriptGenerator;
+
+    public BuildClassPathStage() {
+        this.gradleService = new DefaultGradleService();
+        this.initScriptGenerator = new InitScriptGenerator();
+    }
+
+    public BuildClassPathStage(GradleService gradleService, InitScriptGenerator initScriptGenerator) {
+        this.gradleService = gradleService;
+        this.initScriptGenerator = initScriptGenerator;
+    }
 
     @Override
     public void execute(Context context) throws Exception {
@@ -66,48 +80,11 @@ public class BuildClassPathStage implements Stage {
             gradleTaskPath = subProject.replaceAll("^/|/$", "").replace("/", ":") + ":exportRuntimeClasspath";
         }
 
-        // Create a temporary init script with the task definition
-        File initScript = File.createTempFile("sentinel-export-classpath", ".gradle");
-        String gradleTaskContent = """
-        allprojects {
-            tasks.register("exportRuntimeClasspath") {
-                doLast {
-                    def f = new File(project.projectDir, "classpath.txt")
-                    if (configurations.findByName("runtimeClasspath") != null) {
-                        f.text = configurations.runtimeClasspath.files.collect { it.absolutePath }.join('\\n')
-                    } else {
-                        f.text = ""
-                    }
-                }
-            }
-        }
-        """;
-        Files.writeString(initScript.toPath(), gradleTaskContent);
+        File initScript = initScriptGenerator.generate();
         log.debug("Temporary Gradle init script created at {}", initScript.getAbsolutePath());
 
-        ProcessBuilder pb = new ProcessBuilder(
-                "./gradlew", gradleTaskPath, "-I", initScript.getAbsolutePath()
-        );
-//        ProcessBuilder pb = new ProcessBuilder(
-//                "./gradlew", classpathCommand
-//        );
-        pb.directory(projectRootDir);
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
+        gradleService.runTask(projectRootDir, gradleTaskPath, initScript);
 
-        // log all Gradle output
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                log.debug("[gradle] {}", line);
-            }
-        }
-
-        int exit = process.waitFor();
-        if (exit != 0) {
-            log.error("Gradle classpath generation failed");
-            throw new ModuleException("Gradle classpath generation failed");
-        }
         // classpath.txt is written inside the subproject (if given), else root project
         File cpFile;
         if (subProject != null && !subProject.isBlank()) {

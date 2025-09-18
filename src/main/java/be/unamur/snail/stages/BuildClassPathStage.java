@@ -19,10 +19,11 @@ public class BuildClassPathStage implements Stage {
     @Override
     public void execute(Context context) throws Exception {
         Config config = Config.getInstance();
-        String projectPath = config.getRepo().getTargetDir();
 
+        String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
         File projectDir = new File(projectPath);
         if (!projectDir.exists()) throw new IllegalArgumentException("project directory does not exist");
+        log.info("Starting build classpath stage for {}", projectPath);
 
         List<String> classPath;
         if (new File(projectDir, "pom.xml").exists()) {
@@ -82,7 +83,7 @@ public class BuildClassPathStage implements Stage {
         }
         """;
         Files.writeString(initScript.toPath(), gradleTaskContent);
-        log.info("Temporary Gradle init script created at {}", initScript.getAbsolutePath());
+        log.debug("Temporary Gradle init script created at {}", initScript.getAbsolutePath());
 
         ProcessBuilder pb = new ProcessBuilder(
                 "./gradlew", gradleTaskPath, "-I", initScript.getAbsolutePath()

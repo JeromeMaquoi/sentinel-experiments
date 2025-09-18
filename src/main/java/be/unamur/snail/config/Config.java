@@ -8,8 +8,6 @@ import java.io.File;
 
 public class Config {
     private static Config instance;
-    @JsonProperty("output-dir")
-    private String outputDir;
     private ProjectConfig project;
     private RepoConfig repo;
     private LogConfig log;
@@ -28,10 +26,6 @@ public class Config {
         instance = mapper.readValue(new File(yamlPath), Config.class);
     }
 
-    public String getOutputDir() {
-        return outputDir;
-    }
-
     public ProjectConfig getProject() {
         return project;
     }
@@ -44,25 +38,9 @@ public class Config {
         return log;
     }
 
-    @Override
-    public String toString() {
-        return "Config{" +
-                "outputDir='" + outputDir + '\'' +
-                ", project=" + project +
-                ", repo=" + repo +
-                ", log=" + log +
-                '}';
-    }
-
     public static class ProjectConfig {
-        @JsonProperty("classpath-command")
-        private String classPathCommand;
         @JsonProperty("sub-project")
         private String subProject;
-
-        public String getClassPathCommand() {
-            return classPathCommand;
-        }
 
         public String getSubProject() {
             return subProject;

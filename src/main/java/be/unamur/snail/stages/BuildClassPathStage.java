@@ -28,6 +28,7 @@ public class BuildClassPathStage implements Stage {
         } else throw new IllegalArgumentException("project directory does not exist");
 
         log.info("Classpath built with {} entries", classPath.length);
+        log.debug("Classpath : {}", classPath);
         context.put("classPath", classPath);
     }
 

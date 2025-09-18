@@ -9,11 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Main {
-    private static Logger log = LoggerFactory.getLogger(Main.class);
-
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            log.error("Usage: sentinel-experiments <module-type> --config <path>");
+            System.err.println("Usage: sentinel-experiments <module-type> --config <path>");
             System.exit(1);
         }
         String moduleArg = args[0];
@@ -25,7 +23,7 @@ public class Main {
         // Override log level from config file params
         Config config = Config.getInstance();
         System.setProperty("log.level", config.getLog().getLevel());
-        log = LoggerFactory.getLogger(Main.class);
+        Logger log = LoggerFactory.getLogger(Main.class);
 
         // Select module based on CLI argument
         Module module;

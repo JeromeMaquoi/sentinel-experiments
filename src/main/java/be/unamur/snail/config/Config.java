@@ -12,8 +12,6 @@ public class Config {
     private RepoConfig repo;
     private LogConfig log;
 
-    private Config() {}
-
     public static Config getInstance() {
         if (instance == null) {
             throw new IllegalStateException("Config not loaded yet");
@@ -21,7 +19,7 @@ public class Config {
         return instance;
     }
 
-    public static void setinstanceForTests(Config config) {
+    public static void setInstanceForTests(Config config) {
         instance = config;
     }
 

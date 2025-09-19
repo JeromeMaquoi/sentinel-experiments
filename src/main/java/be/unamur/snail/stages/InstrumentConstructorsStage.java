@@ -10,21 +10,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 
+import java.util.List;
+
 public class InstrumentConstructorsStage implements Stage {
     private static Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
     @Override
     public void execute(Context context) throws ModuleException {
         Config config = Config.getInstance();
-        String projectPath = config.getRepo().getTargetDir();
-        String inputPath = projectPath + "/src/main/java/";
-        String outputDir = config.getOutputDir() + "/src/main/java/";
+        String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
+        String subProject = config.getProject().getSubProject();
+        String sourceCodePath = projectPath + subProject + "/src/main/java/";
+        log.info("Starting instrumentation process for {}", sourceCodePath);
 
         try {
             Launcher launcher = new Launcher();
-            launcher.addInputResource(inputPath);
-            launcher.setSourceOutputDirectory(outputDir);
-            String[] classPath = context.get("classPath");
-            launcher.getEnvironment().setSourceClasspath(classPath);
+            launcher.addInputResource(sourceCodePath);
+            launcher.setSourceOutputDirectory(sourceCodePath);
+            List<String> classPaths = context.get("classPath");
+            launcher.getEnvironment().setSourceClasspath(classPaths.toArray(new String[0]));
             launcher.addProcessor(new ConstructorInstrumentationProcessor());
             launcher.run();
             log.info("Instrumentation completed.");

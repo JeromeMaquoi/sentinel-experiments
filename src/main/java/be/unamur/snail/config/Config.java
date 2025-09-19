@@ -8,13 +8,9 @@ import java.io.File;
 
 public class Config {
     private static Config instance;
-    @JsonProperty("output-dir")
-    private String outputDir;
     private ProjectConfig project;
     private RepoConfig repo;
     private LogConfig log;
-
-    private Config() {}
 
     public static Config getInstance() {
         if (instance == null) {
@@ -23,13 +19,17 @@ public class Config {
         return instance;
     }
 
+    public static void setInstanceForTests(Config config) {
+        instance = config;
+    }
+
+    public static void reset() {
+        instance = null;
+    }
+
     public static void load(String yamlPath) throws Exception {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         instance = mapper.readValue(new File(yamlPath), Config.class);
-    }
-
-    public String getOutputDir() {
-        return outputDir;
     }
 
     public ProjectConfig getProject() {
@@ -44,29 +44,12 @@ public class Config {
         return log;
     }
 
-    @Override
-    public String toString() {
-        return "Config{" +
-                "outputDir='" + outputDir + '\'' +
-                ", project=" + project +
-                ", repo=" + repo +
-                ", log=" + log +
-                '}';
-    }
-
     public static class ProjectConfig {
-        @JsonProperty("classpath-command")
-        private String classPathCommand;
+        @JsonProperty("sub-project")
+        private String subProject;
 
-        public String getClassPathCommand() {
-            return classPathCommand;
-        }
-
-        @Override
-        public String toString() {
-            return "ProjectConfig{" +
-                    "classPathCommand='" + classPathCommand + '\'' +
-                    '}';
+        public String getSubProject() {
+            return subProject;
         }
     }
 

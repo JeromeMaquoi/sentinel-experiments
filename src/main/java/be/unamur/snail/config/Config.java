@@ -21,6 +21,14 @@ public class Config {
         return instance;
     }
 
+    public static void setinstanceForTests(Config config) {
+        instance = config;
+    }
+
+    public static void reset() {
+        instance = null;
+    }
+
     public static void load(String yamlPath) throws Exception {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         instance = mapper.readValue(new File(yamlPath), Config.class);

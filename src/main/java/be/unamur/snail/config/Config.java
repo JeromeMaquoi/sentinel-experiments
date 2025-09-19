@@ -11,6 +11,8 @@ public class Config {
     private ProjectConfig project;
     private RepoConfig repo;
     private LogConfig log;
+    @JsonProperty("code-constructors-instrumentation-path")
+    private String codeConstructorsInstrumentationPath;
 
     public static Config getInstance() {
         if (instance == null) {
@@ -42,6 +44,10 @@ public class Config {
 
     public LogConfig getLog() {
         return log;
+    }
+
+    public String getCodeConstructorsInstrumentationPath() {
+        return codeConstructorsInstrumentationPath;
     }
 
     public static class ProjectConfig {

@@ -32,7 +32,7 @@ public class Main {
                 module = new SpoonInstrumentConstructorModule();
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported module type: " + moduleArg);
+                throw new IllegalArgumentException("Unsupported module type: " + moduleArg); 
         }
 
         Context context = new Context();

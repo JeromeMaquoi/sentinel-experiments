@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 public class CopySourceCodeStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(CopySourceCodeStage.class);
@@ -57,7 +56,7 @@ public class CopySourceCodeStage implements Stage {
                 .forEach(path -> {
                    try {
                        Path targetPath = target.resolve(source.relativize(path));
-                       Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                       Files.copy(path, targetPath);
                    } catch (IOException e) {
                        throw new DirectoryNotCopiedException(path, e);
                    }

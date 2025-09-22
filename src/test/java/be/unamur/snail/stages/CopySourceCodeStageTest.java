@@ -2,12 +2,14 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.DirectoryNotCopiedException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -83,5 +85,29 @@ class CopySourceCodeStageTest {
         assertThatThrownBy(() -> stage.execute(context))
                 .isInstanceOf(SourceDirectoryNotFoundException.class)
                 .hasMessageContaining("does_not_exist");
+    }
+
+    @Test
+    void doesNotOverwriteExistingFilesTest() throws IOException {
+        Path sourceDir = tempDir.resolve("source");
+        Files.createDirectories(sourceDir);
+        Path javaFile = sourceDir.resolve("Test.java");
+        Files.writeString(javaFile, "class Test {}");
+
+        config.setCodeConstructorsInstrumentationPathForTests(sourceDir.toString());
+        config.getRepo().setTargetDirForTests(tempDir.resolve("target-project").toString());
+        config.getRepo().setCommitForTests("abc123");
+        config.getProject().setSubProjectForTests("");
+
+        Context context = new Context();
+
+        Path targetFile = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/Test.java");
+        Files.createDirectories(targetFile.getParent());
+        Files.writeString(targetFile, "class Existing {}");
+
+        assertThatThrownBy(() -> stage.execute(context))
+                .isInstanceOf(DirectoryNotCopiedException.class);
+
+        assertThat(Files.readString(targetFile)).isEqualTo("class Existing {}");
     }
 }

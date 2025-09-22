@@ -11,6 +11,8 @@ public class Config {
     private ProjectConfig project;
     private RepoConfig repo;
     private LogConfig log;
+    @JsonProperty("code-constructors-instrumentation-path")
+    private String codeConstructorsInstrumentationPath;
 
     public static Config getInstance() {
         if (instance == null) {
@@ -36,12 +38,28 @@ public class Config {
         return project;
     }
 
+    public void setProjectForTests(ProjectConfig project) {
+        this.project = project;
+    }
+
     public RepoConfig getRepo() {
         return repo;
     }
 
+    public void setRepoForTests(RepoConfig repo) {
+        this.repo = repo;
+    }
+
     public LogConfig getLog() {
         return log;
+    }
+
+    public String getCodeConstructorsInstrumentationPath() {
+        return codeConstructorsInstrumentationPath;
+    }
+
+    public void setCodeConstructorsInstrumentationPathForTests(String codeConstructorsInstrumentationPath) {
+        this.codeConstructorsInstrumentationPath = codeConstructorsInstrumentationPath;
     }
 
     public static class ProjectConfig {
@@ -50,6 +68,10 @@ public class Config {
 
         public String getSubProject() {
             return subProject;
+        }
+
+        public void setSubProjectForTests(String subProject) {
+            this.subProject = subProject;
         }
     }
 
@@ -67,8 +89,16 @@ public class Config {
             return commit;
         }
 
+        public void setCommitForTests(String commit) {
+            this.commit = commit;
+        }
+
         public String getTargetDir() {
             return targetDir;
+        }
+
+        public void setTargetDirForTests(String targetDir) {
+            this.targetDir = targetDir;
         }
 
         @Override

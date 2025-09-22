@@ -56,7 +56,11 @@ public class CopySourceCodeStage implements Stage {
                 .forEach(path -> {
                    try {
                        Path targetPath = target.resolve(source.relativize(path));
-                       Files.copy(path, targetPath);
+                       if (Files.isDirectory(path)) {
+                           Files.createDirectories(targetPath);
+                       } else {
+                           Files.copy(path, targetPath);
+                       }
                    } catch (IOException e) {
                        throw new DirectoryNotCopiedException(path, e);
                    }

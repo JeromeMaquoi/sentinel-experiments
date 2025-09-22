@@ -44,7 +44,7 @@ class CopySourceCodeStageTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         Config.reset();
     }
 

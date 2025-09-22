@@ -3,9 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
-import be.unamur.snail.exceptions.DirectoryNotCopiedException;
-import be.unamur.snail.exceptions.ModuleException;
-import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
+import be.unamur.snail.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,33 +35,34 @@ public class CopySourceCodeStage implements Stage {
         log.info("Copy completed.");
     }
 
-    public String getTargetProjectName(Config config, String targetDir) throws ModuleException {
+    public String getTargetProjectName(Config config, String targetDir) throws TargetDirMissingException, CommitMissingException {
         String commit = config.getRepo().getCommit();
         String subProject = config.getProject().getSubProject();
 
         if (targetDir == null || targetDir.isBlank()) {
-            throw new ModuleException("Missing required context key: target-dir");
+            throw new TargetDirMissingException(targetDir);
         }
         if (commit == null || commit.isBlank()) {
-            throw new ModuleException("Missing required context key: commit");
+            throw new CommitMissingException(commit);
         }
 
         return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/";
     }
 
     public void copyJavaFiles(Path source, Path target) throws IOException {
-        Files.walk(source)
-                .forEach(path -> {
-                   try {
-                       Path targetPath = target.resolve(source.relativize(path));
-                       if (Files.isDirectory(path)) {
-                           Files.createDirectories(targetPath);
-                       } else {
-                           Files.copy(path, targetPath);
-                       }
-                   } catch (IOException e) {
-                       throw new DirectoryNotCopiedException(path, e);
-                   }
-                });
+        try(var stream = Files.walk(source)) {
+            stream.forEach(path -> {
+                try {
+                    Path targetPath = target.resolve(source.relativize(path));
+                    if (Files.isDirectory(path)) {
+                        Files.createDirectories(targetPath);
+                    } else {
+                        Files.copy(path, targetPath);
+                    }
+                } catch (IOException e) {
+                    throw new DirectoryNotCopiedException(path, e);
+                }
+            });
+        }
     }
 }

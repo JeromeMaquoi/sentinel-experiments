@@ -85,10 +85,6 @@ public class Config {
             return url;
         }
 
-        public void setUrlForTests(String url) {
-            this.url = url;
-        }
-
         public String getCommit() {
             return commit;
         }

@@ -38,8 +38,16 @@ public class Config {
         return project;
     }
 
+    public void setProjectForTests(ProjectConfig project) {
+        this.project = project;
+    }
+
     public RepoConfig getRepo() {
         return repo;
+    }
+
+    public void setRepoForTests(RepoConfig repo) {
+        this.repo = repo;
     }
 
     public LogConfig getLog() {
@@ -50,12 +58,20 @@ public class Config {
         return codeConstructorsInstrumentationPath;
     }
 
+    public void setCodeConstructorsInstrumentationPathForTests(String codeConstructorsInstrumentationPath) {
+        this.codeConstructorsInstrumentationPath = codeConstructorsInstrumentationPath;
+    }
+
     public static class ProjectConfig {
         @JsonProperty("sub-project")
         private String subProject;
 
         public String getSubProject() {
             return subProject;
+        }
+
+        public void setSubProjectForTests(String subProject) {
+            this.subProject = subProject;
         }
     }
 
@@ -69,12 +85,24 @@ public class Config {
             return url;
         }
 
+        public void setUrlForTests(String url) {
+            this.url = url;
+        }
+
         public String getCommit() {
             return commit;
         }
 
+        public void setCommitForTests(String commit) {
+            this.commit = commit;
+        }
+
         public String getTargetDir() {
             return targetDir;
+        }
+
+        public void setTargetDirForTests(String targetDir) {
+            this.targetDir = targetDir;
         }
 
         @Override

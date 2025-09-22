@@ -3,7 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.ModuleException;
-import be.unamur.snail.exceptions.TargetDirectoryNotFound;
+import be.unamur.snail.exceptions.TargetDirectoryNotFoundException;
 import be.unamur.snail.utils.gradle.GradleService;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.junit.jupiter.api.AfterEach;
@@ -139,7 +139,7 @@ class BuildClassPathStageTest {
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
 
-        assertThrows(TargetDirectoryNotFound.class, () -> stage.execute(new Context()));
+        assertThrows(TargetDirectoryNotFoundException.class, () -> stage.execute(new Context()));
     }
 
     @Test

@@ -4,7 +4,7 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.exceptions.ModuleException;
-import be.unamur.snail.exceptions.TargetDirectoryNotFound;
+import be.unamur.snail.exceptions.TargetDirectoryNotFoundException;
 import be.unamur.snail.utils.gradle.DefaultGradleService;
 import be.unamur.snail.utils.gradle.GradleService;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
@@ -37,7 +37,7 @@ public class BuildClassPathStage implements Stage {
 
         String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
         File projectDir = new File(projectPath);
-        if (!projectDir.exists()) throw new TargetDirectoryNotFound("Project directory does not exist");
+        if (!projectDir.exists()) throw new TargetDirectoryNotFoundException("Project directory does not exist");
         log.info("Starting build classpath stage for {}", projectPath);
 
         List<String> classPath;

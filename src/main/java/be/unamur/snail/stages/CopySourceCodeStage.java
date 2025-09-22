@@ -3,12 +3,17 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
+import be.unamur.snail.exceptions.DirectoryNotCopiedException;
 import be.unamur.snail.exceptions.ModuleException;
+import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class CopySourceCodeStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(CopySourceCodeStage.class);
@@ -19,7 +24,21 @@ public class CopySourceCodeStage implements Stage {
         String fromDir = config.getCodeConstructorsInstrumentationPath();
         Path from = Paths.get(fromDir);
 
+        if (!Files.isDirectory(from)) {
+            throw new SourceDirectoryNotFoundException(from);
+        }
+
         String targetDir = config.getRepo().getTargetDir();
+        String targetProjectName = getTargetProjectName(config, targetDir);
+        Path target = Paths.get(targetProjectName).toAbsolutePath();
+        log.info("Copying source code from {} to {}", from, target);
+
+        Files.createDirectories(target);
+        copyJavaFiles(from, target);
+        log.info("Copy completed.");
+    }
+
+    public String getTargetProjectName(Config config, String targetDir) throws ModuleException {
         String commit = config.getRepo().getCommit();
         String subProject = config.getProject().getSubProject();
 
@@ -30,8 +49,18 @@ public class CopySourceCodeStage implements Stage {
             throw new ModuleException("Missing required context key: commit");
         }
 
-        String targetProjectName = targetDir + "_" + commit + subProject + "src/main/java/be/unamur/snail/";
-        Path target = Paths.get(targetProjectName).toAbsolutePath();
-        log.info("Copying source code from {} to {}", from, target);
+        return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/";
+    }
+
+    public void copyJavaFiles(Path source, Path target) throws IOException {
+        Files.walk(source)
+                .forEach(path -> {
+                   try {
+                       Path targetPath = target.resolve(source.relativize(path));
+                       Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                   } catch (IOException e) {
+                       throw new DirectoryNotCopiedException(path, e);
+                   }
+                });
     }
 }

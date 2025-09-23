@@ -66,7 +66,7 @@ class BuildClassPathStageTest {
 
         stage.execute(context);
 
-        List<String> cp = context.get("classPath");
+        List<String> cp = context.getClassPath();
         assertEquals(List.of("a.jar", "b.jar"), cp);
     }
 
@@ -99,7 +99,7 @@ class BuildClassPathStageTest {
 
         stage.execute(context);
 
-        List<String> cp = context.get("classPath");
+        List<String> cp = context.getClassPath();
         assertEquals(List.of("dep1.jar", "dep2.jar"), cp);
     }
 

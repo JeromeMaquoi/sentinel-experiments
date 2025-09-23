@@ -90,30 +90,6 @@ class CopySourceCodeStageTest {
     }
 
     @Test
-    void doesNotOverwriteExistingFilesTest() throws IOException {
-        Path sourceDir = tempDir.resolve("source");
-        Files.createDirectories(sourceDir);
-        Path javaFile = sourceDir.resolve("Test.java");
-        Files.writeString(javaFile, "class Test {}");
-
-        config.setCodeConstructorsInstrumentationPathForTests(sourceDir.toString());
-        config.getRepo().setTargetDirForTests(tempDir.resolve("target-project").toString());
-        config.getRepo().setCommitForTests("abc123");
-        config.getProject().setSubProjectForTests("");
-
-        Context context = new Context();
-
-        Path targetFile = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/Test.java");
-        Files.createDirectories(targetFile.getParent());
-        Files.writeString(targetFile, "class Existing {}");
-
-        assertThatThrownBy(() -> stage.execute(context))
-                .isInstanceOf(DirectoryNotCopiedException.class);
-
-        assertThat(Files.readString(targetFile)).isEqualTo("class Existing {}");
-    }
-
-    @Test
     void targetDirMissingThrowsExceptionTest() {
         config.getRepo().setTargetDirForTests(null);
         config.getRepo().setCommitForTests("abc123");

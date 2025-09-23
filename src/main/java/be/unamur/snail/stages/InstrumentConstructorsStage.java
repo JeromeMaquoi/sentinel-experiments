@@ -26,7 +26,7 @@ public class InstrumentConstructorsStage implements Stage {
             Launcher launcher = new Launcher();
             launcher.addInputResource(sourceCodePath);
             launcher.setSourceOutputDirectory(sourceCodePath);
-            List<String> classPaths = context.get("classPath");
+            List<String> classPaths = context.getClassPath();
             launcher.getEnvironment().setSourceClasspath(classPaths.toArray(new String[0]));
             launcher.addProcessor(new ConstructorInstrumentationProcessor());
             launcher.run();

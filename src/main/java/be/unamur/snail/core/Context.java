@@ -1,24 +1,33 @@
 package be.unamur.snail.core;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class Context {
-    private final Map<String, Object> data = new HashMap<>();
+    private List<String> classPath;
+    private String repoPath;
+    private String commit;
 
-    public void put(String key, Object value) {
-        data.put(key, value);
+    public List<String> getClassPath() {
+        return classPath;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T get(String key) {
-        return (T) data.get(key);
+    public void setClassPath(List<String> classPath) {
+        this.classPath = classPath;
     }
 
-    @Override
-    public String toString() {
-        return "Context{" +
-                "data=" + data +
-                '}';
+    public String getRepoPath() {
+        return repoPath;
+    }
+
+    public void setRepoPath(String repoPath) {
+        this.repoPath = repoPath;
+    }
+
+    public String getCommit() {
+        return commit;
+    }
+
+    public void setCommit(String commit) {
+        this.commit = commit;
     }
 }

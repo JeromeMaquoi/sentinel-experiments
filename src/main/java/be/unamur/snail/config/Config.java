@@ -13,6 +13,10 @@ public class Config {
     private LogConfig log;
     @JsonProperty("code-constructors-instrumentation-path")
     private String codeConstructorsInstrumentationPath;
+    @JsonProperty("time-out")
+    private int timeout = 120;
+    @JsonProperty("execution-plan")
+    private ExecutionPlanConfig executionPlan;
 
     public static Config getInstance() {
         if (instance == null) {
@@ -60,6 +64,22 @@ public class Config {
 
     public void setCodeConstructorsInstrumentationPathForTests(String codeConstructorsInstrumentationPath) {
         this.codeConstructorsInstrumentationPath = codeConstructorsInstrumentationPath;
+    }
+
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeoutForTests(int timeout) {
+        this.timeout = timeout;
+    }
+
+    public ExecutionPlanConfig getExecutionPlan() {
+        return executionPlan;
+    }
+
+    public void setExecutionPlanForTests(ExecutionPlanConfig executionPlan) {
+        this.executionPlan = executionPlan;
     }
 
     public static class ProjectConfig {
@@ -123,6 +143,21 @@ public class Config {
             return "LogConfig{" +
                     "level='" + level + '\'' +
                     '}';
+        }
+    }
+
+    public static class ExecutionPlanConfig {
+        @JsonProperty("test-command")
+        private String testCommand;
+        @JsonProperty("ignore-failures")
+        private boolean ignoreFailures;
+
+        public String getTestCommand() {
+            return testCommand;
+        }
+
+        public boolean getIgnoreFailures() {
+            return ignoreFailures;
         }
     }
 }

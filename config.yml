@@ -7,3 +7,7 @@ repo:
 log:
   level: INFO
 code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/code/constructorinstrumentation"
+time-out: 120
+execution-plan:
+  test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties"
+  ignore-failures: true

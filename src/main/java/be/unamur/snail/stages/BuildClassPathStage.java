@@ -49,7 +49,7 @@ public class BuildClassPathStage implements Stage {
 
         log.info("Classpath built with {} entries", classPath.size());
         log.debug("Classpath : {}", classPath);
-        context.put("classPath", classPath);
+        context.setClassPath(classPath);
     }
 
     private List<String> buildMavenClasspath(File projectDir) throws Exception {

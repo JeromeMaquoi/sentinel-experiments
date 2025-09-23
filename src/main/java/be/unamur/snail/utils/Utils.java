@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -57,33 +56,6 @@ public class Utils {
         return new CompletedProcess(command, returnCode, stdout, stderr);
     }
 
-    public static class CompletedProcess {
-        private final String args;
-        private final int returnCode;
-        private final String stdout;
-        private final String stderr;
-
-        public CompletedProcess(String args, int returnCode, String stdout, String stderr) {
-            this.args = args;
-            this.returnCode = returnCode;
-            this.stdout = stdout;
-            this.stderr = stderr;
-        }
-
-        public String getArgs() {
-            return args;
-        }
-
-        public int getReturnCode() {
-            return returnCode;
-        }
-
-        public String getStdout() {
-            return stdout;
-        }
-
-        public String getStderr() {
-            return stderr;
-        }
+    public record CompletedProcess(String args, int returnCode, String stdout, String stderr) {
     }
 }

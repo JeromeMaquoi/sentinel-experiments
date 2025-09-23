@@ -3,6 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
+import be.unamur.snail.exceptions.DirectoryNotCopiedException;
 import be.unamur.snail.exceptions.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,17 +52,19 @@ public class CopyDirectoryStage implements Stage {
     }
 
     private void copyDirectory(Path source, Path target) throws IOException {
-        Files.walk(source).forEach(path -> {
-            Path dest = target.resolve(source.relativize(path));
-            try {
-                if (Files.isDirectory(path)) {
-                    Files.createDirectories(dest);
-                } else {
-                    Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
+        try (var stream = Files.walk(source)) {
+            stream.forEach(path -> {
+                Path dest = target.resolve(source.relativize(path));
+                try {
+                    if (Files.isDirectory(path)) {
+                        Files.createDirectories(dest);
+                    } else {
+                        Files.copy(path, dest);
+                    }
+                } catch (IOException e) {
+                    throw new DirectoryNotCopiedException(path, e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException("Error copying: " + path + " -> " + dest, e);
-            }
-        });
+            });
+        }
     }
 }

@@ -17,8 +17,8 @@ public class RunProjectTestsStage implements Stage {
         String cwd = context.getRepoPath();
         Utils.CompletedProcess result = Utils.runCommand(testCommand, cwd);
 
-        if (result.getReturnCode() != 0) {
-            log.error("Project tests execution failed with code {}", result.getReturnCode());
+        if (result.returnCode() != 0) {
+            log.error("Project tests execution failed with code {}", result.returnCode());
             if (!config.getExecutionPlan().getIgnoreFailures()) {
                 throw new RuntimeException("Project tests execution failed");
             }

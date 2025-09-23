@@ -23,6 +23,8 @@ public class Utils {
         log.info("Executing command: {}", command);
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
+        builder.environment().put("PATH", "/usr/bin:/bin");
+
         if (cwd != null && !cwd.isEmpty()) {
             builder.directory(new File(cwd));
         }

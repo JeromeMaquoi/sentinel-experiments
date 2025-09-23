@@ -1,0 +1,68 @@
+package be.unamur.snail.utils;
+
+import be.unamur.snail.config.Config;
+import be.unamur.snail.exceptions.CommandTimedOutException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class UtilsTest {
+    @TempDir
+    Path tempDir;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        Path yaml = tempDir.resolve("config.yaml");
+        Files.writeString(yaml, """
+            project:
+              sub-project: "sub/module"
+            repo:
+              url: "https://example.com/repo.git"
+              commit: "123abc"
+              target-dir: "/tmp/repo"
+            log:
+              level: "DEBUG"
+        """);
+        Config.load(yaml.toString());
+    }
+
+    @AfterEach
+    void tearDown() {
+        Config.reset();
+    }
+
+    @Test
+    void runCommandSuccessEchoTest() throws IOException, InterruptedException {
+        String command = "echo Hello World";
+        Utils.CompletedProcess result = Utils.runCommand(command);
+        assertThat(result.getReturnCode()).isZero();
+        assertThat(result.getStdout()).contains("Hello World");
+        assertThat(result.getStderr()).isBlank();
+    }
+
+    @Test
+    void runCommandInWorkingDirectoryTest() throws IOException, InterruptedException {
+        String command = "ls";
+        String cwd = System.getProperty("user.dir");
+        Utils.CompletedProcess result = Utils.runCommand(command, cwd);
+        assertThat(result.getReturnCode()).isZero();
+        assertThat(result.getStdout()).contains("src");
+    }
+
+    @Test
+    void runCommandTimeoutTest() {
+        String command = "sleep 5";
+        Config.getInstance().setTimeoutForTests(1);
+
+        Exception ex = assertThrows(CommandTimedOutException.class, () -> Utils.runCommand(command));
+        assertThat(ex.getMessage()).contains("Command timed out");
+    }
+}

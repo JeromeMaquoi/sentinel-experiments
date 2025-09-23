@@ -30,9 +30,11 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
         }
 
         log.info("Cloning {} to {}", repoUrl, targetDirStr);
+        context.setRepoPath(targetDirStr);
 
         try (Git git = Git.cloneRepository().setURI(repoUrl).setDirectory(targetDir).call()) {
             git.checkout().setName(commit).call();
+            context.setCommit(commit);
             log.info("Checked out commit {}", commit);
         } catch (GitAPIException e) {
             throw new RuntimeException("Failed to clone or checkout " + commit, e);

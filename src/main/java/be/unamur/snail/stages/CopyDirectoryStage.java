@@ -45,6 +45,9 @@ public class CopyDirectoryStage implements Stage {
             throw new ModuleException("Error while copying directory from " + source + " to " + target, e);
         }
         log.info("Copy of directory from {} to {} completed", source, target);
+
+        context.setRepoPath(target.toAbsolutePath().toString());
+        log.info("Context repository path: {}", context.getRepoPath());
     }
 
     private void copyDirectory(Path source, Path target) throws IOException {

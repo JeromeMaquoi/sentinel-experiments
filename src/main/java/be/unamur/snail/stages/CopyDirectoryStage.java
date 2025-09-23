@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class CopyDirectoryStage implements Stage {
-    private static Logger log = LoggerFactory.getLogger(CopyDirectoryStage.class);
+    private static final Logger log = LoggerFactory.getLogger(CopyDirectoryStage.class);
 
     @Override
     public void execute(Context context) throws Exception {
@@ -33,13 +33,13 @@ public class CopyDirectoryStage implements Stage {
         Path source = Paths.get(targetDir).toAbsolutePath();
         Path target = Paths.get(targetDir + "_" + commit).toAbsolutePath();
 
-        log.info("Source directory: {}", source);
+        log.debug("Source directory: {}", source);
 
         if (!Files.isDirectory(source)) {
             throw new ModuleException("Source directory not found: " + source);
         }
 
-        log.info("Copying directory from {} to {}", source, target);
+        log.debug("Copying directory from {} to {}", source, target);
         try {
             copyDirectory(source, target);
         } catch (IOException e) {
@@ -48,7 +48,7 @@ public class CopyDirectoryStage implements Stage {
         log.info("Copy of directory from {} to {} completed", source, target);
 
         context.setRepoPath(target.toAbsolutePath().toString());
-        log.info("Context repository path: {}", context.getRepoPath());
+        log.debug("Context repository path: {}", context.getRepoPath());
     }
 
     private void copyDirectory(Path source, Path target) throws IOException {
@@ -59,7 +59,7 @@ public class CopyDirectoryStage implements Stage {
                     if (Files.isDirectory(path)) {
                         Files.createDirectories(dest);
                     } else {
-                        Files.copy(path, dest);
+                        Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
                     }
                 } catch (IOException e) {
                     throw new DirectoryNotCopiedException(path, e);

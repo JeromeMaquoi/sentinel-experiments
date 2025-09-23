@@ -151,6 +151,8 @@ public class Config {
         private String testCommand;
         @JsonProperty("ignore-failures")
         private boolean ignoreFailures;
+        @JsonProperty("ignore-spoon-failures")
+        private boolean ignoreSpoonFailures;
 
         public String getTestCommand() {
             return testCommand;
@@ -158,6 +160,10 @@ public class Config {
 
         public boolean getIgnoreFailures() {
             return ignoreFailures;
+        }
+
+        public boolean getIgnoreSpoonFailures() {
+            return ignoreSpoonFailures;
         }
     }
 }

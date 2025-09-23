@@ -1,5 +1,5 @@
 project:
-  sub-project: "/spring-boot-project/spring-boot/"
+  sub-project: "/spring-boot-project/spring-boot"
 repo:
   url: "https://github.com/spring-projects/spring-boot"
   commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
@@ -10,4 +10,5 @@ code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recher
 time-out: 120
 execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties"
-  ignore-failures: true
+  ignore-failures: false
+  ignore-spoon-failures: true

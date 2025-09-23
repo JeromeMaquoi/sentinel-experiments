@@ -1,0 +1,79 @@
+package be.unamur.snail.stages;
+
+import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
+import be.unamur.snail.utils.Utils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+class RunProjectTestsStageTest {
+    private RunProjectTestsStage stage;
+    private Context context;
+    private Config config;
+    private Config.ExecutionPlanConfig executionPlanConfig;
+
+    @BeforeEach
+    void setUp() {
+        stage = new RunProjectTestsStage();
+
+        context = mock(Context.class);
+        when(context.getRepoPath()).thenReturn("fake-repo");
+
+        config = mock(Config.class);
+        executionPlanConfig = mock(Config.ExecutionPlanConfig.class);
+        when(config.getExecutionPlan()).thenReturn(executionPlanConfig);
+    }
+
+    @Test
+    void executedSuccessfulTest() {
+        when(executionPlanConfig.getTestCommand()).thenReturn("echo OK");
+        when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
+
+        try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
+            Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("echo OK", 0, "OK", "");
+            utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
+
+            try (MockedStatic<Config> configMock = mockStatic(Config.class)) {
+                configMock.when(Config::getInstance).thenReturn(config);
+                assertDoesNotThrow(() -> stage.execute(context));
+            }
+        }
+    }
+
+    @Test
+    void executedFailedWithoutIgnoreFailuresTest() {
+        when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
+        when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
+
+        try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
+            Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");
+            utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
+            try (MockedStatic<Config> configMock = Mockito.mockStatic(Config.class)) {
+                configMock.when(Config::getInstance).thenReturn(config);
+                assertThrows(TestSuiteExecutionFailedException.class, () -> stage.execute(context));
+            }
+        }
+    }
+
+    @Test
+    void executedFailedWithIgnoreFailuresTest() {
+        when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
+        when(executionPlanConfig.getIgnoreFailures()).thenReturn(true);
+
+        try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
+            Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");
+            utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
+            try (MockedStatic<Config> configMock = Mockito.mockStatic(Config.class)) {
+                configMock.when(Config::getInstance).thenReturn(config);
+                assertDoesNotThrow(() -> stage.execute(context));
+            }
+        }
+    }
+}

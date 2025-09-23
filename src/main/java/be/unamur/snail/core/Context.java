@@ -1,24 +1,17 @@
 package be.unamur.snail.core;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Context {
-    private final Map<String, Object> data = new HashMap<>();
+    private List<String> classPath;
 
-    public void put(String key, Object value) {
-        data.put(key, value);
+    public List<String> getClassPath() {
+        return classPath;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T get(String key) {
-        return (T) data.get(key);
-    }
-
-    @Override
-    public String toString() {
-        return "Context{" +
-                "data=" + data +
-                '}';
+    public void setClassPath(List<String> classPath) {
+        this.classPath = classPath;
     }
 }

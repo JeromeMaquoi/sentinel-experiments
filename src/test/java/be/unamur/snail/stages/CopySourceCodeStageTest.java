@@ -111,4 +111,14 @@ class CopySourceCodeStageTest {
                 .isInstanceOf(CommitMissingException.class)
                 .hasMessageContaining("null");
     }
+
+    @Test
+    void getTargetProjectNameSuccessTest() throws CommitMissingException, TargetDirMissingException {
+        config.getRepo().setTargetDirForTests("/tmp/project");
+        config.getRepo().setCommitForTests("abc123");
+        config.getProject().setSubProjectForTests("");
+
+        String result = stage.getTargetProjectName(config, config.getRepo().getTargetDir());
+        assertThat(result).isEqualTo("/tmp/project_abc123/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/");
+    }
 }

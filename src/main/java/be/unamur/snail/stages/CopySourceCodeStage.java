@@ -47,7 +47,7 @@ public class CopySourceCodeStage implements Stage {
             throw new CommitMissingException(commit);
         }
 
-        return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/";
+        return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/";
     }
 
     public void copyJavaFiles(Path source, Path target) throws IOException {

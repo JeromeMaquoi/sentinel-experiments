@@ -68,7 +68,7 @@ class CopySourceCodeStageTest {
         stage.execute(context);
 
         // Assert: check if file was copied
-        Path expectedTarget = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/Test.java");
+        Path expectedTarget = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/Test.java");
         assertThat(expectedTarget).exists();
         assertThat(Files.readString(expectedTarget)).isEqualTo("package be.unamur.snail; class Test {}");
     }

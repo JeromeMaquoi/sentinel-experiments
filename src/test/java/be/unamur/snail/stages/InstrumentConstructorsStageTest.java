@@ -55,7 +55,7 @@ class InstrumentConstructorsStageTest {
                 return factory;
             }
         };
-        PKG = "be.unamur.snail.register.SendUtils";
+        PKG = "be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils";
 
         when(factory.Type()).thenReturn(typeFactory);
         when(factory.Code()).thenReturn(codeFactory);

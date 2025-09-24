@@ -37,6 +37,10 @@ class RunProjectTestsStageTest {
         when(executionPlanConfig.getTestCommand()).thenReturn("echo OK");
         when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
 
+        Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
+        when(config.getProject()).thenReturn(projectConfig);
+        when(projectConfig.getPackagePrefix()).thenReturn("be");
+
         try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
             Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("echo OK", 0, "OK", "");
             utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
@@ -53,6 +57,10 @@ class RunProjectTestsStageTest {
         when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
         when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
 
+        Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
+        when(config.getProject()).thenReturn(projectConfig);
+        when(projectConfig.getPackagePrefix()).thenReturn("be");
+
         try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
             Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");
             utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
@@ -67,6 +75,10 @@ class RunProjectTestsStageTest {
     void executedFailedWithIgnoreFailuresTest() {
         when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
         when(executionPlanConfig.getIgnoreFailures()).thenReturn(true);
+
+        Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
+        when(config.getProject()).thenReturn(projectConfig);
+        when(projectConfig.getPackagePrefix()).thenReturn("be");
 
         try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
             Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");

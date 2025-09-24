@@ -1,6 +1,5 @@
-package be.unamur.snail.stages;
+package be.unamur.snail.processors;
 
-import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
@@ -21,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
-class InstrumentConstructorsStageTest {
+class ConstructorInstrumentationProcessorTest {
     private Launcher launcher;
 
     Path inputPath;

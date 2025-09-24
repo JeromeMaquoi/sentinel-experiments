@@ -15,7 +15,7 @@ import java.util.List;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
     //    private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private static final String PKG = "be.unamur.snail.register.SendUtils";
+    private static final String PKG = "be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils";
 
     @Override
     public void process(CtConstructor<?> constructor) {
@@ -107,7 +107,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         CtExecutableReference<?> getSnapshotMethod = factory.Executable().createReference(
                 registerUtilsType,
                 factory.Type().voidPrimitiveType(),
-                "getSnapshotAndStackTrace"
+                "getStackTrace"
         );
 
         CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());

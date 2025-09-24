@@ -34,7 +34,7 @@ public class InstrumentConstructorsStage implements Stage {
             log.info("Instrumentation completed.");
         } catch (SpoonException e) {
             log.error("Failed to instrument constructors for project {}", projectPath, e);
-            if (!config.getExecutionPlan().getIgnoreFailures()) {
+            if (!config.getExecutionPlan().getIgnoreSpoonFailures()) {
                 throw new ModuleException("Failed to instrument constructors for project " + projectPath, e);
             }
             log.warn("Ignoring failures, continuing anyway.");

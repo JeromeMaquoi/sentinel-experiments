@@ -17,7 +17,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         new CopyDirectoryStage(),
         new BuildClassPathStage(),
         new InstrumentConstructorsStage(),
-        //new CopySourceCodeStage(),
+        new CopySourceCodeStage(),
         new RunProjectTestsStage()
     );
     @Override

@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class Utils {
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
@@ -33,16 +32,22 @@ public class Utils {
         Process process = builder.start();
 
         StringBuilder stdoutBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Config config = Config.getInstance();
-                if (config.getProject().isShowProjectLogs()) {
-                    log.info("{}", line);
+        // Reader in a background thread
+        Thread readerThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Config config = Config.getInstance();
+                    if (config.getProject().isShowProjectLogs()) {
+                        log.info("{}", line);
+                    }
+                    stdoutBuilder.append(line).append(System.lineSeparator());
                 }
-                stdoutBuilder.append(line).append(System.lineSeparator());
+            } catch (IOException e) {
+                log.error("Error reading process output", e);
             }
-        }
+        });
+        readerThread.start();
 
         Config config = Config.getInstance();
         boolean finished = process.waitFor(config.getTimeout(), TimeUnit.SECONDS);
@@ -51,8 +56,9 @@ public class Utils {
             throw new CommandTimedOutException(command);
         }
 
-        int returnCode = process.exitValue();
+        readerThread.join();
 
+        int returnCode = process.exitValue();
         return new CompletedProcess(command, returnCode, stdoutBuilder.toString(), "");
     }
 

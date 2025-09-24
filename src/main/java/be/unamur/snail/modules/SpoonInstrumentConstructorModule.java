@@ -14,7 +14,7 @@ public class SpoonInstrumentConstructorModule implements Module {
     private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages = Arrays.asList(
         //new CloneAndCheckoutRepositoryStage()//,
-        //new CopyDirectoryStage(),
+        new CopyDirectoryStage(),
         //new BuildClassPathStage(),
         //new InstrumentConstructorsStage(),
         new CopySourceCodeStage(),

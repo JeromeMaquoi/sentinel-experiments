@@ -106,6 +106,7 @@ public class Config {
         private String commit;
         @JsonProperty("target-dir")
         private String targetDir;
+        private boolean overwrite;
 
         public String getUrl() {
             return url;
@@ -127,13 +128,12 @@ public class Config {
             this.targetDir = targetDir;
         }
 
-        @Override
-        public String toString() {
-            return "RepoConfig{" +
-                    "url='" + url + '\'' +
-                    ", commit='" + commit + '\'' +
-                    ", targetDir='" + targetDir + '\'' +
-                    '}';
+        public boolean isOverwrite() {
+            return overwrite;
+        }
+
+        public void setOverwriteForTests(boolean overwrite) {
+            this.overwrite = overwrite;
         }
     }
 

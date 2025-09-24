@@ -3,7 +3,6 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.CommitMissingException;
-import be.unamur.snail.exceptions.DirectoryNotCopiedException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.exceptions.TargetDirMissingException;
 import org.junit.jupiter.api.AfterEach;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

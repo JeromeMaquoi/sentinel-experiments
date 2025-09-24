@@ -5,6 +5,7 @@ repo:
   url: "https://github.com/spring-projects/spring-boot"
   commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot-clone"
+  overwrite: false
 log:
   level: INFO
 code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"

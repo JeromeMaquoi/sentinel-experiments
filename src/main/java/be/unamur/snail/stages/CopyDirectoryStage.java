@@ -4,6 +4,7 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.exceptions.DirectoryNotCopiedException;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,10 @@ public class CopyDirectoryStage implements Stage {
         String commit = config.getRepo().getCommit();
 
         if (targetDir == null || targetDir.isBlank()) {
-            throw new ModuleException("Missing required context key: target-dir");
+            throw new MissingConfigKeyException("target-dir");
         }
         if (commit == null || commit.isBlank()) {
-            throw new ModuleException("Missing required context key: commit");
+            throw new MissingConfigKeyException("commit");
         }
 
         Path source = Paths.get(targetDir).toAbsolutePath();

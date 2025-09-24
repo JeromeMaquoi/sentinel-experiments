@@ -2,6 +2,7 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,5 +76,17 @@ class RunProjectTestsStageTest {
                 assertDoesNotThrow(() -> stage.execute(context));
             }
         }
+    }
+
+    @Test
+    void executeThrowsMissingContextKeyTest() {
+        when(context.getRepoPath()).thenReturn(null);
+        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
+    }
+
+    @Test
+    void executeThrowsBlanckContextKeyTest() {
+        when(context.getRepoPath()).thenReturn("");
+        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
     }
 }

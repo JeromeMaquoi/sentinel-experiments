@@ -3,6 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
 import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
@@ -23,6 +24,10 @@ public class RunProjectTestsStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        if (context.getRepoPath() == null || context.getRepoPath().isBlank()) {
+            throw new MissingContextKeyException("repoPath");
+        }
+
         Config config = Config.getInstance();
         String testCommand = config.getExecutionPlan().getTestCommand();
         String cwd = context.getRepoPath();

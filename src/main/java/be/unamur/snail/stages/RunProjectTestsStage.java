@@ -5,15 +5,21 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
 import be.unamur.snail.utils.Utils;
+import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class RunProjectTestsStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(RunProjectTestsStage.class);
+
+    private final InitScriptGenerator initScriptGenerator;
+
+    public RunProjectTestsStage() {
+        this.initScriptGenerator = new InitScriptGenerator();
+    }
 
     @Override
     public void execute(Context context) throws Exception {
@@ -22,8 +28,8 @@ public class RunProjectTestsStage implements Stage {
         String cwd = context.getRepoPath();
 
         // Add init script to see the logs in the terminal during the execution
-        Path initScript = createInitScript();
-        String commandWithInit = testCommand + " --init-script " + initScript.toAbsolutePath();
+        File initScript = initScriptGenerator.generateShowLogsInitScript();
+        String commandWithInit = testCommand + " --init-script " + initScript.getAbsolutePath();
 
         Utils.CompletedProcess result = Utils.runCommand(commandWithInit, cwd);
 
@@ -36,31 +42,7 @@ public class RunProjectTestsStage implements Stage {
         }
         log.info("Project tests execution completed");
 
-        Files.deleteIfExists(initScript);
-    }
-
-    /**
-     * Create a temp gradle file with init script in it to configure
-     * the project to show logs in terminal during execution
-     * @return a Path of the temporary file where the script has been
-     * created
-     * @throws IOException if there is a problem during the creation of
-     * the file
-     */
-    public Path createInitScript() throws IOException {
-        String script = """
-                allprojects {
-                    tasks.withType(Test).configureEach {
-                        testLogging {
-                            showStandardStreams = true
-                            events 'passed', 'failed', 'skipped'
-                            exceptionFormat 'full'
-                        }
-                    }
-                }
-                """;
-        Path tempFile = Files.createTempFile("test-logging", ".gradle");
-        Files.writeString(tempFile, script);
-        return tempFile;
+        // Delete init script
+        Files.deleteIfExists(initScript.toPath());
     }
 }

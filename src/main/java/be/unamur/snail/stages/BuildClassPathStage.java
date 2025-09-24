@@ -81,7 +81,7 @@ public class BuildClassPathStage implements Stage {
             gradleTaskPath = subProject.replaceAll("^/|/$", "").replace("/", ":") + ":exportRuntimeClasspath";
         }
 
-        File initScript = initScriptGenerator.generate();
+        File initScript = initScriptGenerator.generateClasspathInitScript();
         log.debug("Temporary Gradle init script created at {}", initScript.getAbsolutePath());
 
         gradleService.runTask(projectRootDir, gradleTaskPath, initScript);

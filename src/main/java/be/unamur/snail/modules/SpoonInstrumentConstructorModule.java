@@ -15,8 +15,8 @@ public class SpoonInstrumentConstructorModule implements Module {
     private final List<Stage> stages = Arrays.asList(
         //new CloneAndCheckoutRepositoryStage()//,
         new CopyDirectoryStage(),
-        //new BuildClassPathStage(),
-        //new InstrumentConstructorsStage(),
+        new BuildClassPathStage(),
+        new InstrumentConstructorsStage(),
         new CopySourceCodeStage(),
         new RunProjectTestsStage()
     );

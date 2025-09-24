@@ -87,6 +87,8 @@ public class Config {
         private String subProject;
         @JsonProperty("show-project-logs")
         private boolean showProjectLogs;
+        @JsonProperty("package-prefix")
+        private String packagePrefix;
 
         public String getSubProject() {
             return subProject;
@@ -98,6 +100,10 @@ public class Config {
 
         public boolean isShowProjectLogs() {
             return showProjectLogs;
+        }
+
+        public String getPackagePrefix() {
+            return packagePrefix;
         }
     }
 

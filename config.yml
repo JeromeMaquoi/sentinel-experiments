@@ -1,6 +1,7 @@
 project:
   sub-project: "/spring-boot-project/spring-boot"
   show-project-logs: true
+  package-prefix: "org.springframework"
 repo:
   url: "https://github.com/spring-projects/spring-boot"
   commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"

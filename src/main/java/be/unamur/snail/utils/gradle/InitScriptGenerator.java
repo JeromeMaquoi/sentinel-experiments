@@ -39,7 +39,7 @@ public class InitScriptGenerator {
      * @throws IOException if there is a problem during the creation of
      * the file
      */
-    public File generateShowLogsInitScript() throws IOException {
+    public File generateShowLogsInitScriptForGradle() throws IOException {
         String script = """
                 allprojects {
                     tasks.withType(Test).configureEach {
@@ -47,6 +47,10 @@ public class InitScriptGenerator {
                             showStandardStreams = true
                             events 'passed', 'failed', 'skipped'
                             exceptionFormat 'full'
+                        }
+                        // Forward the packagePrefix system property to the test JVM
+                        if (System.getProperty("packagePrefix") != null) {
+                            systemProperty "packagePrefix", System.getProperty("packagePrefix")
                         }
                     }
                 }

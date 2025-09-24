@@ -1,8 +1,5 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
-import be.unamur.snail.config.Config;
-import be.unamur.snail.exceptions.MissingConfigKeyException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,12 +12,12 @@ public class StackTraceHelper {
     }
 
     public List<StackTraceElement> getFilteredStackTrace() {
-        Config config = Config.getInstance();
-        if (config.getProject().getPackagePrefix() == null || config.getProject().getPackagePrefix().isEmpty()) {
-            throw new MissingConfigKeyException("package-prefix");
+        String prefix = System.getProperty("packagePrefix", System.getenv("PACKAGE_PREFIX"));
+        if (prefix == null || prefix.isEmpty()) {
+            throw new IllegalArgumentException("Package prefix not set");
         }
         return new ArrayList<>(Arrays.stream(this.stackTraceProvider.getStackTrace())
-                .filter(element -> element.getClassName().startsWith(config.getProject().getPackagePrefix()))
+                .filter(element -> element.getClassName().startsWith(prefix))
                 .toList());
     }
 }

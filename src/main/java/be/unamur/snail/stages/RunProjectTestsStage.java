@@ -33,8 +33,15 @@ public class RunProjectTestsStage implements Stage {
         String cwd = context.getRepoPath();
 
         // Add init script to see the logs in the terminal during the execution
-        File initScript = initScriptGenerator.generateShowLogsInitScript();
+        File initScript = initScriptGenerator.generateShowLogsInitScriptForGradle();
+        // TODO handle Maven and not only Gradle
         String commandWithInit = testCommand + " --init-script " + initScript.getAbsolutePath();
+
+        // ADd package prefix as system property for stacktrace filtering
+        String packagePrefix = config.getProject().getPackagePrefix();
+        if (packagePrefix != null && !packagePrefix.isBlank()) {
+            commandWithInit += " -DpackagePrefix=" + packagePrefix;
+        }
 
         Utils.CompletedProcess result = Utils.runCommand(commandWithInit, cwd);
 

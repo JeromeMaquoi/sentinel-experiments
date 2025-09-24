@@ -5,9 +5,16 @@ import java.util.List;
 
 public class SendConstructorsUtils {
     private ConstructorContext constructorContext;
+    private StackTraceHelper stackTraceHelper;
 
     public SendConstructorsUtils() {
         this.constructorContext = new ConstructorContext();
+        this.stackTraceHelper = new StackTraceHelper(new DefaultStackTraceProvider());
+    }
+
+    public SendConstructorsUtils(StackTraceHelper stackTraceHelper) {
+        this.constructorContext = new ConstructorContext();
+        this.stackTraceHelper = stackTraceHelper;
     }
 
     /**
@@ -41,8 +48,16 @@ public class SendConstructorsUtils {
         System.out.println("Added attribute " + attributeName + " to context");
     }
 
-    public void getStackTrace(Object object) {
-        System.out.println("Getting stack trace");
+    /**
+     * Get the stacktrace of this at a t time, and puts it in the
+     * current constructor context
+     */
+    public void getStackTrace() {
+        if (constructorContext == null || constructorContext.isEmpty()) {
+            throw new IllegalStateException("ConstructorContext is not initialized");
+        }
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
+        constructorContext = constructorContext.withStackTrace(stackTrace);
     }
 
     public void send() {

@@ -4,6 +4,7 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
 import org.slf4j.Logger;
@@ -17,6 +18,10 @@ public class InstrumentConstructorsStage implements Stage {
     private static Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
     @Override
     public void execute(Context context) throws ModuleException {
+        if (context.getClassPath() == null || context.getClassPath().isEmpty()) {
+            throw new MissingContextKeyException("classPath");
+        }
+
         Config config = Config.getInstance();
         String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
         String subProject = config.getProject().getSubProject();

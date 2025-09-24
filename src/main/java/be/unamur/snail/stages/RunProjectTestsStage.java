@@ -25,6 +25,6 @@ public class RunProjectTestsStage implements Stage {
             }
             log.warn("Ignoring failures, continuing anyway.");
         }
-        log.info("Project tests execution completed: {}", result.stdout());
+        log.info("Project tests execution completed");
     }
 }

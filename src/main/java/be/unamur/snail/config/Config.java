@@ -85,6 +85,8 @@ public class Config {
     public static class ProjectConfig {
         @JsonProperty("sub-project")
         private String subProject;
+        @JsonProperty("show-project-logs")
+        private boolean showProjectLogs;
 
         public String getSubProject() {
             return subProject;
@@ -92,6 +94,10 @@ public class Config {
 
         public void setSubProjectForTests(String subProject) {
             this.subProject = subProject;
+        }
+
+        public boolean isShowProjectLogs() {
+            return showProjectLogs;
         }
     }
 

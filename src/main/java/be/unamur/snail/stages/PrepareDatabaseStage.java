@@ -43,10 +43,20 @@ public class PrepareDatabaseStage implements Stage {
     public void startMongoService() throws IOException, InterruptedException {
         log.info("Starting local MongoDB database...");
         Utils.runCommand("sudo systemctl start mongod");
-        if (!isMongoRunningLocally()) {
-            throw new MongoServiceNotStartedException();
+
+        int retries = 10;
+        int delayMs = 1000;
+
+        for (int i = 0; i < retries; i++) {
+            Utils.CompletedProcess status = Utils.runCommand("systemctl is-active mongod");
+            if (status.stdout().trim().equals("active")) {
+                log.info("MongoDB service activated.");
+                return;
+            }
+            log.info("Waiting for MongoDB service to be active... (attempt {}/{})", i + 1, retries);
+            Thread.sleep(delayMs);
         }
-        log.info("Local MongoDB database started.");
+        throw new MongoServiceNotStartedException();
     }
 
     public void prepareDevDatabase(String backendPath) throws Exception {
@@ -69,14 +79,6 @@ public class PrepareDatabaseStage implements Stage {
             return result.returnCode() == 0 && !result.stdout().isBlank();
         } catch (IOException | InterruptedException e) {
             log.error("Could not check screen sessions", e);
-            return false;
-        }
-    }
-
-    public boolean isMongoRunningLocally() {
-        try (Socket socket = new Socket("localhost", 27017)) {
-            return true;
-        } catch (Exception e) {
             return false;
         }
     }

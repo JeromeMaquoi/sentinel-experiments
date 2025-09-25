@@ -67,11 +67,16 @@ public class PrepareDatabaseStage implements Stage {
             log.info("Dev backend already running in screen session 'sentinel-backend'. Skipping start.");
             return;
         }
-        log.info("Starting sentinel-backend locally...");
+        Config config = Config.getInstance();
+        int backendTimeout = config.getDatabase().getBackendTimeoutSeconds();
 
-        String startScript = backendPath + "/start-server.sh";
-        String command = "screen -dmS sentinel-backend bash -c \"" + startScript + "\"";
-        Utils.runCommand(command);
+        log.info("Starting sentinel-backend locally...");
+        String startScript = backendPath + "/start-server.sh " + backendTimeout;
+        String makeScriptExecutable = "chmod +X " + startScript;
+        String scriptCommand = makeScriptExecutable + " && ./" + startScript;
+
+        String completeCommand = "screen -dmS sentinel-backend bash -c \"" + scriptCommand + "\"";
+        Utils.runCommand(completeCommand);
         int retries = 30;
         int delayMs = 1000;
         isServerRunning(retries, delayMs);

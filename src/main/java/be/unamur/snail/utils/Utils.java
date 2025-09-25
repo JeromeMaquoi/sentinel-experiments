@@ -50,7 +50,7 @@ public class Utils {
         readerThread.start();
 
         Config config = Config.getInstance();
-        boolean finished = process.waitFor(config.getTimeout(), TimeUnit.SECONDS);
+        boolean finished = process.waitFor(config.getCommandTimeout(), TimeUnit.SECONDS);
         if (!finished) {
             process.destroyForcibly();
             throw new CommandTimedOutException(command);

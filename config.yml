@@ -10,13 +10,14 @@ repo:
 log:
   level: INFO
 code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
-time-out: 120
+command-time-out: 120
 execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties"
   ignore-failures: false
   ignore-spoon-failures: true
 database:
   mode: dev
+  backend-timeout-seconds: 120
   # dev-specific
   plugins-directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins"
   backend-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"

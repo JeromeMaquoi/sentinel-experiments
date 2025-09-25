@@ -1,22 +1,44 @@
 package be.unamur.snail.stages;
 
+import be.unamur.snail.config.Config;
 import be.unamur.snail.exceptions.MongoServiceNotStartedException;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class PrepareDatabaseStageTest {
     private PrepareDatabaseStage stage;
+    @TempDir
+    Path tempDir;
+    Config config;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         stage = new PrepareDatabaseStage();
+        Path yaml = tempDir.resolve("config.yaml");
+        Files.writeString(yaml, """
+            project:
+              sub-project: ""
+            repo:
+              url: "https://example.com/repo.git"
+              commit: "123abc"
+              target-dir: "/tmp/repo"
+            log:
+              level: "DEBUG"
+            database:
+              backend-timeout-seconds: 120
+        """);
+        Config.load(yaml.toString());
+        config = Config.getInstance();
     }
 
     @Test

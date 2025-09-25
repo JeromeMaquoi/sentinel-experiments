@@ -1,5 +1,6 @@
 package be.unamur.snail.config;
 
+import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -13,15 +14,15 @@ public class Config {
     private LogConfig log;
     @JsonProperty("code-constructors-instrumentation-path")
     private String codeConstructorsInstrumentationPath;
-    @JsonProperty("time-out")
-    private int timeout = 120;
+    @JsonProperty("command-time-out")
+    private int commandTimeout = 120;
     @JsonProperty("execution-plan")
     private ExecutionPlanConfig executionPlan;
     private DatabaseConfig database;
 
     public static Config getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Config not loaded yet");
+            throw new ConfigNotLoadedException();
         }
         return instance;
     }
@@ -67,12 +68,12 @@ public class Config {
         this.codeConstructorsInstrumentationPath = codeConstructorsInstrumentationPath;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public int getCommandTimeout() {
+        return commandTimeout;
     }
 
     public void setTimeoutForTests(int timeout) {
-        this.timeout = timeout;
+        this.commandTimeout = timeout;
     }
 
     public ExecutionPlanConfig getExecutionPlan() {
@@ -194,6 +195,8 @@ public class Config {
 
     public static class DatabaseConfig {
         private String mode;
+        @JsonProperty("backend-timeout-seconds")
+        private int backendTimeoutSeconds;
         @JsonProperty("plugins-directory")
         private String pluginsDirectory;
         @JsonProperty("backend-path")
@@ -221,6 +224,10 @@ public class Config {
 
         public String getSshHost() {
             return sshHost;
+        }
+
+        public int getBackendTimeoutSeconds() {
+            return backendTimeoutSeconds;
         }
     }
 }

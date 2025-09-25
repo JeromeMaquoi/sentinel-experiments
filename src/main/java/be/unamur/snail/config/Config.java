@@ -17,6 +17,7 @@ public class Config {
     private int timeout = 120;
     @JsonProperty("execution-plan")
     private ExecutionPlanConfig executionPlan;
+    private DatabaseConfig database;
 
     public static Config getInstance() {
         if (instance == null) {
@@ -82,6 +83,10 @@ public class Config {
         this.executionPlan = executionPlan;
     }
 
+    public DatabaseConfig getDatabase() {
+        return database;
+    }
+
     public static class ProjectConfig {
         @JsonProperty("sub-project")
         private String subProject;
@@ -106,6 +111,9 @@ public class Config {
             return packagePrefix;
         }
     }
+
+
+
 
     public static class RepoConfig {
         private String url;
@@ -143,6 +151,8 @@ public class Config {
         }
     }
 
+
+
     public static class LogConfig {
         private String level;
 
@@ -157,6 +167,7 @@ public class Config {
                     '}';
         }
     }
+
 
     public static class ExecutionPlanConfig {
         @JsonProperty("test-command")
@@ -176,6 +187,40 @@ public class Config {
 
         public boolean getIgnoreSpoonFailures() {
             return ignoreSpoonFailures;
+        }
+    }
+
+
+
+    public static class DatabaseConfig {
+        private String mode;
+        @JsonProperty("plugins-directory")
+        private String pluginsDirectory;
+        @JsonProperty("backend-path")
+        private String backendPath;
+        @JsonProperty("ssh-user")
+        private String sshUser;
+        @JsonProperty("ssh-host")
+        private String sshHost;
+
+        public String getMode() {
+            return mode;
+        }
+
+        public String getPluginsDirectory() {
+            return pluginsDirectory;
+        }
+
+        public String getBackendPath() {
+            return backendPath;
+        }
+
+        public String getSshUser() {
+            return sshUser;
+        }
+
+        public String getSshHost() {
+            return sshHost;
         }
     }
 }

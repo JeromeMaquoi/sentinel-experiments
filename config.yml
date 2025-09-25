@@ -15,3 +15,11 @@ execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties"
   ignore-failures: false
   ignore-spoon-failures: true
+database:
+  mode: dev
+  # dev-specific
+  plugins-directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins"
+  backend-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

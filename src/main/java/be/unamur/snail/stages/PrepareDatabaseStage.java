@@ -5,13 +5,16 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MongoServiceNotStartedException;
+import be.unamur.snail.exceptions.ServerNotStartedException;
 import be.unamur.snail.exceptions.UnsupportedDatabaseMode;
 import be.unamur.snail.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class PrepareDatabaseStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(PrepareDatabaseStage.class);
@@ -44,8 +47,8 @@ public class PrepareDatabaseStage implements Stage {
         log.info("Starting local MongoDB database...");
         Utils.runCommand("sudo systemctl start mongod");
 
-        int retries = 10;
-        int delayMs = 1000;
+        int retries = 5;
+        int delayMs = 500;
 
         for (int i = 0; i < retries; i++) {
             Utils.CompletedProcess status = Utils.runCommand("systemctl is-active mongod");
@@ -59,18 +62,41 @@ public class PrepareDatabaseStage implements Stage {
         throw new MongoServiceNotStartedException();
     }
 
-    public void prepareDevDatabase(String backendPath) throws Exception {
+    public void prepareDevDatabase(String backendPath) throws IOException, InterruptedException {
         if (isScreenSessionRunning(backendPath)) {
             log.info("Dev backend already running in screen session 'sentinel-backend'. Skipping start.");
             return;
         }
         log.info("Starting sentinel-backend locally...");
-        String command = String.join(" && ",
-                "cd " + backendPath,
-                "./mvnw clean",
-                "./mvnw");
-        Utils.runCommand("screen -dmS sentinel-backend bash -c '" + command + "'", backendPath);
-        log.info("Started dev backend in detached screen session 'sentinel-backend'.");
+
+        String startScript = backendPath + "/start-server.sh";
+        String command = "screen -dmS sentinel-backend bash -c \"" + startScript + "\"";
+        Utils.runCommand(command);
+        int retries = 30;
+        int delayMs = 1000;
+        isServerRunning(retries, delayMs);
+    }
+
+    public void isServerRunning(int retries, int delayMs) throws IOException, InterruptedException {
+        Path readyFile = Paths.get("/tmp/backend-ready");
+        boolean started = false;
+
+        for (int i = 0; i < retries; i++) {
+            if (Files.exists(readyFile)) {
+                String status = Files.readString(readyFile).trim();
+                if (status.equals("READY")) {
+                    log.info("Backend started successfully.");
+                    started = true;
+                }
+                Files.deleteIfExists(readyFile);
+                break;
+            }
+            log.info("Waiting for backend to be ready... (attempt {}/{})", i + 1, retries);
+            Thread.sleep(delayMs);
+        }
+        if (!started) {
+            throw new ServerNotStartedException();
+        }
     }
 
     public boolean isScreenSessionRunning(String sessionName) {

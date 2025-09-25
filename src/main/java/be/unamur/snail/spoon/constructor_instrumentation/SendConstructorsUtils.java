@@ -1,5 +1,9 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import java.util.HashSet;
 import java.util.List;
 
@@ -15,6 +19,10 @@ public class SendConstructorsUtils {
     public SendConstructorsUtils(StackTraceHelper stackTraceHelper) {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
+    }
+
+    public ConstructorContext getConstructorContextForTests() {
+        return constructorContext;
     }
 
     /**
@@ -62,9 +70,16 @@ public class SendConstructorsUtils {
 
     public void send() {
         System.out.println("Sending instance to the database");
+        String json = serializeConstructorContext();
     }
 
-    public ConstructorContext getConstructorContextForTests() {
-        return constructorContext;
+    public String serializeConstructorContext() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            return mapper.writeValueAsString(constructorContext);
+        } catch (JsonProcessingException e) {
+            throw new JsonException(e);
+        }
     }
 }

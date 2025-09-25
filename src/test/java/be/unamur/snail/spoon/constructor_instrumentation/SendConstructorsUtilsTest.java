@@ -85,4 +85,23 @@ class SendConstructorsUtilsTest {
         assertEquals("org.springframework.boot.ApplicationEnvironmentTests", stackTrace.get(0).getClassName());
         assertEquals(30, stackTrace.get(0).getLineNumber());
     }
+
+    @Test
+    void serializeSimpleConstructorContextWorkingTest() {
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        String json = constructorUtils.serializeConstructorContext();
+        System.out.println(json);
+        assertNotNull(json);
+        assertEquals("""
+                {
+                  "fileName" : "file.java",
+                  "className" : "Class",
+                  "methodName" : "method",
+                  "parameters" : [ "java.lang.String" ],
+                  "attributes" : [ ],
+                  "stackTrace" : null,
+                  "snapshot" : null,
+                  "empty" : false
+                }""", json);
+    }
 }

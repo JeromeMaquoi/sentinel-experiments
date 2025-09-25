@@ -59,7 +59,7 @@ class BuildClassPathStageTest {
         setInstance(fake);
 
         // Init mocks
-        when(initScriptGenerator.generate()).thenReturn(cpFile.toFile());
+        when(initScriptGenerator.generateClasspathInitScript()).thenReturn(cpFile.toFile());
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
         Context context = new Context();
@@ -92,7 +92,7 @@ class BuildClassPathStageTest {
         setField(fake, "project", project);
         Config.setInstanceForTests(fake);
 
-        when(initScriptGenerator.generate()).thenReturn(cpFile.toFile());
+        when(initScriptGenerator.generateClasspathInitScript()).thenReturn(cpFile.toFile());
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
         Context context = new Context();
@@ -118,7 +118,7 @@ class BuildClassPathStageTest {
         setField(fake, "project", project);
         setInstance(fake);
 
-        when(initScriptGenerator.generate()).thenReturn(repoDir.resolve("dummy.gradle").toFile());
+        when(initScriptGenerator.generateClasspathInitScript()).thenReturn(repoDir.resolve("dummy.gradle").toFile());
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
         Context context = new Context();

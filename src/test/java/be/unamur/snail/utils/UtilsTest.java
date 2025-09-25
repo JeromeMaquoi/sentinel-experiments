@@ -59,7 +59,7 @@ class UtilsTest {
 
     @Test
     void runCommandTimeoutTest() {
-        String command = "sleep 5";
+        String command = "sleep 2";
         Config.getInstance().setTimeoutForTests(1);
 
         Exception ex = assertThrows(CommandTimedOutException.class, () -> Utils.runCommand(command));

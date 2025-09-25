@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class Utils {
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
@@ -20,7 +19,7 @@ public class Utils {
     }
 
     public static CompletedProcess runCommand(String command, String cwd) throws IOException, InterruptedException {
-        log.info("Executing command: {}", command);
+        log.info("Executing command `{}` in {}", command, cwd);
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
         builder.environment().put("PATH", "/usr/bin:/bin");
@@ -28,9 +27,27 @@ public class Utils {
         if (cwd != null && !cwd.isEmpty()) {
             builder.directory(new File(cwd));
         }
-        builder.redirectErrorStream(false);
+        builder.redirectErrorStream(true);
 
         Process process = builder.start();
+
+        StringBuilder stdoutBuilder = new StringBuilder();
+        // Reader in a background thread
+        Thread readerThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Config config = Config.getInstance();
+                    if (config.getProject().isShowProjectLogs()) {
+                        log.info("{}", line);
+                    }
+                    stdoutBuilder.append(line).append(System.lineSeparator());
+                }
+            } catch (IOException e) {
+                log.error("Error reading process output", e);
+            }
+        });
+        readerThread.start();
 
         Config config = Config.getInstance();
         boolean finished = process.waitFor(config.getTimeout(), TimeUnit.SECONDS);
@@ -39,23 +56,10 @@ public class Utils {
             throw new CommandTimedOutException(command);
         }
 
-        String stdout;
-        String stderr;
-        try (BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-             BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-
-            stdout = outReader.lines().collect(Collectors.joining(System.lineSeparator()));
-            stderr = errReader.lines().collect(Collectors.joining(System.lineSeparator()));
-        }
+        readerThread.join();
 
         int returnCode = process.exitValue();
-
-        if (returnCode != 0) {
-            log.error("Command failed with return code: {}", returnCode);
-            log.error("stdout: {}", stdout);
-            log.error("stderr: {}", stderr);
-        }
-        return new CompletedProcess(command, returnCode, stdout, stderr);
+        return new CompletedProcess(command, returnCode, stdoutBuilder.toString(), "");
     }
 
     public record CompletedProcess(String args, int returnCode, String stdout, String stderr) {

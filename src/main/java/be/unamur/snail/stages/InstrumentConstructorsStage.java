@@ -4,11 +4,13 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
+import spoon.SpoonException;
 
 import java.util.List;
 
@@ -16,6 +18,10 @@ public class InstrumentConstructorsStage implements Stage {
     private static Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
     @Override
     public void execute(Context context) throws ModuleException {
+        if (context.getClassPath() == null || context.getClassPath().isEmpty()) {
+            throw new MissingContextKeyException("classPath");
+        }
+
         Config config = Config.getInstance();
         String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
         String subProject = config.getProject().getSubProject();
@@ -31,9 +37,12 @@ public class InstrumentConstructorsStage implements Stage {
             launcher.addProcessor(new ConstructorInstrumentationProcessor());
             launcher.run();
             log.info("Instrumentation completed.");
-        } catch (Exception e) {
+        } catch (SpoonException e) {
             log.error("Failed to instrument constructors for project {}", projectPath, e);
-            throw new ModuleException("Instrumentation stage failed", e);
+            if (!config.getExecutionPlan().getIgnoreSpoonFailures()) {
+                throw new ModuleException("Failed to instrument constructors for project " + projectPath, e);
+            }
+            log.warn("Ignoring failures, continuing anyway.");
         }
     }
 }

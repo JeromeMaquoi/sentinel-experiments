@@ -85,6 +85,10 @@ public class Config {
     public static class ProjectConfig {
         @JsonProperty("sub-project")
         private String subProject;
+        @JsonProperty("show-project-logs")
+        private boolean showProjectLogs;
+        @JsonProperty("package-prefix")
+        private String packagePrefix;
 
         public String getSubProject() {
             return subProject;
@@ -93,6 +97,14 @@ public class Config {
         public void setSubProjectForTests(String subProject) {
             this.subProject = subProject;
         }
+
+        public boolean isShowProjectLogs() {
+            return showProjectLogs;
+        }
+
+        public String getPackagePrefix() {
+            return packagePrefix;
+        }
     }
 
     public static class RepoConfig {
@@ -100,6 +112,7 @@ public class Config {
         private String commit;
         @JsonProperty("target-dir")
         private String targetDir;
+        private boolean overwrite;
 
         public String getUrl() {
             return url;
@@ -121,13 +134,12 @@ public class Config {
             this.targetDir = targetDir;
         }
 
-        @Override
-        public String toString() {
-            return "RepoConfig{" +
-                    "url='" + url + '\'' +
-                    ", commit='" + commit + '\'' +
-                    ", targetDir='" + targetDir + '\'' +
-                    '}';
+        public boolean isOverwrite() {
+            return overwrite;
+        }
+
+        public void setOverwriteForTests(boolean overwrite) {
+            this.overwrite = overwrite;
         }
     }
 
@@ -151,6 +163,8 @@ public class Config {
         private String testCommand;
         @JsonProperty("ignore-failures")
         private boolean ignoreFailures;
+        @JsonProperty("ignore-spoon-failures")
+        private boolean ignoreSpoonFailures;
 
         public String getTestCommand() {
             return testCommand;
@@ -158,6 +172,10 @@ public class Config {
 
         public boolean getIgnoreFailures() {
             return ignoreFailures;
+        }
+
+        public boolean getIgnoreSpoonFailures() {
+            return ignoreSpoonFailures;
         }
     }
 }

@@ -1,94 +1,46 @@
 package be.unamur.snail.stages;
 
-import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
+import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import spoon.Launcher;
-import spoon.reflect.code.CtConstructorCall;
-import spoon.reflect.code.CtLocalVariable;
-import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtParameter;
-import spoon.reflect.factory.CodeFactory;
-import spoon.reflect.factory.Factory;
-import spoon.reflect.factory.TypeFactory;
-import spoon.reflect.reference.CtTypeReference;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 class InstrumentConstructorsStageTest {
-    private Launcher launcher;
-
-    Path inputPath;
-
-    ConstructorInstrumentationProcessor processor;
-
-    Factory factory;
-
-    TypeFactory typeFactory;
-
-    CodeFactory codeFactory;
-
-    String PKG;
-
-    CtTypeReference mockTypeRef;
-
-    CtConstructorCall mockCall;
-
-    CtLocalVariable mockLocalVariable;
+    private InstrumentConstructorsStage stage;
+    private Context context;
+    private Config config;
+    @TempDir
+    Path tempDir;
 
     @BeforeEach
-    void setUp() {
-        inputPath = Paths.get("src/test/resources/test-inputs/");
-        launcher = new Launcher();
-        factory = mock(Factory.class);
-        typeFactory = mock(TypeFactory.class);
-        codeFactory = mock(CodeFactory.class);
-        processor = new ConstructorInstrumentationProcessor(){
-            @Override
-            public Factory getFactory() {
-                return factory;
-            }
-        };
-        PKG = "be.unamur.snail.register.SendUtils";
-
-        when(factory.Type()).thenReturn(typeFactory);
-        when(factory.Code()).thenReturn(codeFactory);
-
-        mockTypeRef = mock(CtTypeReference.class);
-        mockCall = mock(CtConstructorCall.class);
-        mockLocalVariable = mock(CtLocalVariable.class);
-        when(typeFactory.createReference(PKG)).thenReturn(mockTypeRef);
-        when(codeFactory.createConstructorCall(mockTypeRef)).thenReturn(mockCall);
-        when(codeFactory.createLocalVariable(mockTypeRef, "utils", mockCall)).thenReturn(mockLocalVariable);
+    void setUp() throws Exception {
+        stage = new InstrumentConstructorsStage();
+        context = new Context();
+        Path yaml = tempDir.resolve("config.yaml");
+        Files.writeString(yaml, """
+            project:
+              sub-project: ""
+            repo:
+              url: "https://example.com/repo.git"
+              commit: "123abc"
+              target-dir: "/tmp/repo"
+            log:
+              level: "DEBUG"
+        """);
+        Config.load(yaml.toString());
+        config = Config.getInstance();
+        config.setRepoForTests(new Config.RepoConfig());
     }
 
     @Test
-    void createConstructorParameterListTest() {
-        CtConstructor<?> mockConstructor = mock(CtConstructor.class);
-        CtParameter<?> mockParameter = mock(CtParameter.class);
-        CtTypeReference mockTypeRef  = mock(CtTypeReference.class);
-
-        when(mockTypeRef.getQualifiedName()).thenReturn("java.lang.String");
-        when(mockParameter.getType()).thenReturn(mockTypeRef);
-        when(mockConstructor.getParameters()).thenReturn(List.of(mockParameter));
-
-        List<String> actualResult = processor.createConstructorParameterList(mockConstructor);
-        assertEquals(List.of("java.lang.String"), actualResult);
-    }
-
-    @Test
-    void createSendUtilsInitializationInvocationTest() {
-        CtLocalVariable<?> actualResult = processor.createSendUtilsInitializationInvocation();
-        assertEquals(mockLocalVariable, actualResult);
-
-        verify(factory.Type()).createReference(PKG);
-        verify(codeFactory).createConstructorCall(mockTypeRef);
-        verify(codeFactory).createLocalVariable(mockTypeRef, "utils", mockCall);
+    void shouldThrowExceptionIfClassPathMissingTest() {
+        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
     }
 }

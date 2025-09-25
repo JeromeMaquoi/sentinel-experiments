@@ -3,7 +3,6 @@ package be.unamur.snail.stages;
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.CommitMissingException;
-import be.unamur.snail.exceptions.DirectoryNotCopiedException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.exceptions.TargetDirMissingException;
 import org.junit.jupiter.api.AfterEach;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,7 +66,7 @@ class CopySourceCodeStageTest {
         stage.execute(context);
 
         // Assert: check if file was copied
-        Path expectedTarget = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/Test.java");
+        Path expectedTarget = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/Test.java");
         assertThat(expectedTarget).exists();
         assertThat(Files.readString(expectedTarget)).isEqualTo("package be.unamur.snail; class Test {}");
     }
@@ -110,5 +108,15 @@ class CopySourceCodeStageTest {
         assertThatThrownBy(() -> stage.getTargetProjectName(config, config.getRepo().getTargetDir()))
                 .isInstanceOf(CommitMissingException.class)
                 .hasMessageContaining("null");
+    }
+
+    @Test
+    void getTargetProjectNameSuccessTest() throws CommitMissingException, TargetDirMissingException {
+        config.getRepo().setTargetDirForTests("/tmp/project");
+        config.getRepo().setCommitForTests("abc123");
+        config.getProject().setSubProjectForTests("");
+
+        String result = stage.getTargetProjectName(config, config.getRepo().getTargetDir());
+        assertThat(result).isEqualTo("/tmp/project_abc123/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/");
     }
 }

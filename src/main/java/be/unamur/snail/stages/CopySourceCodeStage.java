@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class CopySourceCodeStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(CopySourceCodeStage.class);
@@ -28,11 +29,11 @@ public class CopySourceCodeStage implements Stage {
         String targetDir = config.getRepo().getTargetDir();
         String targetProjectName = getTargetProjectName(config, targetDir);
         Path target = Paths.get(targetProjectName).toAbsolutePath();
-        log.info("Copying source code from {} to {}", from, target);
+        log.debug("Copying source code from {} to {}", from, target);
 
         Files.createDirectories(target);
         copyJavaFiles(from, target);
-        log.info("Copy completed.");
+        log.info("Copy completed from {} to {}", from, target);
     }
 
     public String getTargetProjectName(Config config, String targetDir) throws TargetDirMissingException, CommitMissingException {
@@ -46,7 +47,7 @@ public class CopySourceCodeStage implements Stage {
             throw new CommitMissingException(commit);
         }
 
-        return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/";
+        return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/";
     }
 
     public void copyJavaFiles(Path source, Path target) throws IOException {
@@ -57,7 +58,7 @@ public class CopySourceCodeStage implements Stage {
                     if (Files.isDirectory(path)) {
                         Files.createDirectories(targetPath);
                     } else {
-                        Files.copy(path, targetPath);
+                        Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
                     }
                 } catch (IOException e) {
                     throw new DirectoryNotCopiedException(path, e);

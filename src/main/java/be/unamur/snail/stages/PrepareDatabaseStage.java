@@ -33,8 +33,12 @@ public class PrepareDatabaseStage implements Stage {
 
         if (mode.equalsIgnoreCase("dev")) {
             log.info("Preparing for local development database...");
-            startMongoService();
-            prepareDevDatabase(backendPath);
+            if (!startMongoService()) {
+                throw new MongoServiceNotStartedException();
+            }
+            if (!startDevDatabase(backendPath)) {
+                throw new ServerNotStartedException();
+            }
         } else if (mode.equalsIgnoreCase("prod")) {
             log.info("Preparing for production database...");
 
@@ -43,7 +47,7 @@ public class PrepareDatabaseStage implements Stage {
         }
     }
 
-    public void startMongoService() throws IOException, InterruptedException {
+    public boolean startMongoService() throws IOException, InterruptedException {
         log.info("Starting local MongoDB database...");
         Utils.runCommand("sudo systemctl start mongod");
 
@@ -54,18 +58,18 @@ public class PrepareDatabaseStage implements Stage {
             Utils.CompletedProcess status = Utils.runCommand("systemctl is-active mongod");
             if (status.stdout().trim().equals("active")) {
                 log.info("MongoDB service activated.");
-                return;
+                return true;
             }
             log.info("Waiting for MongoDB service to be active... (attempt {}/{})", i + 1, retries);
             Thread.sleep(delayMs);
         }
-        throw new MongoServiceNotStartedException();
+        return false;
     }
 
-    public void prepareDevDatabase(String backendPath) throws IOException, InterruptedException {
+    public boolean startDevDatabase(String backendPath) throws IOException, InterruptedException {
         if (isScreenSessionRunning(backendPath)) {
             log.info("Dev backend already running in screen session 'sentinel-backend'. Skipping start.");
-            return;
+            return true;
         }
 
         log.info("Starting sentinel-backend locally...");
@@ -75,10 +79,7 @@ public class PrepareDatabaseStage implements Stage {
         Config config = Config.getInstance();
         int nbCheckServerStart = config.getDatabase().getNbCheckServerStart();
         int delayMs = 1000;
-        boolean started = isServerRunning(nbCheckServerStart, delayMs);
-        if (!started) {
-            throw new ServerNotStartedException();
-        }
+        return isServerRunning(nbCheckServerStart, delayMs);
     }
 
     public String createCompleteCommand(String backendPath) {

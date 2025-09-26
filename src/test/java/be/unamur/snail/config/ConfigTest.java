@@ -1,5 +1,6 @@
 package be.unamur.snail.config;
 
+import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -37,7 +38,7 @@ class ConfigTest {
 
     @Test
     void getInstanceFailsIfNotLoadedTest() {
-        assertThrows(IllegalStateException.class, Config::getInstance);
+        assertThrows(ConfigNotLoadedException.class, Config::getInstance);
     }
 
     @AfterEach

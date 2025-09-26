@@ -11,6 +11,7 @@ import org.mockito.MockedStatic;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -18,8 +19,9 @@ import static org.mockito.Mockito.*;
 class PrepareDatabaseStageTest {
     private PrepareDatabaseStage stage;
     @TempDir
-    Path tempDir;
-    Config config;
+    private Path tempDir;
+    private Config config;
+    private final Path readyFile = Paths.get("/tmp/backend-ready");
 
     @BeforeEach
     void setUp() throws Exception {
@@ -36,9 +38,11 @@ class PrepareDatabaseStageTest {
               level: "DEBUG"
             database:
               backend-timeout-seconds: 120
+              nb-check-server-start: 5
         """);
         Config.load(yaml.toString());
         config = Config.getInstance();
+        Files.deleteIfExists(readyFile);
     }
 
     @Test
@@ -85,6 +89,49 @@ class PrepareDatabaseStageTest {
     }
 
     @Test
+    void isServerRunningShouldReturnTrue() throws IOException, InterruptedException {
+        Files.writeString(readyFile, "READY");
+        boolean result = stage.isServerRunning(3, 10);
+        assertTrue(result, "Expected server to be considered running when file contains READY");
+        assertFalse(Files.exists(readyFile), "READY file should be deleted after reading");
+    }
+
+    @Test
+    void isServerRunningShouldReturnFalseWhenFileContainsFailed() throws IOException, InterruptedException {
+        Files.writeString(readyFile, "FAILED");
+        boolean result = stage.isServerRunning(3, 10);
+        assertFalse(result, "Expected server to be considered not running when file contains FAILED");
+        assertFalse(Files.exists(readyFile), "READY file should be deleted after reading");
+    }
+
+    @Test
+    void isServerRunningShouldReturnFalseWhenFileNeverAppears() throws IOException, InterruptedException {
+        boolean result = stage.isServerRunning(3, 200);
+        assertFalse(result, "Expected server to be considered not running when file never appears");
+    }
+
+    @Test
+    void isServerRunningShouldReturnTrueAfterSomeIterations() throws IOException, InterruptedException {
+        new Thread(() -> {
+            try {
+                Thread.sleep(15);
+                Files.writeString(readyFile, "READY");
+            } catch (Exception ignored) {}
+        }).start();
+
+        boolean result = stage.isServerRunning(5, 20);
+        assertTrue(result, "Expected server to start once backend-ready file is created during retries");
+    }
+
+    @Test
+    void createCompleteCommandShouldSucceed() {
+        String backendPath = "/some/path/to/script/";
+        String completeCommand = stage.createCompleteCommand(backendPath);
+        String expectedCommand = "screen -dmS sentinel-backend bash -c \"chmod +X /some/path/to/script/start-server.sh && ./some/path/to/script/start-server.sh 120\"";
+        assertEquals(expectedCommand, completeCommand, "Command should be well created");
+    }
+
+    @Test
     void prepareDevDatabaseShouldSkipIfScreenSessionRunning() throws IOException, InterruptedException {
         String backendPath = "/tmp/backend";
         PrepareDatabaseStage stageMock = spy(new PrepareDatabaseStage());
@@ -97,18 +144,20 @@ class PrepareDatabaseStageTest {
     }
 
     @Test
-    void prepareDevDatabaseShouldSucceedIfScreenSessionNotRunning() throws IOException, InterruptedException {
+    void prepareDevDatabaseStartsServerWhenNoScreenSessionRunning() throws IOException, InterruptedException {
         String backendPath = "/tmp/backend";
         PrepareDatabaseStage stageMock = spy(new PrepareDatabaseStage());
         doReturn(false).when(stageMock).isScreenSessionRunning(backendPath);
+        doReturn(true).when(stageMock).isServerRunning(anyInt(), anyInt());
+
+        String expectedStartScript = "screen -dmS sentinel-backend bash -c \"chmod +X /tmp/backend/start-server.sh 120 && ./tmp/backend/start-server.sh 120\"";
+        doReturn(expectedStartScript).when(stageMock).createCompleteCommand(backendPath);
 
         try (MockedStatic<Utils> mockedUtils = mockStatic(Utils.class)) {
-            mockedUtils.when(() -> Utils.runCommand(anyString(), eq(backendPath))).thenReturn(new Utils.CompletedProcess("cmd", 0, "", ""));
             stageMock.prepareDevDatabase(backendPath);
 
-            String expectedCommand = "screen -dmS sentinel-backend bash -c \"cd /tmp/backend && ./mvnw clean && ./mvnw\"";
-
-            mockedUtils.verify(() -> Utils.runCommand(expectedCommand, backendPath), times(1));
+            mockedUtils.verify(() -> Utils.runCommand(expectedStartScript), times(1));
+            verify(stageMock).isServerRunning(5, 1000);
         }
     }
 }

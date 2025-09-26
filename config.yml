@@ -21,6 +21,7 @@ database:
   # dev-specific
   plugins-directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins"
   backend-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 10
   # prod-specific
   ssh-user: "jmaquoi"
   ssh-host: "ava.info.unamur.be"

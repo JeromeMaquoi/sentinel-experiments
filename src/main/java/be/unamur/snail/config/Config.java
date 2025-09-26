@@ -205,6 +205,8 @@ public class Config {
         private String sshUser;
         @JsonProperty("ssh-host")
         private String sshHost;
+        @JsonProperty("nb-check-server-start")
+        private int nbCheckServerStart;
 
         public String getMode() {
             return mode;
@@ -228,6 +230,10 @@ public class Config {
 
         public int getBackendTimeoutSeconds() {
             return backendTimeoutSeconds;
+        }
+
+        public int getNbCheckServerStart() {
+            return nbCheckServerStart;
         }
     }
 }

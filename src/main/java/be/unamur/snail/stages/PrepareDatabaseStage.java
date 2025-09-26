@@ -67,41 +67,42 @@ public class PrepareDatabaseStage implements Stage {
             log.info("Dev backend already running in screen session 'sentinel-backend'. Skipping start.");
             return;
         }
-        Config config = Config.getInstance();
-        int backendTimeout = config.getDatabase().getBackendTimeoutSeconds();
 
         log.info("Starting sentinel-backend locally...");
-        String startScript = backendPath + "/start-server.sh " + backendTimeout;
-        String makeScriptExecutable = "chmod +X " + startScript;
-        String scriptCommand = makeScriptExecutable + " && ./" + startScript;
-
-        String completeCommand = "screen -dmS sentinel-backend bash -c \"" + scriptCommand + "\"";
+        String completeCommand = createCompleteCommand(backendPath);
         Utils.runCommand(completeCommand);
-        int retries = 30;
+
+        Config config = Config.getInstance();
+        int nbCheckServerStart = config.getDatabase().getNbCheckServerStart();
         int delayMs = 1000;
-        isServerRunning(retries, delayMs);
-    }
-
-    public void isServerRunning(int retries, int delayMs) throws IOException, InterruptedException {
-        Path readyFile = Paths.get("/tmp/backend-ready");
-        boolean started = false;
-
-        for (int i = 0; i < retries; i++) {
-            if (Files.exists(readyFile)) {
-                String status = Files.readString(readyFile).trim();
-                if (status.equals("READY")) {
-                    log.info("Backend started successfully.");
-                    started = true;
-                }
-                Files.deleteIfExists(readyFile);
-                break;
-            }
-            log.info("Waiting for backend to be ready... (attempt {}/{})", i + 1, retries);
-            Thread.sleep(delayMs);
-        }
+        boolean started = isServerRunning(nbCheckServerStart, delayMs);
         if (!started) {
             throw new ServerNotStartedException();
         }
+    }
+
+    public String createCompleteCommand(String backendPath) {
+        Config config = Config.getInstance();
+        int backendTimeout = config.getDatabase().getBackendTimeoutSeconds();
+        String startScript = backendPath + "start-server.sh";
+        String makeScriptExecutable = "chmod +X " + startScript;
+        String scriptCommand = makeScriptExecutable + " && ." + startScript + " " + backendTimeout;
+
+        return "screen -dmS sentinel-backend bash -c \"" + scriptCommand + "\"";
+    }
+
+    public boolean isServerRunning(int nbCheckServerStart, int delayMs) throws IOException, InterruptedException {
+        Path readyFile = Paths.get("/tmp/backend-ready");
+        for (int i = 0; i < nbCheckServerStart; i++) {
+            if (Files.exists(readyFile)) {
+                String status = Files.readString(readyFile).trim();
+                Files.deleteIfExists(readyFile);
+                return status.equals("READY");
+            }
+            log.info("Waiting for backend to be ready... (attempt {}/{})", i + 1, nbCheckServerStart);
+            Thread.sleep(delayMs);
+        }
+        return false;
     }
 
     public boolean isScreenSessionRunning(String sessionName) {

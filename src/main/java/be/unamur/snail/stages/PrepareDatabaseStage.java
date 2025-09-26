@@ -7,22 +7,15 @@ import be.unamur.snail.database.DatabasePreparer;
 import be.unamur.snail.database.MongoServiceManager;
 import be.unamur.snail.database.SimpleDatabasePreparer;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
-import be.unamur.snail.exceptions.MongoServiceNotStartedException;
-import be.unamur.snail.exceptions.ServerNotStartedException;
 import be.unamur.snail.exceptions.UnsupportedDatabaseMode;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.DevBackendServiceManager;
 import be.unamur.snail.sentinelbackend.ProdBackendServiceManager;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
-import be.unamur.snail.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class PrepareDatabaseStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(PrepareDatabaseStage.class);

@@ -38,7 +38,7 @@ public class PrepareDatabaseStage implements Stage {
 
         if (mode.equalsIgnoreCase("dev")) {
             log.info("Preparing for local development database...");
-            backendManager = new DevBackendServiceManager(runner, backendPath, config.getDatabase().getNbCheckServerStart(), 1000);
+            backendManager = new DevBackendServiceManager(runner, backendPath, config.getDatabase().getNbCheckServerStart(), 5000);
         } else if (mode.equalsIgnoreCase("prod")) {
             log.info("Preparing for production database...");
             backendManager = new ProdBackendServiceManager(runner, backendPath);

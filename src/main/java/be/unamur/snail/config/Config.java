@@ -197,8 +197,6 @@ public class Config {
         private String mode;
         @JsonProperty("backend-timeout-seconds")
         private int backendTimeoutSeconds;
-        @JsonProperty("plugins-directory")
-        private String pluginsDirectory;
         @JsonProperty("backend-path")
         private String backendPath;
         @JsonProperty("ssh-user")
@@ -207,13 +205,13 @@ public class Config {
         private String sshHost;
         @JsonProperty("nb-check-server-start")
         private int nbCheckServerStart;
+        @JsonProperty("backend-log-path")
+        private String backendLogPath;
+        @JsonProperty("backend-port")
+        private int backendPort;
 
         public String getMode() {
             return mode;
-        }
-
-        public String getPluginsDirectory() {
-            return pluginsDirectory;
         }
 
         public String getBackendPath() {
@@ -234,6 +232,18 @@ public class Config {
 
         public int getNbCheckServerStart() {
             return nbCheckServerStart;
+        }
+
+        public String getBackendLogPath() {
+            return backendLogPath;
+        }
+
+        public void setBackendLogPathForTests(String backendLogPath) {
+            this.backendLogPath = backendLogPath;
+        }
+
+        public int getBackendPort() {
+            return backendPort;
         }
     }
 }

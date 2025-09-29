@@ -1,6 +1,7 @@
 package be.unamur.snail.sentinelbackend;
 
 import be.unamur.snail.config.Config;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +37,10 @@ class DevBackendServiceManagerTest {
             log:
               level: "DEBUG"
             database:
+              backend-port: 8080
               backend-timeout-seconds: 120
               nb-check-server-start: 5
+              backend-log-path: "/tmp/sentinel-backend.log"
         """);
         Config.load(yaml.toString());
 
@@ -124,8 +127,17 @@ class DevBackendServiceManagerTest {
         DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
 
         String completeCommand = manager.createCompleteCommand(backendPath);
-        String expectedCommand = "screen -dmS sentinel-backend bash -c \"chmod +X /tmp/backend/start-server.sh && ./tmp/backend/start-server.sh 120\"";
+        String expectedCommand = "screen -dmS sentinel-backend bash -c \"cd /tmp/backend/ && chmod +X start-server.sh && PLUGINS_DIRECTORY=/tmp/backend/plugins ./start-server.sh 120 > /tmp/sentinel-backend.log 2>&1\"";
         assertEquals(expectedCommand, completeCommand, "Command should be well created");
+    }
+
+    @Test
+    void createCompleteCommandShouldThrowExceptionIfMissingBackendLogPathTest() {
+        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        Config config = Config.getInstance();
+        config.getDatabase().setBackendLogPathForTests(null);
+
+        assertThrows(MissingConfigKeyException.class, () -> manager.createCompleteCommand(backendPath));
     }
 
     @Test
@@ -133,6 +145,7 @@ class DevBackendServiceManagerTest {
         CommandRunner runnerMock = mock(CommandRunner.class);
         DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
         doReturn(true).when(manager).isScreenSessionRunning(anyString());
+        doReturn(false).when(manager).isPortInUse(anyInt());
 
         boolean result = manager.startBackend();
 
@@ -152,6 +165,7 @@ class DevBackendServiceManagerTest {
         String dummyCommand = "screen -dmS sentinel-backend -c \"dummy\"";
         doReturn(dummyCommand).when(manager).createCompleteCommand(anyString());
         doReturn(true).when(manager).isServerRunning();
+        doReturn(false).when(manager).isPortInUse(anyInt());
 
         boolean result = manager.startBackend();
 
@@ -159,5 +173,33 @@ class DevBackendServiceManagerTest {
         verify(manager).isScreenSessionRunning(anyString());
         verify(manager).createCompleteCommand(anyString());
         verify(manager).isServerRunning();
+    }
+
+    @Test
+    void isPortInUseShouldReturnTrueTest() throws IOException, InterruptedException {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);
+        when(completedProcess.returnCode()).thenReturn(0);
+        when(completedProcess.stdout()).thenReturn("some proces");
+        when(runnerMock.run(anyString())).thenReturn(completedProcess);
+
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+
+        boolean result = manager.isPortInUse(8080);
+        assertTrue(result);
+    }
+
+    @Test
+    void isPortInUseShouldReturnFalseTest() throws IOException, InterruptedException {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);
+        when(completedProcess.returnCode()).thenReturn(1);
+        when(completedProcess.stdout()).thenReturn("some proces");
+        when(runnerMock.run(anyString())).thenReturn(completedProcess);
+
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+
+        boolean result = manager.isPortInUse(8080);
+        assertFalse(result);
     }
 }

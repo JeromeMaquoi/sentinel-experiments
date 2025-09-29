@@ -1,6 +1,8 @@
 package be.unamur.snail.sentinelbackend;
 
 import be.unamur.snail.config.Config;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
+import be.unamur.snail.exceptions.PortAlreadyInUseException;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.Utils;
 import org.slf4j.Logger;
@@ -29,6 +31,16 @@ public class DevBackendServiceManager implements BackendServiceManager {
 
     @Override
     public boolean startBackend() throws IOException, InterruptedException {
+        Config config = Config.getInstance();
+        int backendPort = config.getDatabase().getBackendPort();
+        if (backendPort == 0) {
+            throw new MissingConfigKeyException("database.backend-port");
+        }
+
+        if (isPortInUse(backendPort)) {
+            throw new PortAlreadyInUseException(backendPort);
+        }
+
         if (isScreenSessionRunning(sessionName)) {
             log.info("Screen session already running");
             return true;
@@ -39,12 +51,32 @@ public class DevBackendServiceManager implements BackendServiceManager {
         return isServerRunning();
     }
 
+    public boolean isPortInUse(int port) {
+        try {
+            Utils.CompletedProcess result = runner.run("lsof -i:" + port);
+            return result.returnCode() == 0 && !result.stdout().isBlank();
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
+    }
+
     public String createCompleteCommand(String backendPath) {
         Config config = Config.getInstance();
         int backendTimeout = config.getDatabase().getBackendTimeoutSeconds();
-        String startScript = backendPath + "start-server.sh";
-        String makeScriptExecutable = "chmod +X " + startScript;
-        String scriptCommand = makeScriptExecutable + " && ." + startScript + " " + backendTimeout;
+
+        if (config.getDatabase().getBackendLogPath() == null) {
+            throw new MissingConfigKeyException("database.backend-log-path");
+        }
+
+        String cdScript = "cd " + backendPath;
+        String makeScriptExecutable = "chmod +X start-server.sh";
+
+        String logPath = config.getDatabase().getBackendLogPath();
+        String logOutputScript = "> " + logPath + " 2>&1";
+
+        String pluginsDirectory = "PLUGINS_DIRECTORY=" + backendPath + "plugins";
+
+        String scriptCommand = cdScript + " && " + makeScriptExecutable + " && " + pluginsDirectory + " ./start-server.sh " + backendTimeout + " " + logOutputScript;
 
         return "screen -dmS " + sessionName + " bash -c \"" + scriptCommand + "\"";
     }
@@ -73,7 +105,7 @@ public class DevBackendServiceManager implements BackendServiceManager {
             Utils.CompletedProcess result = runner.run("screen -ls | grep " + sessionName);
             return result.returnCode() == 0 && !result.stdout().isBlank();
         } catch (IOException | InterruptedException e) {
-            log.error("Could not check screen sessions", e);
+            log.warn("Could not check screen sessions");
             return false;
         }
     }

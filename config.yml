@@ -17,11 +17,12 @@ execution-plan:
   ignore-spoon-failures: true
 database:
   mode: dev
+  backend-port: 8080
   backend-timeout-seconds: 120
+  backend-log-path: "/tmp/sentinel-backend.log"
   # dev-specific
-  plugins-directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins"
   backend-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
-  nb-check-server-start: 10
+  nb-check-server-start: 20
   # prod-specific
   ssh-user: "jmaquoi"
   ssh-host: "ava.info.unamur.be"

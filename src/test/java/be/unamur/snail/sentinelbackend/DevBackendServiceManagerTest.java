@@ -41,6 +41,7 @@ class DevBackendServiceManagerTest {
               server-timeout-seconds: 120
               nb-check-server-start: 5
               server-log-path: "/tmp/sentinel-backend.log"
+              server-ready-path: "/tmp/backend-ready"
         """);
         Config.load(yaml.toString());
 

@@ -211,6 +211,8 @@ public class Config {
         private int serverPort;
         @JsonProperty("server-host")
         private String serverHost;
+        @JsonProperty("server-ready-path")
+        private String serverReadyPath;
 
         public String getMode() {
             return mode;
@@ -250,6 +252,10 @@ public class Config {
 
         public String getServerHost() {
             return serverHost;
+        }
+
+        public String getServerReadyPath() {
+            return serverReadyPath;
         }
     }
 }

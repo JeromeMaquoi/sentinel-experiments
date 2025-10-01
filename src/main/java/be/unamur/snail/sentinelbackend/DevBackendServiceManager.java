@@ -82,7 +82,8 @@ public class DevBackendServiceManager implements BackendServiceManager {
     }
 
     public boolean isServerRunning() throws IOException, InterruptedException {
-        Path readyFile = Paths.get("/tmp/backend-ready");
+        Config config = Config.getInstance();
+        Path readyFile = Paths.get(config.getBackend().getServerReadyPath());
         for (int i = 0; i < nbCheckServerStart; i++) {
             if (Files.exists(readyFile)) {
                 String status = Files.readString(readyFile).trim();

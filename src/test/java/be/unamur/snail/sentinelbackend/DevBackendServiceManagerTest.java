@@ -37,10 +37,10 @@ class DevBackendServiceManagerTest {
             log:
               level: "DEBUG"
             database:
-              backend-port: 8080
-              backend-timeout-seconds: 120
+              server-port: 8080
+              server-timeout-seconds: 120
               nb-check-server-start: 5
-              backend-log-path: "/tmp/sentinel-backend.log"
+              server-log-path: "/tmp/sentinel-backend.log"
         """);
         Config.load(yaml.toString());
 

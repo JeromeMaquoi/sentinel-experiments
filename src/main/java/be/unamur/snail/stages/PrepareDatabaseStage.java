@@ -27,7 +27,7 @@ public class PrepareDatabaseStage implements Stage {
         if (mode == null || mode.isEmpty()) {
             throw new MissingConfigKeyException("database.mode");
         }
-        String backendPath = config.getDatabase().getBackendPath();
+        String backendPath = config.getDatabase().getServerPath();
         if (backendPath == null || backendPath.isEmpty()) {
             throw new MissingConfigKeyException("database.backendPath");
         }

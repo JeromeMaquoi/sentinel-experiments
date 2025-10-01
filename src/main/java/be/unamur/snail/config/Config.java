@@ -18,7 +18,7 @@ public class Config {
     private int commandTimeout = 120;
     @JsonProperty("execution-plan")
     private ExecutionPlanConfig executionPlan;
-    private DatabaseConfig database;
+    private BackendConfig database;
 
     public static Config getInstance() {
         if (instance == null) {
@@ -84,7 +84,7 @@ public class Config {
         this.executionPlan = executionPlan;
     }
 
-    public DatabaseConfig getDatabase() {
+    public BackendConfig getDatabase() {
         return database;
     }
 
@@ -193,29 +193,31 @@ public class Config {
 
 
 
-    public static class DatabaseConfig {
+    public static class BackendConfig {
         private String mode;
-        @JsonProperty("backend-timeout-seconds")
-        private int backendTimeoutSeconds;
-        @JsonProperty("backend-path")
-        private String backendPath;
+        @JsonProperty("server-timeout-seconds")
+        private int serverTimeoutSeconds;
+        @JsonProperty("server-path")
+        private String serverPath;
         @JsonProperty("ssh-user")
         private String sshUser;
         @JsonProperty("ssh-host")
         private String sshHost;
         @JsonProperty("nb-check-server-start")
         private int nbCheckServerStart;
-        @JsonProperty("backend-log-path")
-        private String backendLogPath;
-        @JsonProperty("backend-port")
-        private int backendPort;
+        @JsonProperty("server-log-path")
+        private String serverLogPath;
+        @JsonProperty("server-port")
+        private int serverPort;
+        @JsonProperty("server-host")
+        private String serverHost;
 
         public String getMode() {
             return mode;
         }
 
-        public String getBackendPath() {
-            return backendPath;
+        public String getServerPath() {
+            return serverPath;
         }
 
         public String getSshUser() {
@@ -226,24 +228,28 @@ public class Config {
             return sshHost;
         }
 
-        public int getBackendTimeoutSeconds() {
-            return backendTimeoutSeconds;
+        public int getServerTimeoutSeconds() {
+            return serverTimeoutSeconds;
         }
 
         public int getNbCheckServerStart() {
             return nbCheckServerStart;
         }
 
-        public String getBackendLogPath() {
-            return backendLogPath;
+        public String getServerLogPath() {
+            return serverLogPath;
         }
 
         public void setBackendLogPathForTests(String backendLogPath) {
-            this.backendLogPath = backendLogPath;
+            this.serverLogPath = backendLogPath;
         }
 
-        public int getBackendPort() {
-            return backendPort;
+        public int getServerPort() {
+            return serverPort;
+        }
+
+        public String getServerHost() {
+            return serverHost;
         }
     }
 }

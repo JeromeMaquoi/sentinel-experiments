@@ -19,7 +19,7 @@ public class Utils {
     }
 
     public static CompletedProcess runCommand(String command, String cwd) throws IOException, InterruptedException {
-        log.info("Executing command `{}` in {}", command, cwd);
+        log.debug("Executing command `{}` in {}", command, cwd);
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
         builder.environment().put("PATH", "/usr/bin:/bin");
@@ -39,7 +39,7 @@ public class Utils {
                 while ((line = reader.readLine()) != null) {
                     Config config = Config.getInstance();
                     if (config.getProject().isShowProjectLogs()) {
-                        log.info("{}", line);
+                        log.debug("{}", line);
                     }
                     stdoutBuilder.append(line).append(System.lineSeparator());
                 }

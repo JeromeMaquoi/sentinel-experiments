@@ -32,7 +32,7 @@ public class DevBackendServiceManager implements BackendServiceManager {
     @Override
     public boolean startBackend() throws IOException, InterruptedException {
         Config config = Config.getInstance();
-        int backendPort = config.getDatabase().getServerPort();
+        int backendPort = config.getBackend().getServerPort();
         if (backendPort == 0) {
             throw new MissingConfigKeyException("database.backend-port");
         }
@@ -62,16 +62,16 @@ public class DevBackendServiceManager implements BackendServiceManager {
 
     public String createCompleteCommand(String backendPath) {
         Config config = Config.getInstance();
-        int backendTimeout = config.getDatabase().getServerTimeoutSeconds();
+        int backendTimeout = config.getBackend().getServerTimeoutSeconds();
 
-        if (config.getDatabase().getServerLogPath() == null) {
+        if (config.getBackend().getServerLogPath() == null) {
             throw new MissingConfigKeyException("database.backend-log-path");
         }
 
         String cdScript = "cd " + backendPath;
         String makeScriptExecutable = "chmod +X start-server.sh";
 
-        String logPath = config.getDatabase().getServerLogPath();
+        String logPath = config.getBackend().getServerLogPath();
         String logOutputScript = "> " + logPath + " 2>&1";
 
         String pluginsDirectory = "PLUGINS_DIRECTORY=" + backendPath + "plugins";

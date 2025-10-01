@@ -36,7 +36,7 @@ class DevBackendServiceManagerTest {
               target-dir: "/tmp/repo"
             log:
               level: "DEBUG"
-            database:
+            backend:
               server-port: 8080
               server-timeout-seconds: 120
               nb-check-server-start: 5
@@ -135,7 +135,7 @@ class DevBackendServiceManagerTest {
     void createCompleteCommandShouldThrowExceptionIfMissingBackendLogPathTest() {
         DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
         Config config = Config.getInstance();
-        config.getDatabase().setBackendLogPathForTests(null);
+        config.getBackend().setBackendLogPathForTests(null);
 
         assertThrows(MissingConfigKeyException.class, () -> manager.createCompleteCommand(backendPath));
     }

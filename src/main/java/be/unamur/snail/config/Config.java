@@ -18,7 +18,7 @@ public class Config {
     private int commandTimeout = 120;
     @JsonProperty("execution-plan")
     private ExecutionPlanConfig executionPlan;
-    private BackendConfig database;
+    private BackendConfig backend;
 
     public static Config getInstance() {
         if (instance == null) {
@@ -84,8 +84,8 @@ public class Config {
         this.executionPlan = executionPlan;
     }
 
-    public BackendConfig getDatabase() {
-        return database;
+    public BackendConfig getBackend() {
+        return backend;
     }
 
     public static class ProjectConfig {

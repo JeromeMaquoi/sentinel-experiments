@@ -23,11 +23,11 @@ public class PrepareDatabaseStage implements Stage {
     @Override
     public void execute(Context context) throws Exception {
         Config config = Config.getInstance();
-        String mode = config.getDatabase().getMode();
+        String mode = config.getBackend().getMode();
         if (mode == null || mode.isEmpty()) {
             throw new MissingConfigKeyException("database.mode");
         }
-        String backendPath = config.getDatabase().getServerPath();
+        String backendPath = config.getBackend().getServerPath();
         if (backendPath == null || backendPath.isEmpty()) {
             throw new MissingConfigKeyException("database.backendPath");
         }
@@ -38,12 +38,12 @@ public class PrepareDatabaseStage implements Stage {
 
         if (mode.equalsIgnoreCase("dev")) {
             log.info("Preparing for local development database...");
-            backendManager = new DevBackendServiceManager(runner, backendPath, config.getDatabase().getNbCheckServerStart(), 5000);
+            backendManager = new DevBackendServiceManager(runner, backendPath, config.getBackend().getNbCheckServerStart(), 5000);
         } else if (mode.equalsIgnoreCase("prod")) {
             log.info("Preparing for production database...");
             backendManager = new ProdBackendServiceManager(runner, backendPath);
         } else {
-            throw new UnsupportedDatabaseMode(config.getDatabase().getMode());
+            throw new UnsupportedDatabaseMode(config.getBackend().getMode());
         }
 
         DatabasePreparer preparer = new SimpleDatabasePreparer(mongoManager, backendManager);

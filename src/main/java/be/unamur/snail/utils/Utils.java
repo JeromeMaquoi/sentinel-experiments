@@ -39,7 +39,7 @@ public class Utils {
                 while ((line = reader.readLine()) != null) {
                     Config config = Config.getInstance();
                     if (config.getProject().isShowProjectLogs()) {
-                        log.debug("{}", line);
+                        log.info("{}", line);
                     }
                     stdoutBuilder.append(line).append(System.lineSeparator());
                 }

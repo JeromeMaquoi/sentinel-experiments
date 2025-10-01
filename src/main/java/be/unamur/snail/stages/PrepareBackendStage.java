@@ -17,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class PrepareDatabaseStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(PrepareDatabaseStage.class);
+public class PrepareBackendStage implements Stage {
+    private static final Logger log = LoggerFactory.getLogger(PrepareBackendStage.class);
 
     @Override
     public void execute(Context context) throws Exception {

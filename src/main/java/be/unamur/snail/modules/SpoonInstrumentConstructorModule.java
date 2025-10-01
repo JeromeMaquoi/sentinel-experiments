@@ -13,7 +13,7 @@ import java.util.List;
 public class SpoonInstrumentConstructorModule implements Module {
     private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages = Arrays.asList(
-        new PrepareDatabaseStage()//,
+        new PrepareBackendStage()//,
         //new CloneAndCheckoutRepositoryStage()//,
 //        new CopyDirectoryStage(),
 //        new BuildClassPathStage(),

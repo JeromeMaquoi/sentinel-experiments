@@ -21,6 +21,7 @@ backend:
   server-port: 8080
   server-timeout-seconds: 120
   server-log-path: "/tmp/sentinel-backend.log"
+  server-ready-path: "/tmp/backend-ready"
   # dev-specific
   server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
   nb-check-server-start: 20

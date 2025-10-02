@@ -4,8 +4,7 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Stage;
 import be.unamur.snail.database.DatabasePreparer;
-import be.unamur.snail.database.MongoServiceManager;
-import be.unamur.snail.database.SimpleDatabasePreparer;
+import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
@@ -18,12 +17,12 @@ public class PrepareBackendStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(PrepareBackendStage.class);
 
     private final CommandRunner runner;
-    private final MongoServiceManager mongoManager;
     private final BackendServiceManagerFactory backendFactory;
+    private final DatabasePreparerFactory databaseFactory;
 
-    public PrepareBackendStage(CommandRunner runner, MongoServiceManager mongoManager, BackendServiceManagerFactory backendFactory) {
+    public PrepareBackendStage(CommandRunner runner, BackendServiceManagerFactory backendFactory, DatabasePreparerFactory databaseFactory) {
         this.runner = runner;
-        this.mongoManager = mongoManager;
+        this.databaseFactory = databaseFactory;
         this.backendFactory = backendFactory;
     }
 
@@ -41,8 +40,8 @@ public class PrepareBackendStage implements Stage {
 
         log.info("Preparing backend in mode {}", mode);
         BackendServiceManager backendManager = backendFactory.create(mode, runner, serverPath);
+        DatabasePreparer preparer = databaseFactory.create(backendManager);
 
-        DatabasePreparer preparer = new SimpleDatabasePreparer(mongoManager, backendManager);
         preparer.prepareDatabase();
     }
 }

@@ -2,6 +2,8 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.database.DatabasePreparer;
+import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.database.MongoServiceManager;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.ServerNotStartedException;
@@ -13,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -29,9 +30,10 @@ class PrepareBackendStageTest {
     private Context context;
 
     private CommandRunner runner;
-    private MongoServiceManager mongo;
     private BackendServiceManagerFactory backendFactory;
+    private DatabasePreparerFactory databaseFactory;
     private BackendServiceManager backendManager;
+    private DatabasePreparer databasePreparer;
     private PrepareBackendStage prepareBackendStage;
 
     @BeforeEach
@@ -47,13 +49,15 @@ class PrepareBackendStageTest {
         context = new Context();
 
         runner = mock(CommandRunner.class);
-        mongo = mock(MongoServiceManager.class);
         backendManager = mock(BackendServiceManager.class);
         backendFactory = mock(BackendServiceManagerFactory.class);
+        databaseFactory = mock(DatabasePreparerFactory.class);
+        databasePreparer = mock(DatabasePreparer.class);
 
         when(backendFactory.create(any(), any(), any())).thenReturn(backendManager);
+        when(databaseFactory.create(backendManager)).thenReturn(databasePreparer);
 
-        prepareBackendStage = new PrepareBackendStage(runner, mongo, backendFactory);
+        prepareBackendStage = new PrepareBackendStage(runner, backendFactory, databaseFactory);
     }
 
     @Test
@@ -76,11 +80,18 @@ class PrepareBackendStageTest {
     void executeShouldInstantiateDevBackendManagerIfDevModeTest() throws Exception {
         prepareBackendStage.execute(context);
         verify(backendFactory).create(eq("dev"), eq(runner), eq("/server/path"));
+        verify(databaseFactory).create(backendManager);
+        verify(databasePreparer).prepareDatabase();
     }
 
     @Test
-    void executeShouldInstantiateProdBackendManagerIfProdModeTest() {
+    void executeShouldInstantiateProdBackendManagerIfProdModeTest() throws Exception {
+        config.getBackend().setModeForTests("prod");
+        prepareBackendStage.execute(context);
 
+        verify(backendFactory).create(eq("prod"), eq(runner), eq("/server/path"));
+        verify(databaseFactory).create(backendManager);
+        verify(databasePreparer).prepareDatabase();
     }
 
     @Test

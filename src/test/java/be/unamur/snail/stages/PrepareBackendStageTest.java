@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 
 class PrepareBackendStageTest {
     @TempDir
-    Path tempDir;
+    private Path tempDir;
     private Config config;
     private Context context;
 

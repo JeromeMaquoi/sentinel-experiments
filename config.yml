@@ -10,8 +10,20 @@ repo:
 log:
   level: INFO
 code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
-time-out: 120
+command-time-out: 120
 execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties"
   ignore-failures: false
   ignore-spoon-failures: true
+backend:
+  mode: dev
+  server-host: localhost
+  server-port: 8080
+  server-timeout-seconds: 120
+  server-log-path: "/tmp/sentinel-backend.log"
+  # dev-specific
+  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 20
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

@@ -1,5 +1,6 @@
 package be.unamur.snail.config;
 
+import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -13,14 +14,15 @@ public class Config {
     private LogConfig log;
     @JsonProperty("code-constructors-instrumentation-path")
     private String codeConstructorsInstrumentationPath;
-    @JsonProperty("time-out")
-    private int timeout = 120;
+    @JsonProperty("command-time-out")
+    private int commandTimeout = 120;
     @JsonProperty("execution-plan")
     private ExecutionPlanConfig executionPlan;
+    private BackendConfig backend;
 
     public static Config getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Config not loaded yet");
+            throw new ConfigNotLoadedException();
         }
         return instance;
     }
@@ -66,12 +68,12 @@ public class Config {
         this.codeConstructorsInstrumentationPath = codeConstructorsInstrumentationPath;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public int getCommandTimeout() {
+        return commandTimeout;
     }
 
     public void setTimeoutForTests(int timeout) {
-        this.timeout = timeout;
+        this.commandTimeout = timeout;
     }
 
     public ExecutionPlanConfig getExecutionPlan() {
@@ -80,6 +82,10 @@ public class Config {
 
     public void setExecutionPlanForTests(ExecutionPlanConfig executionPlan) {
         this.executionPlan = executionPlan;
+    }
+
+    public BackendConfig getBackend() {
+        return backend;
     }
 
     public static class ProjectConfig {
@@ -106,6 +112,9 @@ public class Config {
             return packagePrefix;
         }
     }
+
+
+
 
     public static class RepoConfig {
         private String url;
@@ -143,6 +152,8 @@ public class Config {
         }
     }
 
+
+
     public static class LogConfig {
         private String level;
 
@@ -157,6 +168,7 @@ public class Config {
                     '}';
         }
     }
+
 
     public static class ExecutionPlanConfig {
         @JsonProperty("test-command")
@@ -176,6 +188,86 @@ public class Config {
 
         public boolean getIgnoreSpoonFailures() {
             return ignoreSpoonFailures;
+        }
+    }
+
+
+
+    public static class BackendConfig {
+        private String mode;
+        @JsonProperty("server-timeout-seconds")
+        private int serverTimeoutSeconds;
+        @JsonProperty("server-path")
+        private String serverPath;
+        @JsonProperty("ssh-user")
+        private String sshUser;
+        @JsonProperty("ssh-host")
+        private String sshHost;
+        @JsonProperty("nb-check-server-start")
+        private int nbCheckServerStart;
+        @JsonProperty("server-log-path")
+        private String serverLogPath;
+        @JsonProperty("server-port")
+        private int serverPort;
+        @JsonProperty("server-host")
+        private String serverHost;
+        @JsonProperty("server-ready-path")
+        private String serverReadyPath;
+
+        public String getMode() {
+            return mode;
+        }
+
+        public void setModeForTests(String mode) {
+            this.mode = mode;
+        }
+
+        public String getServerPath() {
+            return serverPath;
+        }
+
+        public void setServerPathForTests(String serverPath) {
+            this.serverPath = serverPath;
+        }
+
+        public String getSshUser() {
+            return sshUser;
+        }
+
+        public String getSshHost() {
+            return sshHost;
+        }
+
+        public int getServerTimeoutSeconds() {
+            return serverTimeoutSeconds;
+        }
+
+        public int getNbCheckServerStart() {
+            return nbCheckServerStart;
+        }
+
+        public String getServerLogPath() {
+            return serverLogPath;
+        }
+
+        public void setBackendLogPathForTests(String backendLogPath) {
+            this.serverLogPath = backendLogPath;
+        }
+
+        public int getServerPort() {
+            return serverPort;
+        }
+
+        public void setServerPortForTests(int serverPort) {
+            this.serverPort = serverPort;
+        }
+
+        public String getServerHost() {
+            return serverHost;
+        }
+
+        public String getServerReadyPath() {
+            return serverReadyPath;
         }
     }
 }

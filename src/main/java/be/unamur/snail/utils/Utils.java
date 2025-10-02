@@ -19,7 +19,7 @@ public class Utils {
     }
 
     public static CompletedProcess runCommand(String command, String cwd) throws IOException, InterruptedException {
-        log.info("Executing command `{}` in {}", command, cwd);
+        log.debug("Executing command `{}` in {}", command, cwd);
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
         builder.environment().put("PATH", "/usr/bin:/bin");
@@ -50,7 +50,7 @@ public class Utils {
         readerThread.start();
 
         Config config = Config.getInstance();
-        boolean finished = process.waitFor(config.getTimeout(), TimeUnit.SECONDS);
+        boolean finished = process.waitFor(config.getCommandTimeout(), TimeUnit.SECONDS);
         if (!finished) {
             process.destroyForcibly();
             throw new CommandTimedOutException(command);

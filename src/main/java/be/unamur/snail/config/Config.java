@@ -218,8 +218,16 @@ public class Config {
             return mode;
         }
 
+        public void setModeForTests(String mode) {
+            this.mode = mode;
+        }
+
         public String getServerPath() {
             return serverPath;
+        }
+
+        public void setServerPathForTests(String serverPath) {
+            this.serverPath = serverPath;
         }
 
         public String getSshUser() {
@@ -248,6 +256,10 @@ public class Config {
 
         public int getServerPort() {
             return serverPort;
+        }
+
+        public void setServerPortForTests(int serverPort) {
+            this.serverPort = serverPort;
         }
 
         public String getServerHost() {

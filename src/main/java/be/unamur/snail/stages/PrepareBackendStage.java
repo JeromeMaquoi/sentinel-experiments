@@ -25,11 +25,11 @@ public class PrepareBackendStage implements Stage {
         Config config = Config.getInstance();
         String mode = config.getBackend().getMode();
         if (mode == null || mode.isEmpty()) {
-            throw new MissingConfigKeyException("database.mode");
+            throw new MissingConfigKeyException("backend.mode");
         }
-        String backendPath = config.getBackend().getServerPath();
-        if (backendPath == null || backendPath.isEmpty()) {
-            throw new MissingConfigKeyException("database.backendPath");
+        String serverPath = config.getBackend().getServerPath();
+        if (serverPath == null || serverPath.isEmpty()) {
+            throw new MissingConfigKeyException("backend.serverPath");
         }
 
         CommandRunner runner = new SimpleCommandRunner();
@@ -38,10 +38,10 @@ public class PrepareBackendStage implements Stage {
 
         if (mode.equalsIgnoreCase("dev")) {
             log.info("Preparing for local development database...");
-            backendManager = new DevBackendServiceManager(runner, backendPath, config.getBackend().getNbCheckServerStart(), 5000);
+            backendManager = new DevBackendServiceManager(runner, serverPath, config.getBackend().getNbCheckServerStart(), 5000);
         } else if (mode.equalsIgnoreCase("prod")) {
             log.info("Preparing for production database...");
-            backendManager = new ProdBackendServiceManager(runner, backendPath);
+            backendManager = new ProdBackendServiceManager(runner, serverPath);
         } else {
             throw new UnsupportedDatabaseMode(config.getBackend().getMode());
         }

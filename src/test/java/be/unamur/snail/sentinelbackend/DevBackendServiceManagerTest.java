@@ -2,6 +2,7 @@ package be.unamur.snail.sentinelbackend;
 
 import be.unamur.snail.config.Config;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
+import be.unamur.snail.exceptions.PortAlreadyInUseException;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
@@ -174,6 +175,21 @@ class DevBackendServiceManagerTest {
         verify(manager).isScreenSessionRunning(anyString());
         verify(manager).createCompleteCommand(anyString());
         verify(manager).isServerRunning();
+    }
+
+    @Test
+    void startBackendShouldThrowMissingConfigKeyExceptionIfBackendPortIsZeroTest() {
+        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        Config config = Config.getInstance();
+        config.getBackend().setServerPortForTests(0);
+        assertThrows(MissingConfigKeyException.class, () -> manager.startBackend());
+    }
+
+    @Test
+    void startBackendShouldThrowPortAlreadyInUseExceptionIfPortUsedTest() {
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(cmd -> null, backendPath, 5, 100));
+        doReturn(true).when(manager).isPortInUse(anyInt());
+        assertThrows(PortAlreadyInUseException.class, () -> manager.startBackend());
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -70,7 +71,17 @@ public class SendConstructorsUtils {
 
     public void send() {
         System.out.println("Sending instance to the database");
+        String apiURL = System.getProperty("apiURL", "http://localhost:8080/api/v2/constructors");
         String json = serializeConstructorContext();
+        HttpClientService service = new HttpClientService();
+        try {
+            String result = service.post(apiURL, json);
+            System.out.println(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String serializeConstructorContext() {

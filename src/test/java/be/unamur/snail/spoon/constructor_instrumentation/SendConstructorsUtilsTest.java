@@ -5,20 +5,24 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SendConstructorsUtilsTest {
     private SendConstructorsUtils constructorUtils;
+    private ConstructorContextSender sender;
 
     @BeforeEach
     void setUp() {
         StackTraceHelper mockHelper = Mockito.mock(StackTraceHelper.class);
         StackTraceElement stackTraceElement = new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30);
         when(mockHelper.getFilteredStackTrace()).thenReturn(List.of(stackTraceElement));
-        constructorUtils = new SendConstructorsUtils(mockHelper);
+
+        sender = mock(ConstructorContextSender.class);
+        constructorUtils = new SendConstructorsUtils(mockHelper, sender);
     }
 
     @Test
@@ -88,9 +92,11 @@ class SendConstructorsUtilsTest {
 
     @Test
     void serializeSimpleConstructorContextWorkingTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
-        String json = constructorUtils.serializeConstructorContext();
+        ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withParameters(List.of("java.lang.String")).withAttributes(new HashSet<>());
+
+        String json = constructorUtils.serializeConstructorContext(context);
         System.out.println(json);
+
         assertNotNull(json);
         assertEquals("""
                 {
@@ -103,5 +109,22 @@ class SendConstructorsUtilsTest {
                   "snapshot" : null,
                   "empty" : false
                 }""", json);
+    }
+
+    @Test
+    void sendThrowsExceptionIfSenderNullTest() {
+        SendConstructorsUtils utils = new SendConstructorsUtils((ConstructorContextSender) null);
+        assertThrows(IllegalStateException.class, utils::send);
+    }
+
+    @Test
+    void sendDelegatesToSenderTest() {
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        constructorUtils.addAttribute("field", "String", "hello", "literal");
+        constructorUtils.getStackTrace();
+        ConstructorContext context = constructorUtils.getConstructorContextForTests();
+
+        constructorUtils.send();
+        verify(sender, times(1)).send(context);
     }
 }

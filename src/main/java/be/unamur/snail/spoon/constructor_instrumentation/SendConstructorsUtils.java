@@ -4,22 +4,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
 public class SendConstructorsUtils {
     private ConstructorContext constructorContext;
-    private StackTraceHelper stackTraceHelper;
+    private final StackTraceHelper stackTraceHelper;
+    private final ConstructorContextSender sender;
 
-    public SendConstructorsUtils() {
+    public SendConstructorsUtils(ConstructorContextSender sender) {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = new StackTraceHelper(new DefaultStackTraceProvider());
+        this.sender = sender;
     }
 
-    public SendConstructorsUtils(StackTraceHelper stackTraceHelper) {
+    public SendConstructorsUtils(StackTraceHelper stackTraceHelper, ConstructorContextSender sender) {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
+        this.sender = sender;
     }
 
     public ConstructorContext getConstructorContextForTests() {
@@ -71,24 +73,17 @@ public class SendConstructorsUtils {
 
     public void send() {
         System.out.println("Sending instance to the database");
-        String apiURL = System.getProperty("apiURL", "http://localhost:8080/api/v2/constructors");
-        String json = serializeConstructorContext();
-        HttpClientService service = new HttpClientService();
-        try {
-            String result = service.post(apiURL, json);
-            System.out.println(result);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (sender == null) {
+            throw new IllegalStateException("Sender is not initialized");
         }
+        sender.send(constructorContext);
     }
 
-    public String serializeConstructorContext() {
+    public String serializeConstructorContext(ConstructorContext context) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            return mapper.writeValueAsString(constructorContext);
+            return mapper.writeValueAsString(context);
         } catch (JsonProcessingException e) {
             throw new JsonException(e);
         }

@@ -13,50 +13,68 @@ import spoon.reflect.visitor.filter.TypeFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
+public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> implements InstrumentProcessor<CtConstructor<?>> {
     //    private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private static final String PKG = "be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils";
+    private static final String FQCN = "be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils";
 
     @Override
     public void process(CtConstructor<?> constructor) {
         if (constructor.getBody() == null) return;
+        instrument(constructor, new InstrumentationUtils(getFactory()));
+    }
+
+    @Override
+    public void instrument(CtConstructor<?> constructor, InstrumentationUtils utils) {
         Factory factory = getFactory();
 
         String fileName = getFileName(constructor);
         String className = constructor.getDeclaringType().getQualifiedName();
         String constructorName = constructor.getDeclaringType().getSimpleName();
-        List<String> constructorParameters = createConstructorParameterList(constructor);
+        List<String> params = utils.getParameterTypes(constructor.getParameters());
 
-        CtLocalVariable<?> utilsVariable = createSendUtilsInitializationInvocation();
-        CtVariableReference<?> utilsVarRef = utilsVariable.getReference();
-        CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVarRef, false);
+        CtLocalVariable<?> utilsVariable = utils.createConstructorInstantiationVariable(FQCN, "utils");
+        CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
 
-        CtInvocation<?> initConstructorInvocation = createInitConstructorContextInvocation(utilsAccess, fileName, className, constructorName, constructorParameters);
-        constructor.getBody().insertBegin(initConstructorInvocation);
-
-        // "utils" variable initialization
+        // Insert utils variable
         constructor.getBody().insertBegin(utilsVariable);
 
+        // Init constructor context
+        constructor.getBody().insertBegin(
+                utils.createInvocation(
+                        utilsAccess,
+                        FQCN,
+                        "initConstructorContext",
+                        factory.Code().createLiteral(fileName),
+                        factory.Code().createLiteral(className),
+                        factory.Code().createLiteral(constructorName),
+                        utils.createStringListLiteral(params)
+                )
+        );
+
+        // Add attributes
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
-            if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess && (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null)) {
+            if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess) {
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
+                String rhsType = getRightHandSideExpression(assignment.getAssignment(), constructor);
 
-                String sourceType = getRightHandSideExpression(assignment.getAssignment(), constructor);
-
-                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, utilsAccess, fieldName, fieldType, fieldAccess, sourceType);
-                assignment.insertAfter(prepareMethodInvocation);
+                assignment.insertAfter(
+                        utils.createInvocation(
+                                utilsAccess,
+                                FQCN,
+                                "addAttribute",
+                                factory.Code().createLiteral(fieldName),
+                                factory.Code().createLiteral(fieldType),
+                                fieldAccess,
+                                factory.Code().createLiteral(rhsType)
+                        )
+                );
             }
         }
 
-        CtInvocation<?> getSnapshotAndStackTraceInvocation = createGetStackTraceInvocation(factory, utilsAccess);
-        constructor.getBody().insertEnd(getSnapshotAndStackTraceInvocation);
-
-//        CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
-//        constructor.getBody().addStatement(writeConstructorContextInvocation);
-
-        CtInvocation<?> sendInvocation = createSendInvocation(factory, utilsAccess);
-        constructor.getBody().insertEnd(sendInvocation);
+        // Stack trace
+        constructor.getBody().insertEnd(utils.createInvocation(utilsAccess, FQCN, "getStackTrace"));
+        constructor.getBody().insertEnd(utils.createInvocation(utilsAccess, FQCN, "send"));
     }
 
     public String getRightHandSideExpression(CtExpression<?> expression, CtConstructor<?> constructor) {
@@ -85,102 +103,5 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             fileName = constructor.getPosition().getFile().getPath();
         }
         return fileName;
-    }
-
-    public List<String> createConstructorParameterList(CtConstructor<?> constructor) {
-        List<String> constructorParameters = new ArrayList<>();
-        for (CtParameter<?> parameter : constructor.getParameters()) {
-            constructorParameters.add(parameter.getType().getQualifiedName());
-        }
-        return constructorParameters;
-    }
-
-    public CtLocalVariable<?> createSendUtilsInitializationInvocation() {
-        Factory factory = getFactory();
-        CtTypeReference<?> utilsType = factory.Type().createReference(PKG);
-        CtConstructorCall constructorCall = factory.Code().createConstructorCall(utilsType);
-        return factory.Code().createLocalVariable(utilsType, "utils", constructorCall);
-    }
-
-    public CtInvocation<?> createGetStackTraceInvocation(Factory factory, CtExpression<?> target) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> getStackTrace = factory.Executable().createReference(
-                registerUtilsType,
-                factory.Type().voidPrimitiveType(),
-                "getStackTrace"
-        );
-
-        return factory.Code().createInvocation(
-                target,
-                getStackTrace
-        );
-    }
-
-//    public CtInvocation<?> createWriteConstructorContextInvocation(Factory factory, CtExpression<?> target) {
-//        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-//        CtExecutableReference<?> writeConstructorContextMethod = factory.Executable().createReference(
-//                registerUtilsType,
-//                factory.Type().voidPrimitiveType(),
-//                "writeConstructorContext"
-//        );
-//
-//        return factory.Code().createInvocation(
-//                target,
-//                writeConstructorContextMethod
-//        );
-//    }
-
-    public CtInvocation<?> createSendInvocation(Factory factory, CtExpression<?> target) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> sendMethod = factory.Executable().createReference(
-                registerUtilsType,
-                factory.Type().voidPrimitiveType(),
-                "send"
-        );
-        return factory.Code().createInvocation(
-                target,
-                sendMethod
-        );
-    }
-
-
-
-    public CtInvocation<?> createInitConstructorContextInvocation(CtExpression<?> target, String fileName, String className, String constructorName, List<String> constructorParameters) {
-        Factory factory = getFactory();
-        CtTypeReference<?> sendUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> initConstructorMethodRef = factory.Executable().createReference(
-                sendUtilsType,
-                factory.Type().voidPrimitiveType(),
-                "initConstructorContext"
-        );
-        CtExpression<ArrayList> parameterListLiteral = new MethodInstrumentationProcessor().createParameterListLiteral(factory, constructorParameters);
-
-
-        return factory.Code().createInvocation(
-                target,
-                initConstructorMethodRef,
-                factory.Code().createLiteral(fileName),
-                factory.Code().createLiteral(className),
-                factory.Code().createLiteral(constructorName),
-                parameterListLiteral
-        );
-    }
-
-    public CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess, String sourceType) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
-        CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
-                registerUtilsType,
-                voidType,
-                "addAttribute"
-        );
-        return factory.Code().createInvocation(
-                target,
-                addAttributeMethod,
-                factory.Code().createLiteral(fieldName),
-                factory.Code().createLiteral(fieldType),
-                fieldAccess,
-                factory.Code().createLiteral(sourceType)
-        );
     }
 }

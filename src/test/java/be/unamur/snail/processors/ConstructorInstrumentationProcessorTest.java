@@ -67,27 +67,27 @@ class ConstructorInstrumentationProcessorTest {
         when(codeFactory.createLocalVariable(mockTypeRef, "utils", mockCall)).thenReturn(mockLocalVariable);
     }
 
-    @Test
-    void createConstructorParameterListTest() {
-        CtConstructor<?> mockConstructor = mock(CtConstructor.class);
-        CtParameter<?> mockParameter = mock(CtParameter.class);
-        CtTypeReference mockTypeRef  = mock(CtTypeReference.class);
-
-        when(mockTypeRef.getQualifiedName()).thenReturn("java.lang.String");
-        when(mockParameter.getType()).thenReturn(mockTypeRef);
-        when(mockConstructor.getParameters()).thenReturn(List.of(mockParameter));
-
-        List<String> actualResult = processor.createConstructorParameterList(mockConstructor);
-        assertEquals(List.of("java.lang.String"), actualResult);
-    }
-
-    @Test
-    void createSendUtilsInitializationInvocationTest() {
-        CtLocalVariable<?> actualResult = processor.createSendUtilsInitializationInvocation();
-        assertEquals(mockLocalVariable, actualResult);
-
-        verify(factory.Type()).createReference(PKG);
-        verify(codeFactory).createConstructorCall(mockTypeRef);
-        verify(codeFactory).createLocalVariable(mockTypeRef, "utils", mockCall);
-    }
+//    @Test
+//    void createConstructorParameterListTest() {
+//        CtConstructor<?> mockConstructor = mock(CtConstructor.class);
+//        CtParameter<?> mockParameter = mock(CtParameter.class);
+//        CtTypeReference mockTypeRef  = mock(CtTypeReference.class);
+//
+//        when(mockTypeRef.getQualifiedName()).thenReturn("java.lang.String");
+//        when(mockParameter.getType()).thenReturn(mockTypeRef);
+//        when(mockConstructor.getParameters()).thenReturn(List.of(mockParameter));
+//
+//        List<String> actualResult = processor.createConstructorParameterList(mockConstructor);
+//        assertEquals(List.of("java.lang.String"), actualResult);
+//    }
+//
+//    @Test
+//    void createSendUtilsInitializationInvocationTest() {
+//        CtLocalVariable<?> actualResult = processor.createSendUtilsInitializationInvocation();
+//        assertEquals(mockLocalVariable, actualResult);
+//
+//        verify(factory.Type()).createReference(PKG);
+//        verify(codeFactory).createConstructorCall(mockTypeRef);
+//        verify(codeFactory).createLocalVariable(mockTypeRef, "utils", mockCall);
+//    }
 }

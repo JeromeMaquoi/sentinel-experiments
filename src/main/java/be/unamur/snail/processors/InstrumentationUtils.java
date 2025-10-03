@@ -1,6 +1,8 @@
 package be.unamur.snail.processors;
 
 import be.unamur.snail.exceptions.ParameterIsNullOrEmptyException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
@@ -11,9 +13,12 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class InstrumentationUtils {
+    private static final Logger log = LoggerFactory.getLogger(InstrumentationUtils.class);
+
     private final Factory factory;
 
     public InstrumentationUtils(final Factory factory) {
@@ -54,6 +59,7 @@ public class InstrumentationUtils {
         if (params == null) {
             throw new ParameterIsNullOrEmptyException("params");
         }
+        log.info("Extracting parameter types from {} parameters", params.size());
         List<String> result = new ArrayList<>();
         for (CtParameter<?> param : params) {
             result.add(param.getType().getQualifiedName());
@@ -99,10 +105,10 @@ public class InstrumentationUtils {
      * @throws ParameterIsNullOrEmptyException if values is null
      */
     public CtExpression<ArrayList> createStringListLiteral(List<String> values) {
-        if (values == null || values.isEmpty()) {
+        if (values == null) {
             throw new ParameterIsNullOrEmptyException("values");
         }
-        CtTypeReference<?> arraysType = factory.Type().createReference(ArrayList.class);
+        CtTypeReference<?> arraysType = factory.Type().createReference(Arrays.class);
         CtExecutableReference<?> asListMethod = factory.Executable().createReference(
                 arraysType,
                 factory.Type().createReference(List.class),

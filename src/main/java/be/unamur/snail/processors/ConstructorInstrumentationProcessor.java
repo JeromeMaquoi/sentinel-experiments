@@ -1,5 +1,7 @@
 package be.unamur.snail.processors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
@@ -14,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> implements InstrumentProcessor<CtConstructor<?>> {
-    //    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final String FQCN = "be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils";
 
     @Override
@@ -31,12 +33,10 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         String className = constructor.getDeclaringType().getQualifiedName();
         String constructorName = constructor.getDeclaringType().getSimpleName();
         List<String> params = utils.getParameterTypes(constructor.getParameters());
+        log.info("Found constructor {} with parameters {}", constructorName, params);
 
         CtLocalVariable<?> utilsVariable = utils.createConstructorInstantiationVariable(FQCN, "utils");
         CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
-
-        // Insert utils variable
-        constructor.getBody().insertBegin(utilsVariable);
 
         // Init constructor context
         constructor.getBody().insertBegin(
@@ -50,6 +50,9 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                         utils.createStringListLiteral(params)
                 )
         );
+
+        // Insert utils variable
+        constructor.getBody().insertBegin(utilsVariable);
 
         // Add attributes
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {

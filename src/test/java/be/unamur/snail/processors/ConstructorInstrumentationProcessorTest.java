@@ -2,92 +2,67 @@ package be.unamur.snail.processors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import spoon.Launcher;
-import spoon.reflect.code.CtConstructorCall;
-import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.CtModel;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtParameter;
-import spoon.reflect.factory.CodeFactory;
-import spoon.reflect.factory.Factory;
-import spoon.reflect.factory.TypeFactory;
-import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
 
 class ConstructorInstrumentationProcessorTest {
     private Launcher launcher;
-
     Path inputPath;
-
-    ConstructorInstrumentationProcessor processor;
-
-    Factory factory;
-
-    TypeFactory typeFactory;
-
-    CodeFactory codeFactory;
-
-    String PKG;
-
-    CtTypeReference mockTypeRef;
-
-    CtConstructorCall mockCall;
-
-    CtLocalVariable mockLocalVariable;
+    @TempDir
+    Path tempDir;
+    Path outputPath;
 
     @BeforeEach
     void setUp() {
-        inputPath = Paths.get("src/test/resources/test-inputs/");
+        inputPath = Paths.get("src/test/resources/test-code-instrumentation/");
+        outputPath = tempDir.resolve("output");
+
         launcher = new Launcher();
-        factory = mock(Factory.class);
-        typeFactory = mock(TypeFactory.class);
-        codeFactory = mock(CodeFactory.class);
-        processor = new ConstructorInstrumentationProcessor(){
-            @Override
-            public Factory getFactory() {
-                return factory;
-            }
-        };
-        PKG = "be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils";
-
-        when(factory.Type()).thenReturn(typeFactory);
-        when(factory.Code()).thenReturn(codeFactory);
-
-        mockTypeRef = mock(CtTypeReference.class);
-        mockCall = mock(CtConstructorCall.class);
-        mockLocalVariable = mock(CtLocalVariable.class);
-        when(typeFactory.createReference(PKG)).thenReturn(mockTypeRef);
-        when(codeFactory.createConstructorCall(mockTypeRef)).thenReturn(mockCall);
-        when(codeFactory.createLocalVariable(mockTypeRef, "utils", mockCall)).thenReturn(mockLocalVariable);
+        launcher.addInputResource(inputPath.toString());
+        launcher.setSourceOutputDirectory(outputPath.toString());
+        launcher.addProcessor(new ConstructorInstrumentationProcessor());
+        launcher.run();
+        launcher.prettyprint();
     }
 
-//    @Test
-//    void createConstructorParameterListTest() {
-//        CtConstructor<?> mockConstructor = mock(CtConstructor.class);
-//        CtParameter<?> mockParameter = mock(CtParameter.class);
-//        CtTypeReference mockTypeRef  = mock(CtTypeReference.class);
-//
-//        when(mockTypeRef.getQualifiedName()).thenReturn("java.lang.String");
-//        when(mockParameter.getType()).thenReturn(mockTypeRef);
-//        when(mockConstructor.getParameters()).thenReturn(List.of(mockParameter));
-//
-//        List<String> actualResult = processor.createConstructorParameterList(mockConstructor);
-//        assertEquals(List.of("java.lang.String"), actualResult);
-//    }
-//
-//    @Test
-//    void createSendUtilsInitializationInvocationTest() {
-//        CtLocalVariable<?> actualResult = processor.createSendUtilsInitializationInvocation();
-//        assertEquals(mockLocalVariable, actualResult);
-//
-//        verify(factory.Type()).createReference(PKG);
-//        verify(codeFactory).createConstructorCall(mockTypeRef);
-//        verify(codeFactory).createLocalVariable(mockTypeRef, "utils", mockCall);
-//    }
+    @Test
+    void constructorWithAssignmentsIsInstrumentedTest() {
+        String className = "TestConstructorClassWithAssignments";
+        Path outputFile = outputPath.resolve("test/" + className + ".java");
+        assertTrue(outputFile.toFile().exists(), "Output file should be generated");
+        System.out.println("Instrumented file: " + outputFile.toAbsolutePath());
+
+        CtModel model = launcher.getModel();
+        // Retrieve the processed constructor
+        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class))
+                .stream()
+                .filter(c -> c.getSimpleName().equals(className))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Class "+className+" not found in the model"));
+
+        CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
+        CtBlock<?> body = constructor.getBody();
+        List<CtStatement> statements = body.getStatements();
+        System.out.println(statements);
+
+        assertThat(statements.get(0).toString()).contains("SendConstructorsUtils utils = new be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils()");
+        assertThat(statements.get(1).toString()).contains("utils.initConstructorContext(");
+        assertThat(statements.get(2).toString()).contains("this.name = name");
+        assertThat(statements.get(3).toString()).contains("utils.addAttribute(");
+        assertThat(statements.get(4).toString()).contains("utils.getStackTrace()");
+        assertThat(statements.get(5).toString()).contains("utils.send()");
+    }
 }

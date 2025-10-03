@@ -14,6 +14,11 @@ public class HttpClientService {
         this.httpClient = HttpClient.newHttpClient();
     }
 
+    // Constructor for tests
+    public HttpClientService(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
     public String post(String url, String jsonPayload) throws IOException, InterruptedException {
         if (jsonPayload != null) {
             // Build the HTTP request
@@ -29,7 +34,7 @@ public class HttpClientService {
                 return response.body();
             } else {
                 System.out.println("Error: " + response.statusCode() + " " + response.body());
-                throw new RuntimeException("HTTP error: " + response.statusCode() + ", body: " + response.body());
+                throw new HttpErrorException(response.statusCode(), response.body());
             }
         }
         throw new InvalidPropertiesFormatException("No data to send to the server");

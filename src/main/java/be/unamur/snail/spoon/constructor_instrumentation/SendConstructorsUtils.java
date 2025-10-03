@@ -18,6 +18,7 @@ public class SendConstructorsUtils {
         this.sender = sender;
     }
 
+    // Constructor for tests
     public SendConstructorsUtils(StackTraceHelper stackTraceHelper, ConstructorContextSender sender) {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
@@ -38,6 +39,10 @@ public class SendConstructorsUtils {
     public void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
         constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
         System.out.println("Constructor context is: " + constructorContext);
+    }
+
+    public void resetConstructorContextForTests() {
+        constructorContext = null;
     }
 
     /**

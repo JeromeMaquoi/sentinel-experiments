@@ -1,5 +1,6 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,6 +24,11 @@ class SendConstructorsUtilsTest {
 
         sender = mock(ConstructorContextSender.class);
         constructorUtils = new SendConstructorsUtils(mockHelper, sender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        constructorUtils.resetConstructorContextForTests();
     }
 
     @Test
@@ -57,6 +63,12 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
+    void addAttributeThrowsExceptionIfConstructorContextIsNullTest() {
+        constructorUtils.resetConstructorContextForTests();
+        assertThrows(IllegalStateException.class, () -> constructorUtils.addAttribute("field", null, "hello", "literal"));
+    }
+
+    @Test
     void addAttributeWithNullActualObjectTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
         constructorUtils.addAttribute("field", "int", null, "literal");
@@ -72,6 +84,12 @@ class SendConstructorsUtilsTest {
 
     @Test
     void getStackTraceThrowsExceptionIfConstructorContextNotInitializedTest() {
+        assertThrows(IllegalStateException.class, () -> constructorUtils.getStackTrace());
+    }
+
+    @Test
+    void getStackTraceThrowsExceptionIfConstructorContextIsNullTest() {
+        constructorUtils.resetConstructorContextForTests();
         assertThrows(IllegalStateException.class, () -> constructorUtils.getStackTrace());
     }
 
@@ -112,8 +130,13 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
+    void serializeConstructorContextThrowsExceptionIfMapperDoesNotSucceedTest() {
+
+    }
+
+    @Test
     void sendThrowsExceptionIfSenderNullTest() {
-        SendConstructorsUtils utils = new SendConstructorsUtils((ConstructorContextSender) null);
+        SendConstructorsUtils utils = new SendConstructorsUtils(null);
         assertThrows(IllegalStateException.class, utils::send);
     }
 

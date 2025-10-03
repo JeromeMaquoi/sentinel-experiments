@@ -116,19 +116,19 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    public CtInvocation<?> createWriteConstructorContextInvocation(Factory factory, CtExpression<?> target) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> writeConstructorContextMethod = factory.Executable().createReference(
-                registerUtilsType,
-                factory.Type().voidPrimitiveType(),
-                "writeConstructorContext"
-        );
-
-        return factory.Code().createInvocation(
-                target,
-                writeConstructorContextMethod
-        );
-    }
+//    public CtInvocation<?> createWriteConstructorContextInvocation(Factory factory, CtExpression<?> target) {
+//        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+//        CtExecutableReference<?> writeConstructorContextMethod = factory.Executable().createReference(
+//                registerUtilsType,
+//                factory.Type().voidPrimitiveType(),
+//                "writeConstructorContext"
+//        );
+//
+//        return factory.Code().createInvocation(
+//                target,
+//                writeConstructorContextMethod
+//        );
+//    }
 
     public CtInvocation<?> createSendInvocation(Factory factory, CtExpression<?> target) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);

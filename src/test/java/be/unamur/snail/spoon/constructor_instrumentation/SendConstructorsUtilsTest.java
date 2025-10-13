@@ -109,34 +109,9 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
-    void serializeSimpleConstructorContextWorkingTest() {
-        ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withParameters(List.of("java.lang.String")).withAttributes(new HashSet<>());
-
-        String json = constructorUtils.serializeConstructorContext(context);
-        System.out.println(json);
-
-        assertNotNull(json);
-        assertEquals("""
-                {
-                  "fileName" : "file.java",
-                  "className" : "Class",
-                  "methodName" : "method",
-                  "parameters" : [ "java.lang.String" ],
-                  "attributes" : [ ],
-                  "stackTrace" : null,
-                  "snapshot" : null,
-                  "empty" : false
-                }""", json);
-    }
-
-    @Test
-    void serializeConstructorContextThrowsExceptionIfMapperDoesNotSucceedTest() {
-
-    }
-
-    @Test
     void sendThrowsExceptionIfSenderNullTest() {
-        SendConstructorsUtils utils = new SendConstructorsUtils(null);
+        StackTraceHelper helper = mock(StackTraceHelper.class);
+        SendConstructorsUtils utils = new SendConstructorsUtils(helper, null);
         assertThrows(IllegalStateException.class, utils::send);
     }
 

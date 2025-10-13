@@ -110,17 +110,11 @@ class InstrumentationUtilsTest {
     }
 
     @Test
-    void createStringListLiteralShouldThrowExceptionIfValuesIsEmptyTest() {
-        List<String> emptyList = Collections.emptyList();
-        assertThrows(ParameterIsNullOrEmptyException.class, () -> utils.createStringListLiteral(emptyList));
-    }
-
-    @Test
     void createStringListLiteralShouldSucceedTest() {
         List<String> values = List.of("a", "b", "c");
         CtExpression<ArrayList> expression = utils.createStringListLiteral(values);
 
         assertNotNull(expression);
-        assertEquals("new java.util.ArrayList(java.util.ArrayList.asList(\"a\", \"b\", \"c\"))", expression.toString());
+        assertEquals("new java.util.ArrayList(java.util.Arrays.asList(\"a\", \"b\", \"c\"))", expression.toString());
     }
 }

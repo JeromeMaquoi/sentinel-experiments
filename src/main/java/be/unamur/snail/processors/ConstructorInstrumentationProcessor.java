@@ -5,14 +5,10 @@ import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> implements InstrumentProcessor<CtConstructor<?>> {

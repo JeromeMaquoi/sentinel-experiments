@@ -43,6 +43,15 @@ public class RunProjectTestsStage implements Stage {
             commandWithInit += " -DpackagePrefix=" + packagePrefix;
         }
 
+        // Add API endpoint as system property for data sending to the db
+        String endpoint = config.getBackend().getEndpoint();
+        if (endpoint != null && !endpoint.isBlank()) {
+            String host = config.getBackend().getServerHost();
+            int port = config.getBackend().getServerPort();
+            String completeEndpoint = "http://" + host + ":" + port + endpoint;
+            commandWithInit += " -Dendpoint=" + completeEndpoint;
+        }
+
         Utils.CompletedProcess result = Utils.runCommand(commandWithInit, cwd);
 
         if (result.returnCode() != 0) {

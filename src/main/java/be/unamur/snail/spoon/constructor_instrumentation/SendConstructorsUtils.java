@@ -1,9 +1,5 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import java.util.HashSet;
 import java.util.List;
 
@@ -12,10 +8,11 @@ public class SendConstructorsUtils {
     private final StackTraceHelper stackTraceHelper;
     private final ConstructorContextSender sender;
 
-    public SendConstructorsUtils(ConstructorContextSender sender) {
+    public SendConstructorsUtils() {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = new StackTraceHelper(new DefaultStackTraceProvider());
-        this.sender = sender;
+        String apiURL = System.getProperty("apiURL", System.getenv("API_URL"));
+        this.sender = new HttpConstructorContextSender(apiURL);
     }
 
     // Constructor for tests
@@ -76,21 +73,14 @@ public class SendConstructorsUtils {
         constructorContext = constructorContext.withStackTrace(stackTrace);
     }
 
+    /**
+     * Send the constructor data into the database
+     */
     public void send() {
         System.out.println("Sending instance to the database");
         if (sender == null) {
             throw new IllegalStateException("Sender is not initialized");
         }
         sender.send(constructorContext);
-    }
-
-    public String serializeConstructorContext(ConstructorContext context) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        try {
-            return mapper.writeValueAsString(context);
-        } catch (JsonProcessingException e) {
-            throw new JsonException(e);
-        }
     }
 }

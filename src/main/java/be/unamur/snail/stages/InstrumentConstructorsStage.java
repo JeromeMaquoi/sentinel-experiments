@@ -15,7 +15,7 @@ import spoon.SpoonException;
 import java.util.List;
 
 public class InstrumentConstructorsStage implements Stage {
-    private static Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
+    private static final Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
     @Override
     public void execute(Context context) throws ModuleException {
         if (context.getClassPath() == null || context.getClassPath().isEmpty()) {

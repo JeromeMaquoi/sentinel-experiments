@@ -213,6 +213,8 @@ public class Config {
         private String serverHost;
         @JsonProperty("server-ready-path")
         private String serverReadyPath;
+        @JsonProperty("endpoint")
+        private String endpoint;
 
         public String getMode() {
             return mode;
@@ -268,6 +270,10 @@ public class Config {
 
         public String getServerReadyPath() {
             return serverReadyPath;
+        }
+
+        public String getEndpoint() {
+            return endpoint;
         }
     }
 }

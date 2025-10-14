@@ -11,7 +11,11 @@ public class SendConstructorsUtils {
     public SendConstructorsUtils() {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = new StackTraceHelper(new DefaultStackTraceProvider());
-        String apiURL = System.getProperty("apiURL", System.getenv("API_URL"));
+        String apiURL = System.getProperty("apiUrl", System.getenv("API_URL"));
+        System.out.println("apiUrl: " + apiURL);
+        if (apiURL == null || apiURL.isEmpty()) {
+            throw new IllegalArgumentException("apiUrl not set");
+        }
         this.sender = new HttpConstructorContextSender(apiURL);
     }
 

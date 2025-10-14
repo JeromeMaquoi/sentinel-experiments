@@ -49,9 +49,10 @@ public class RunProjectTestsStage implements Stage {
             String host = config.getBackend().getServerHost();
             int port = config.getBackend().getServerPort();
             String completeEndpoint = "http://" + host + ":" + port + endpoint;
-            commandWithInit += " -Dendpoint=" + completeEndpoint;
+            log.info("Setting endpoint to {}", completeEndpoint);
+            commandWithInit += " -DapiUrl=" + completeEndpoint;
         }
-
+        log.info("Executing command {}", commandWithInit);
         Utils.CompletedProcess result = Utils.runCommand(commandWithInit, cwd);
 
         if (result.returnCode() != 0) {

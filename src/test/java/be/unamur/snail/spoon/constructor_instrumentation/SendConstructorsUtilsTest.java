@@ -1,24 +1,34 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SendConstructorsUtilsTest {
     private SendConstructorsUtils constructorUtils;
+    private ConstructorContextSender sender;
 
     @BeforeEach
     void setUp() {
         StackTraceHelper mockHelper = Mockito.mock(StackTraceHelper.class);
         StackTraceElement stackTraceElement = new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30);
         when(mockHelper.getFilteredStackTrace()).thenReturn(List.of(stackTraceElement));
-        constructorUtils = new SendConstructorsUtils(mockHelper);
+
+        sender = mock(ConstructorContextSender.class);
+        constructorUtils = new SendConstructorsUtils(mockHelper, sender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        constructorUtils.resetConstructorContextForTests();
     }
 
     @Test
@@ -53,6 +63,12 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
+    void addAttributeThrowsExceptionIfConstructorContextIsNullTest() {
+        constructorUtils.resetConstructorContextForTests();
+        assertThrows(IllegalStateException.class, () -> constructorUtils.addAttribute("field", null, "hello", "literal"));
+    }
+
+    @Test
     void addAttributeWithNullActualObjectTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
         constructorUtils.addAttribute("field", "int", null, "literal");
@@ -72,6 +88,12 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
+    void getStackTraceThrowsExceptionIfConstructorContextIsNullTest() {
+        constructorUtils.resetConstructorContextForTests();
+        assertThrows(IllegalStateException.class, () -> constructorUtils.getStackTrace());
+    }
+
+    @Test
     void getStackTraceWorkingTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
         constructorUtils.getStackTrace();
@@ -87,21 +109,20 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
-    void serializeSimpleConstructorContextWorkingTest() {
+    void sendThrowsExceptionIfSenderNullTest() {
+        StackTraceHelper helper = mock(StackTraceHelper.class);
+        SendConstructorsUtils utils = new SendConstructorsUtils(helper, null);
+        assertThrows(IllegalStateException.class, utils::send);
+    }
+
+    @Test
+    void sendDelegatesToSenderTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
-        String json = constructorUtils.serializeConstructorContext();
-        System.out.println(json);
-        assertNotNull(json);
-        assertEquals("""
-                {
-                  "fileName" : "file.java",
-                  "className" : "Class",
-                  "methodName" : "method",
-                  "parameters" : [ "java.lang.String" ],
-                  "attributes" : [ ],
-                  "stackTrace" : null,
-                  "snapshot" : null,
-                  "empty" : false
-                }""", json);
+        constructorUtils.addAttribute("field", "String", "hello", "literal");
+        constructorUtils.getStackTrace();
+        ConstructorContext context = constructorUtils.getConstructorContextForTests();
+
+        constructorUtils.send();
+        verify(sender, times(1)).send(context);
     }
 }

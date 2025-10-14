@@ -32,7 +32,7 @@ public class RunProjectTestsStage implements Stage {
         String testCommand = config.getExecutionPlan().getTestCommand();
         String cwd = context.getRepoPath();
 
-        // Add init script to see the logs in the terminal during the execution
+        // Add init script to see the logs in the terminal during the execution and for passing properties packagePrefix and apiUrl to the tests
         File initScript = initScriptGenerator.generateShowLogsInitScriptForGradle();
         // TODO handle Maven and not only Gradle
         String commandWithInit = testCommand + " --init-script " + initScript.getAbsolutePath();
@@ -43,6 +43,16 @@ public class RunProjectTestsStage implements Stage {
             commandWithInit += " -DpackagePrefix=" + packagePrefix;
         }
 
+        // Add API endpoint as system property for data sending to the db
+        String endpoint = config.getBackend().getEndpoint();
+        if (endpoint != null && !endpoint.isBlank()) {
+            String host = config.getBackend().getServerHost();
+            int port = config.getBackend().getServerPort();
+            String completeEndpoint = "http://" + host + ":" + port + endpoint;
+            log.info("Setting endpoint to {}", completeEndpoint);
+            commandWithInit += " -DapiUrl=" + completeEndpoint;
+        }
+        log.info("Executing command {}", commandWithInit);
         Utils.CompletedProcess result = Utils.runCommand(commandWithInit, cwd);
 
         if (result.returnCode() != 0) {

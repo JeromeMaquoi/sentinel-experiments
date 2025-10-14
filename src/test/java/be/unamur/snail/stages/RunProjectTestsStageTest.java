@@ -41,6 +41,11 @@ class RunProjectTestsStageTest {
         when(config.getProject()).thenReturn(projectConfig);
         when(projectConfig.getPackagePrefix()).thenReturn("be");
 
+        Config.BackendConfig backendConfig = mock(Config.BackendConfig.class);
+        when(config.getBackend()).thenReturn(backendConfig);
+        when(backendConfig.getServerPort()).thenReturn(8080);
+        when(backendConfig.getServerHost()).thenReturn("localhost");
+
         try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
             Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("echo OK", 0, "OK", "");
             utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
@@ -61,6 +66,11 @@ class RunProjectTestsStageTest {
         when(config.getProject()).thenReturn(projectConfig);
         when(projectConfig.getPackagePrefix()).thenReturn("be");
 
+        Config.BackendConfig backendConfig = mock(Config.BackendConfig.class);
+        when(config.getBackend()).thenReturn(backendConfig);
+        when(backendConfig.getServerPort()).thenReturn(8080);
+        when(backendConfig.getServerHost()).thenReturn("localhost");
+
         try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
             Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");
             utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
@@ -79,6 +89,11 @@ class RunProjectTestsStageTest {
         Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
         when(config.getProject()).thenReturn(projectConfig);
         when(projectConfig.getPackagePrefix()).thenReturn("be");
+
+        Config.BackendConfig backendConfig = mock(Config.BackendConfig.class);
+        when(config.getBackend()).thenReturn(backendConfig);
+        when(backendConfig.getServerPort()).thenReturn(8080);
+        when(backendConfig.getServerHost()).thenReturn("localhost");
 
         try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
             Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");

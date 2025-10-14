@@ -32,7 +32,7 @@ public class RunProjectTestsStage implements Stage {
         String testCommand = config.getExecutionPlan().getTestCommand();
         String cwd = context.getRepoPath();
 
-        // Add init script to see the logs in the terminal during the execution
+        // Add init script to see the logs in the terminal during the execution and for passing properties packagePrefix and apiUrl to the tests
         File initScript = initScriptGenerator.generateShowLogsInitScriptForGradle();
         // TODO handle Maven and not only Gradle
         String commandWithInit = testCommand + " --init-script " + initScript.getAbsolutePath();

@@ -52,6 +52,10 @@ public class InitScriptGenerator {
                         if (System.getProperty("packagePrefix") != null) {
                             systemProperty "packagePrefix", System.getProperty("packagePrefix")
                         }
+                        // Forward the apiUrl system property to the test JVM
+                        if (System.getProperty("apiUrl") != null) {
+                            systemProperty "apiUrl", System.getProperty("apiUrl")
+                        }
                     }
                 }
                 """;

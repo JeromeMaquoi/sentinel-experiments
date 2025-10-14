@@ -37,6 +37,11 @@ public class DevBackendServiceManager implements BackendServiceManager {
             throw new MissingConfigKeyException("database.backend-port");
         }
 
+        if (isBackendAlreadyRunning(config.getBackend().getServerHost(), backendPort)) {
+            log.info("Backend is already running on port {}", backendPort);
+            return true;
+        }
+
         if (isPortInUse(backendPort)) {
             throw new PortAlreadyInUseException(backendPort);
         }
@@ -49,6 +54,16 @@ public class DevBackendServiceManager implements BackendServiceManager {
         String command = createCompleteCommand(backendPath);
         runner.run(command);
         return isServerRunning();
+    }
+
+    public boolean isBackendAlreadyRunning(String host, int port) {
+        try {
+            String command = "curl http://" + host + ":" + port + "/management/health";
+            Utils.CompletedProcess result = runner.run(command);
+            return result.returnCode() == 0;
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
     }
 
     public boolean isPortInUse(int port) {

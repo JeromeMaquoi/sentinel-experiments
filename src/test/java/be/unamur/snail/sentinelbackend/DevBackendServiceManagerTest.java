@@ -38,6 +38,7 @@ class DevBackendServiceManagerTest {
             log:
               level: "DEBUG"
             backend:
+              server-host: localhost
               server-port: 8080
               server-timeout-seconds: 120
               nb-check-server-start: 5
@@ -148,6 +149,7 @@ class DevBackendServiceManagerTest {
         DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
         doReturn(true).when(manager).isScreenSessionRunning(anyString());
         doReturn(false).when(manager).isPortInUse(anyInt());
+        doReturn(false).when(manager).isBackendAlreadyRunning(anyString(), anyInt());
 
         boolean result = manager.startBackend();
 
@@ -168,6 +170,7 @@ class DevBackendServiceManagerTest {
         doReturn(dummyCommand).when(manager).createCompleteCommand(anyString());
         doReturn(true).when(manager).isServerRunning();
         doReturn(false).when(manager).isPortInUse(anyInt());
+        doReturn(false).when(manager).isBackendAlreadyRunning(anyString(), anyInt());
 
         boolean result = manager.startBackend();
 
@@ -182,14 +185,27 @@ class DevBackendServiceManagerTest {
         DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
         Config config = Config.getInstance();
         config.getBackend().setServerPortForTests(0);
-        assertThrows(MissingConfigKeyException.class, () -> manager.startBackend());
+        assertThrows(MissingConfigKeyException.class, manager::startBackend);
     }
 
     @Test
-    void startBackendShouldThrowPortAlreadyInUseExceptionIfPortUsedTest() {
-        DevBackendServiceManager manager = spy(new DevBackendServiceManager(cmd -> null, backendPath, 5, 100));
+    void startBackendShouldReturnTrueIfBackendAlreadyRunningTest() throws IOException, InterruptedException {
+        CommandRunner simpleRunner = command -> new Utils.CompletedProcess("", 0, "", "");
+        DevBackendServiceManager spyManager = spy(new DevBackendServiceManager(simpleRunner, backendPath, 5, 100));
+        doReturn(true).when(spyManager).isBackendAlreadyRunning(anyString(), anyInt());
+
+        assertTrue(spyManager.startBackend());
+    }
+
+    @Test
+    void startBackendShouldThrowPortAlreadyInUseExceptionIfPortUsedAndServerNotUpTest() {
+        CommandRunner simpleRunner = command -> new Utils.CompletedProcess("", 0, "", "");
+
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(simpleRunner, backendPath, 5, 100));
         doReturn(true).when(manager).isPortInUse(anyInt());
-        assertThrows(PortAlreadyInUseException.class, () -> manager.startBackend());
+        doReturn(false).when(manager).isBackendAlreadyRunning(anyString(), anyInt());
+
+        assertThrows(PortAlreadyInUseException.class, manager::startBackend);
     }
 
     @Test
@@ -218,5 +234,27 @@ class DevBackendServiceManagerTest {
 
         boolean result = manager.isPortInUse(8080);
         assertFalse(result);
+    }
+
+    @Test
+    void isBackendAlreadyRunningShouldReturnTrueTest() throws IOException, InterruptedException {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);
+        when(completedProcess.returnCode()).thenReturn(0);
+        when(runnerMock.run("curl http://localhost:8080/management/health")).thenReturn(completedProcess);
+
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+        assertTrue(manager.isBackendAlreadyRunning("localhost", 8080));
+    }
+
+    @Test
+    void isBackendAlreadyRunningShouldReturnFalseTest() throws IOException, InterruptedException {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);
+        when(completedProcess.returnCode()).thenReturn(1);
+        when(runnerMock.run("curl http://localhost:8080/management/health")).thenReturn(completedProcess);
+
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+        assertFalse(manager.isBackendAlreadyRunning("localhost", 8080));
     }
 }

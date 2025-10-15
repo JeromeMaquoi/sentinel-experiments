@@ -119,7 +119,6 @@ class SendConstructorsUtilsTest {
     void sendThrowsExceptionIfConstructorNotCompleteTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
         constructorUtils.addAttribute("field", "String", "hello", "literal");
-        ConstructorContext context = constructorUtils.getConstructorContextForTests();
 
         assertThrows(ConstructorContextNotCompletedException.class, () -> constructorUtils.send());
     }

@@ -82,6 +82,9 @@ public class SendConstructorsUtils {
      */
     public void send() {
         System.out.println("Sending instance to the database");
+        if (!constructorContext.isComplete()) {
+            throw new ConstructorContextNotCompletedException();
+        }
         if (sender == null) {
             throw new IllegalStateException("Sender is not initialized");
         }

@@ -85,6 +85,10 @@ public class ConstructorContext implements AstElement {
         return fileName == null && className==null && methodName==null;
     }
 
+    public boolean isComplete() {
+        return fileName != null && className != null && methodName != null && parameters != null && attributes != null & stackTrace != null;
+    }
+
     @Override
     public String toString() {
         return "ConstructorContext{" +

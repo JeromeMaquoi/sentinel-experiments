@@ -33,7 +33,8 @@ class ConstructorContextSerializerTest {
                   "attributes" : [ ],
                   "stackTrace" : null,
                   "snapshot" : null,
-                  "empty" : false
+                  "empty" : false,
+                  "complete" : false
                 }""", json);
     }
 }

@@ -112,6 +112,10 @@ class SendConstructorsUtilsTest {
     void sendThrowsExceptionIfSenderNullTest() {
         StackTraceHelper helper = mock(StackTraceHelper.class);
         SendConstructorsUtils utils = new SendConstructorsUtils(helper, null);
+        utils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        utils.addAttribute("field", "String", "hello", "literal");
+        utils.getStackTrace();
+
         assertThrows(IllegalStateException.class, utils::send);
     }
 

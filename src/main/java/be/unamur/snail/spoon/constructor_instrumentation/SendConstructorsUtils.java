@@ -1,6 +1,6 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SendConstructorsUtils {
@@ -38,8 +38,7 @@ public class SendConstructorsUtils {
      * @param parameters a list of parameters of the constructor
      */
     public void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
-        System.out.println("Constructor context is: " + constructorContext);
+        constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new ArrayList<>());
     }
 
     public void resetConstructorContextForTests() {
@@ -62,7 +61,7 @@ public class SendConstructorsUtils {
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
         AttributeContext attributeContext = new AttributeContext(attributeName, attributeType, actualType, rightHandSideExpressionType);
         constructorContext.addAttribute(attributeContext);
-        System.out.println("Added attribute " + attributeName + " to context");
+//        System.out.println("Added attribute " + attributeName + " to context");
     }
 
     /**
@@ -74,6 +73,7 @@ public class SendConstructorsUtils {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
+        System.out.println("Stack trace: " + stackTrace);
         constructorContext = constructorContext.withStackTrace(stackTrace);
     }
 
@@ -81,13 +81,13 @@ public class SendConstructorsUtils {
      * Send the constructor data into the database
      */
     public void send() {
-        System.out.println("Sending instance to the database");
         if (!constructorContext.isComplete()) {
             throw new ConstructorContextNotCompletedException();
         }
         if (sender == null) {
             throw new IllegalStateException("Sender is not initialized");
         }
+        System.out.println("Sending instance to the database: " + constructorContext);
         sender.send(constructorContext);
     }
 }

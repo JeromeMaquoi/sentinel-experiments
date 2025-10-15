@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,7 +99,7 @@ class SendConstructorsUtilsTest {
 
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
         assertNotNull(context);
-        List<StackTraceElement> stackTrace = context.getStackTrace();
+        List<StackTraceElement> stackTrace = context.getStacktrace();
         assertEquals(1, stackTrace.size());
         assertEquals("createEnvironment", stackTrace.get(0).getMethodName());
         assertEquals("ApplicationEnvironmentTests.java", stackTrace.get(0).getFileName());

@@ -34,7 +34,7 @@ class RunProjectTestsStageTest {
 
     @Test
     void executedSuccessfulTest() {
-        when(executionPlanConfig.getTestCommand()).thenReturn("echo OK");
+        when(executionPlanConfig.getCommand()).thenReturn("echo OK");
         when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
 
         Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
@@ -59,7 +59,7 @@ class RunProjectTestsStageTest {
 
     @Test
     void executedFailedWithoutIgnoreFailuresTest() {
-        when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
+        when(executionPlanConfig.getCommand()).thenReturn("failCommand");
         when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
 
         Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
@@ -83,7 +83,7 @@ class RunProjectTestsStageTest {
 
     @Test
     void executedFailedWithIgnoreFailuresTest() {
-        when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
+        when(executionPlanConfig.getCommand()).thenReturn("failCommand");
         when(executionPlanConfig.getIgnoreFailures()).thenReturn(true);
 
         Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);

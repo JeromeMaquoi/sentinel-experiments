@@ -39,7 +39,7 @@ public class RunProjectTestsStage implements Stage {
         }
 
         Config config = Config.getInstance();
-        String testCommand = config.getExecutionPlan().getTestCommand();
+        String testCommand = config.getExecutionPlan().getCommand();
         String cwd = context.getRepoPath();
 
         // Add init script to see the logs in the terminal during the execution and for passing properties packagePrefix and apiUrl to the tests

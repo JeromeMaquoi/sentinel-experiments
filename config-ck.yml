@@ -1,0 +1,24 @@
+repo:
+  url: "https://github.com/mauricioaniche/ck"
+  commit: "54c21707a7a27a9511dba9a97d19c3554a5a44ac"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/ck"
+  overwrite: true
+log:
+  level: INFO
+execution-plan:
+  command: "mvn clean package"
+  ignore-failures: false
+backend:
+  mode: dev
+  server-host: localhost
+  server-port: 8080
+  server-timeout-seconds: 120
+  server-log-path: "/tmp/sentinel-backend.log"
+  server-ready-path: "/tmp/backend-ready"
+  endpoint: "/api/v2/constructor-contexts"
+  # dev-specific
+  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 20
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

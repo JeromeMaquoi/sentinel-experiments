@@ -4,6 +4,7 @@ import be.unamur.snail.config.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.core.Module;
 import be.unamur.snail.exceptions.ModuleException;
+import be.unamur.snail.modules.CkModule;
 import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,9 @@ public class Main {
         switch (moduleArg) {
             case "instrumentconstructor":
                 module = new SpoonInstrumentConstructorModule();
+                break;
+            case "ck":
+                module = new CkModule();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported module type: " + moduleArg); 

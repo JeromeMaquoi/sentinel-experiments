@@ -171,15 +171,15 @@ public class Config {
 
 
     public static class ExecutionPlanConfig {
-        @JsonProperty("test-command")
-        private String testCommand;
+        @JsonProperty("command")
+        private String command;
         @JsonProperty("ignore-failures")
         private boolean ignoreFailures;
         @JsonProperty("ignore-spoon-failures")
         private boolean ignoreSpoonFailures;
 
-        public String getTestCommand() {
-            return testCommand;
+        public String getCommand() {
+            return command;
         }
 
         public boolean getIgnoreFailures() {

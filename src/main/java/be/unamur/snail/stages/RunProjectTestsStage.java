@@ -13,6 +13,16 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Files;
 
+/**
+ * Stage made to execute the test suite of the analyzed project. It passes some
+ * properties to the tests:
+ * - packagePrefix: the package prefix used by the instrumented code to filter the
+ * stacktraces
+ * - apiUrl: the complete apiUrl used by the instrumented code to post data to the db
+ * PRE: this stages needs the module CkModule to be run, as this module will add Ck data
+ * into the db, data needed by the instrumented code in this stage to add constructor
+ * context data into the db
+ */
 public class RunProjectTestsStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(RunProjectTestsStage.class);
 
@@ -37,7 +47,7 @@ public class RunProjectTestsStage implements Stage {
         // TODO handle Maven and not only Gradle
         String commandWithInit = testCommand + " --init-script " + initScript.getAbsolutePath();
 
-        // ADd package prefix as system property for stacktrace filtering
+        // Add package prefix as system property for stacktrace filtering
         String packagePrefix = config.getProject().getPackagePrefix();
         if (packagePrefix != null && !packagePrefix.isBlank()) {
             commandWithInit += " -DpackagePrefix=" + packagePrefix;

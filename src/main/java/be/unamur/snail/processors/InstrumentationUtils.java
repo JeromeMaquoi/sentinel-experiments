@@ -59,7 +59,7 @@ public class InstrumentationUtils {
         if (params == null) {
             throw new ParameterIsNullOrEmptyException("params");
         }
-        log.info("Extracting parameter types from {} parameters", params.size());
+        log.debug("Extracting parameter types from {} parameters", params.size());
         List<String> result = new ArrayList<>();
         for (CtParameter<?> param : params) {
             result.add(param.getType().getQualifiedName());

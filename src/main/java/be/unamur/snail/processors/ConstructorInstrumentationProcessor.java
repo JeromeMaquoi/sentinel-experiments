@@ -29,7 +29,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         String className = constructor.getDeclaringType().getQualifiedName();
         String constructorName = constructor.getDeclaringType().getSimpleName();
         List<String> params = utils.getParameterTypes(constructor.getParameters());
-        log.info("Found constructor {} with parameters {}", constructorName, params);
+        log.debug("Found constructor {} with parameters {}", constructorName, params);
 
         CtLocalVariable<?> utilsVariable = utils.createConstructorInstantiationVariable(FQCN, "utils");
         CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);

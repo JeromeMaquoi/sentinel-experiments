@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,7 +99,7 @@ class SendConstructorsUtilsTest {
 
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
         assertNotNull(context);
-        List<StackTraceElement> stackTrace = context.getStackTrace();
+        List<StackTraceElement> stackTrace = context.getStacktrace();
         assertEquals(1, stackTrace.size());
         assertEquals("createEnvironment", stackTrace.get(0).getMethodName());
         assertEquals("ApplicationEnvironmentTests.java", stackTrace.get(0).getFileName());
@@ -112,7 +111,19 @@ class SendConstructorsUtilsTest {
     void sendThrowsExceptionIfSenderNullTest() {
         StackTraceHelper helper = mock(StackTraceHelper.class);
         SendConstructorsUtils utils = new SendConstructorsUtils(helper, null);
+        utils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        utils.addAttribute("field", "String", "hello", "literal");
+        utils.getStackTrace();
+
         assertThrows(IllegalStateException.class, utils::send);
+    }
+
+    @Test
+    void sendThrowsExceptionIfConstructorNotCompleteTest() {
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        constructorUtils.addAttribute("field", "String", "hello", "literal");
+
+        assertThrows(ConstructorContextNotCompletedException.class, () -> constructorUtils.send());
     }
 
     @Test

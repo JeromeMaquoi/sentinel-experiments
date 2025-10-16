@@ -1,15 +1,14 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
 import java.util.List;
-import java.util.Set;
 
 public class ConstructorContext implements AstElement {
     private String fileName;
     private String className;
     private String methodName;
     private List<String> parameters;
-    private Set<AttributeContext> attributes;
-    private List<StackTraceElement> stackTrace;
+    private List<AttributeContext> attributes;
+    private List<StackTraceElement> stacktrace;
     private String snapshot;
 
     public ConstructorContext() {}
@@ -34,13 +33,13 @@ public class ConstructorContext implements AstElement {
         return this;
     }
 
-    public ConstructorContext withAttributes(Set<AttributeContext> attributes) {
+    public ConstructorContext withAttributes(List<AttributeContext> attributes) {
         this.attributes = attributes;
         return this;
     }
 
-    public ConstructorContext withStackTrace(List<StackTraceElement> stackTrace) {
-        this.stackTrace = stackTrace;
+    public ConstructorContext withStackTrace(List<StackTraceElement> stacktrace) {
+        this.stacktrace = stacktrace;
         return this;
     }
 
@@ -65,12 +64,12 @@ public class ConstructorContext implements AstElement {
         return parameters;
     }
 
-    public Set<AttributeContext> getAttributes() {
+    public List<AttributeContext> getAttributes() {
         return attributes;
     }
 
-    public List<StackTraceElement> getStackTrace() {
-        return stackTrace;
+    public List<StackTraceElement> getStacktrace() {
+        return stacktrace;
     }
 
     public String getSnapshot() {
@@ -85,6 +84,10 @@ public class ConstructorContext implements AstElement {
         return fileName == null && className==null && methodName==null;
     }
 
+    public boolean isComplete() {
+        return fileName != null && className != null && methodName != null && parameters != null && attributes != null & stacktrace != null;
+    }
+
     @Override
     public String toString() {
         return "ConstructorContext{" +
@@ -93,7 +96,7 @@ public class ConstructorContext implements AstElement {
                 ", methodName='" + methodName + '\'' +
                 ", parameters=" + parameters +
                 ", attributes=" + attributes +
-                ", stackTrace=" + stackTrace +
+                ", stacktrace=" + stacktrace +
                 ", snapshot='" + snapshot + '\'' +
                 '}';
     }

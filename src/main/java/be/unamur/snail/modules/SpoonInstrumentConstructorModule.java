@@ -1,8 +1,7 @@
 package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Context;
-import be.unamur.snail.core.Module;
-import be.unamur.snail.core.Stage;
+import be.unamur.snail.stages.Stage;
 import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.database.MongoServiceManager;
 import be.unamur.snail.database.SimpleDatabasePreparerFactory;

@@ -1,6 +1,6 @@
 package be.unamur.snail.stages;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;

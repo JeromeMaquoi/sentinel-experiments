@@ -1,12 +1,10 @@
 package be.unamur.snail.stages;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.database.DatabasePreparer;
 import be.unamur.snail.database.DatabasePreparerFactory;
-import be.unamur.snail.database.MongoServiceManager;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
-import be.unamur.snail.exceptions.ServerNotStartedException;
 import be.unamur.snail.exceptions.UnsupportedDatabaseMode;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;

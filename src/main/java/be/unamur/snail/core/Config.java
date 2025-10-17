@@ -1,4 +1,4 @@
-package be.unamur.snail.config;
+package be.unamur.snail.core;
 
 import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import com.fasterxml.jackson.annotation.JsonProperty;

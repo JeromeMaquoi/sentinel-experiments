@@ -1,8 +1,8 @@
 package be.unamur.snail;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
-import be.unamur.snail.core.Module;
+import be.unamur.snail.modules.Module;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
 import org.slf4j.Logger;

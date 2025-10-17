@@ -1,5 +1,6 @@
 package be.unamur.snail.config;
 
+import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

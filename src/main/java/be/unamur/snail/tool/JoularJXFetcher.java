@@ -2,6 +2,7 @@ package be.unamur.snail.tool;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.utils.HttpReleaseDownloader;
 import be.unamur.snail.utils.ReleaseDownloader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,10 @@ import java.nio.file.Path;
 public class JoularJXFetcher implements ToolReleaseFetcher {
     private static final Logger log = LoggerFactory.getLogger(JoularJXFetcher.class);
     private final ReleaseDownloader downloader;
+
+    public JoularJXFetcher() {
+        this.downloader = new HttpReleaseDownloader();
+    }
 
     public JoularJXFetcher(ReleaseDownloader downloader) {
         this.downloader = downloader;

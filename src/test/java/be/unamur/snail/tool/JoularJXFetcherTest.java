@@ -6,8 +6,6 @@ import be.unamur.snail.utils.HttpReleaseDownloader;
 import be.unamur.snail.utils.ReleaseDownloader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.net.URI;

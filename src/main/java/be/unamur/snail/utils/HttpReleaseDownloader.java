@@ -11,14 +11,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 public class HttpReleaseDownloader implements ReleaseDownloader {
     private static final Logger log = LoggerFactory.getLogger(HttpReleaseDownloader.class);
     private final HttpClient client;
 
     public HttpReleaseDownloader() {
-        this.client = HttpClient.newHttpClient();
+        this.client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build();
     }
 
     @Override
@@ -33,6 +34,7 @@ public class HttpReleaseDownloader implements ReleaseDownloader {
         log.info("Downloading {} → {}", uri, outputPath);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
+                .header("Accept", "application/octet-stream")
                 .GET()
                 .build();
         HttpResponse<Path> response = client.send(

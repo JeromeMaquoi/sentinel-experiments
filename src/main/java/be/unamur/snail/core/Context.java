@@ -6,6 +6,8 @@ public class Context {
     private List<String> classPath;
     private String repoPath;
     private String commit;
+    private String energyToolPath;
+    private String energyToolVersion;
 
     public List<String> getClassPath() {
         return classPath;
@@ -29,5 +31,21 @@ public class Context {
 
     public void setCommit(String commit) {
         this.commit = commit;
+    }
+
+    public String getEnergyToolPath() {
+        return energyToolPath;
+    }
+
+    public void setEnergyToolPath(String energyToolPath) {
+        this.energyToolPath = energyToolPath;
+    }
+
+    public String getEnergyToolVersion() {
+        return energyToolVersion;
+    }
+
+    public void setEnergyToolVersion(String energyToolVersion) {
+        this.energyToolVersion = energyToolVersion;
     }
 }

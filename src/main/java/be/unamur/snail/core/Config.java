@@ -177,8 +177,6 @@ public class Config {
         private boolean ignoreFailures;
         @JsonProperty("ignore-spoon-failures")
         private boolean ignoreSpoonFailures;
-        @JsonProperty("measurement-tool")
-        private String measurementTool;
         @JsonProperty("num-test-runs")
         private int numTestRuns;
         @JsonProperty("energy-measurements")
@@ -194,10 +192,6 @@ public class Config {
 
         public boolean getIgnoreSpoonFailures() {
             return ignoreSpoonFailures;
-        }
-
-        public String getMeasurementTool() {
-            return measurementTool;
         }
 
         public int getNumTestRuns() {

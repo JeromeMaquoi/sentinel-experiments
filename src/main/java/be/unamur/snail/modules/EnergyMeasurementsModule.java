@@ -20,7 +20,7 @@ public class EnergyMeasurementsModule implements Module {
         EnergyMeasurementToolFactory factory = new EnergyMeasurementToolFactory();
 
         Config config = Config.getInstance();
-        String toolName = config.getExecutionPlan().getMeasurementTool();
+        String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
         int numTestRuns = config.getExecutionPlan().getNumTestRuns();
         EnergyMeasurementTool tool = factory.create(toolName);
 

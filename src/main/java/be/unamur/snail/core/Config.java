@@ -181,6 +181,8 @@ public class Config {
         private String measurementTool;
         @JsonProperty("num-test-runs")
         private int numTestRuns;
+        @JsonProperty("energy-measurements")
+        private EnergyMeasurementConfig energyMeasurements;
 
         public String getTestCommand() {
             return testCommand;
@@ -200,6 +202,43 @@ public class Config {
 
         public int getNumTestRuns() {
             return numTestRuns;
+        }
+
+        public EnergyMeasurementConfig getEnergyMeasurements() {
+            return energyMeasurements;
+        }
+    }
+
+    public static class EnergyMeasurementConfig {
+        private String tool;
+        @JsonProperty("tool-version")
+        private String toolVersion;
+        @JsonProperty("release-url")
+        private String releaseUrl;
+        @JsonProperty("tool-path")
+        private String toolPath;
+
+        public String getTool() {
+            return tool;
+        }
+        public String getToolVersion() {
+            return toolVersion;
+        }
+        public String getReleaseUrl() {
+            return releaseUrl;
+        }
+        public String getToolPath() {
+            return toolPath;
+        }
+
+        @Override
+        public String toString() {
+            return "EnergyMeasurementConfig{" +
+                    "tool='" + tool + '\'' +
+                    ", toolVersion='" + toolVersion + '\'' +
+                    ", releaseUrl='" + releaseUrl + '\'' +
+                    ", toolPath='" + toolPath + '\'' +
+                    '}';
         }
     }
 

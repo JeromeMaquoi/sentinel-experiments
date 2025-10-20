@@ -13,8 +13,12 @@ execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties"
   ignore-failures: false
   ignore-spoon-failures: true
-  measurement-tool: "joularjx"
   num-test-runs: 30
+  energy-measurements:
+    tool: "joularjx"
+    tool-version: "3.0.1"
+    release-url: "https://github.com/joular/joularjx"
+    tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
 backend:
   mode: dev
   server-host: localhost

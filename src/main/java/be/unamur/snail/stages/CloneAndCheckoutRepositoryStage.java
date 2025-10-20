@@ -1,8 +1,7 @@
 package be.unamur.snail.stages;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
-import be.unamur.snail.core.Stage;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;

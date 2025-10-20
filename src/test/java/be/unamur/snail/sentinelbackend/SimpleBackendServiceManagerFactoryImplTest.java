@@ -1,6 +1,6 @@
 package be.unamur.snail.sentinelbackend;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.UnsupportedDatabaseMode;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

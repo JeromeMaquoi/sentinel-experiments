@@ -1,4 +1,4 @@
-package be.unamur.snail.config;
+package be.unamur.snail.core;
 
 import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -177,6 +177,10 @@ public class Config {
         private boolean ignoreFailures;
         @JsonProperty("ignore-spoon-failures")
         private boolean ignoreSpoonFailures;
+        @JsonProperty("measurement-tool")
+        private String measurementTool;
+        @JsonProperty("num-test-runs")
+        private int numTestRuns;
 
         public String getTestCommand() {
             return testCommand;
@@ -188,6 +192,14 @@ public class Config {
 
         public boolean getIgnoreSpoonFailures() {
             return ignoreSpoonFailures;
+        }
+
+        public String getMeasurementTool() {
+            return measurementTool;
+        }
+
+        public int getNumTestRuns() {
+            return numTestRuns;
         }
     }
 

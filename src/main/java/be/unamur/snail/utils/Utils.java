@@ -1,6 +1,6 @@
 package be.unamur.snail.utils;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.CommandTimedOutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

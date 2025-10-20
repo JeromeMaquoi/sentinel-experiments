@@ -1,6 +1,6 @@
 package be.unamur.snail.sentinelbackend;
 
-import be.unamur.snail.config.Config;
+import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.PortAlreadyInUseException;
 import be.unamur.snail.utils.CommandRunner;

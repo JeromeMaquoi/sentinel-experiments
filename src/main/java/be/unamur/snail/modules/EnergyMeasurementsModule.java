@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EnergyMeasurementsModule implements Module {
-    private final static Logger log = LoggerFactory.getLogger(EnergyMeasurementsModule.class);
+    private static final Logger log = LoggerFactory.getLogger(EnergyMeasurementsModule.class);
     private final List<Stage> stages;
 
     public EnergyMeasurementsModule() {
@@ -26,7 +26,7 @@ public class EnergyMeasurementsModule implements Module {
 
         List<Stage> allStages = new ArrayList<>();
 
-        // Clone and checkoud analyzed project
+        // Clone and checkout analyzed project
         allStages.add(new CloneAndCheckoutRepositoryStage());
         allStages.addAll(tool.createSetupStages());
 

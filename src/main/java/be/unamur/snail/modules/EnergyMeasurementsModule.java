@@ -17,17 +17,18 @@ public class EnergyMeasurementsModule implements Module {
     private final List<Stage> stages;
 
     public EnergyMeasurementsModule() {
-        this(buildStagesFromConfig());
+        this(buildStagesFromConfig(new EnergyMeasurementToolFactory(), Config.getInstance()));
     }
 
-    public EnergyMeasurementsModule(List<Stage> stages) {
+    public EnergyMeasurementsModule(EnergyMeasurementToolFactory factory, Config config) {
+        this(buildStagesFromConfig(factory, config));
+    }
+
+    private EnergyMeasurementsModule(List<Stage> stages) {
         this.stages = stages;
     }
 
-    private static List<Stage> buildStagesFromConfig() {
-        EnergyMeasurementToolFactory factory = new EnergyMeasurementToolFactory();
-
-        Config config = Config.getInstance();
+    public static List<Stage> buildStagesFromConfig(EnergyMeasurementToolFactory factory, Config config) {
         String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
         int numTestRuns = config.getExecutionPlan().getNumTestRuns();
         EnergyMeasurementTool tool = factory.create(toolName);

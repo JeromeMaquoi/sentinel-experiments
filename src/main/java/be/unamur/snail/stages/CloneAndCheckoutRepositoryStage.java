@@ -9,6 +9,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+/**
+ * Stage responsible for cloning the analyzed project and checkout to the
+ * desired commit
+ */
 public class CloneAndCheckoutRepositoryStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(CloneAndCheckoutRepositoryStage.class);
 

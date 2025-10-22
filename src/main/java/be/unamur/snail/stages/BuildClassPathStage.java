@@ -14,6 +14,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
 
+/**
+ * Stage responsible for the creation of the class path of the analyzed
+ * project, so that it can be used by Spoon in other stages
+ */
 public class BuildClassPathStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(BuildClassPathStage.class);
 

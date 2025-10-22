@@ -15,6 +15,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+/**
+ * Stage responsible for the copy of the analyzed project's files into a new
+ * directory
+ */
 public class CopyDirectoryStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(CopyDirectoryStage.class);
 

@@ -13,6 +13,11 @@ import spoon.SpoonException;
 
 import java.util.List;
 
+
+/**
+ * Stage responsible for the instrumentation of a project to get data
+ * about the constructors of this project
+ */
 public class InstrumentConstructorsStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
     @Override

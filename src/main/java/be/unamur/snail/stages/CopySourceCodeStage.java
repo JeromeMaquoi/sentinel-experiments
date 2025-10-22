@@ -12,6 +12,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+/**
+ * Stage responsible for the copy and paste of source code to the
+ * analyzed project
+ */
 public class CopySourceCodeStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(CopySourceCodeStage.class);
 

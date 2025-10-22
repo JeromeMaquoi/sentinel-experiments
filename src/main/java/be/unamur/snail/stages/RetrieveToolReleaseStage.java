@@ -7,6 +7,10 @@ import be.unamur.snail.tool.ToolReleaseFetcherFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Stage responsible for the retrieve of a release of the tool used
+ * for measurements
+ */
 public class RetrieveToolReleaseStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(RetrieveToolReleaseStage.class);
     private final ToolReleaseFetcherFactory fetcherFactory;

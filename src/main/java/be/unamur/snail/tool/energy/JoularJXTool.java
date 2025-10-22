@@ -1,5 +1,6 @@
 package be.unamur.snail.tool.energy;
 
+import be.unamur.snail.stages.RetrieveToolReleaseStage;
 import be.unamur.snail.stages.Stage;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
 
     @Override
     public List<Stage> createSetupStages() {
-        return List.of();
+        return List.of(new RetrieveToolReleaseStage());
     }
 
     @Override

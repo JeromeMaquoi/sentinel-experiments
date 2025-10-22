@@ -1,0 +1,36 @@
+package be.unamur.snail.stages;
+
+import be.unamur.snail.core.Config;
+import be.unamur.snail.core.Context;
+import be.unamur.snail.tool.ToolReleaseFetcher;
+import be.unamur.snail.tool.ToolReleaseFetcherFactory;
+import be.unamur.snail.tool.ToolReleaseResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Stage responsible for the retrieve of a release of the tool used
+ * for measurements
+ */
+public class RetrieveToolReleaseStage implements Stage {
+    private static final Logger log = LoggerFactory.getLogger(RetrieveToolReleaseStage.class);
+    private final ToolReleaseFetcherFactory fetcherFactory;
+
+    public RetrieveToolReleaseStage() {
+        this.fetcherFactory = new ToolReleaseFetcherFactory();
+    }
+
+    @Override
+    public void execute(Context context) throws Exception {
+        Config config = Config.getInstance();
+        String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
+        log.info("Retrieving release for tool {}", toolName);
+
+        ToolReleaseFetcher fetcher = fetcherFactory.createFectcher(toolName);
+        ToolReleaseResult result = fetcher.fetchRelease();
+        context.setEnergyToolPath(result.path());
+        context.setEnergyToolVersion(result.version());
+
+        log.info("Retrieved release for tool {} at {}", toolName, result.path());
+    }
+}

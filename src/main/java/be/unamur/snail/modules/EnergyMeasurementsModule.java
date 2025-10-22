@@ -17,18 +17,21 @@ public class EnergyMeasurementsModule implements Module {
     private final List<Stage> stages;
 
     public EnergyMeasurementsModule() {
-        EnergyMeasurementToolFactory factory = new EnergyMeasurementToolFactory();
+        this(buildStagesFromConfig(new EnergyMeasurementToolFactory(), Config.getInstance()));
+    }
 
-        Config config = Config.getInstance();
-        String toolName = config.getExecutionPlan().getMeasurementTool();
+    private EnergyMeasurementsModule(List<Stage> stages) {
+        this.stages = stages;
+    }
+
+    public static List<Stage> buildStagesFromConfig(EnergyMeasurementToolFactory factory, Config config) {
+        String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
         int numTestRuns = config.getExecutionPlan().getNumTestRuns();
         EnergyMeasurementTool tool = factory.create(toolName);
 
-        List<Stage> allStages = new ArrayList<>();
-
         // Clone and checkout analyzed project
+        List<Stage> allStages = new ArrayList<>(tool.createSetupStages());
         allStages.add(new CloneAndCheckoutRepositoryStage());
-        allStages.addAll(tool.createSetupStages());
 
         // Measurement stages repeated
         for (int i = 0; i < numTestRuns; i++) {
@@ -38,7 +41,7 @@ public class EnergyMeasurementsModule implements Module {
         // Post-processing stages to run after the measurements
         allStages.addAll(tool.createPostProcessingStages());
 
-        this.stages = allStages;
+        return allStages;
     }
 
     @Override

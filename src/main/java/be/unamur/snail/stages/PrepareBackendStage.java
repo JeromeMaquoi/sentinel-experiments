@@ -12,6 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * Stage responsible for the preparation of the backend, by starting the
+ * database and the relevant APIs to access it
+ */
 public class PrepareBackendStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(PrepareBackendStage.class);
 

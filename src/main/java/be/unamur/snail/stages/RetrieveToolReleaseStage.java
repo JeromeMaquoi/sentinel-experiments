@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.tool.ToolReleaseFetcher;
 import be.unamur.snail.tool.ToolReleaseFetcherFactory;
+import be.unamur.snail.tool.ToolReleaseResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +27,10 @@ public class RetrieveToolReleaseStage implements Stage {
         log.info("Retrieving release for tool {}", toolName);
 
         ToolReleaseFetcher fetcher = fetcherFactory.createFectcher(toolName);
-        String toolPath = fetcher.fetchRelease(context);
+        ToolReleaseResult result = fetcher.fetchRelease();
+        context.setEnergyToolPath(result.path());
+        context.setEnergyToolVersion(result.version());
 
-        log.info("Retrieved release for tool {}", toolPath);
+        log.info("Retrieved release for tool {} at {}", toolName, result.path());
     }
 }

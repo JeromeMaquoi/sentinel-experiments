@@ -45,15 +45,16 @@ class JoularJXFetcherTest {
     void fetchReseaseShouldNotDownloadJarFileIfAlreadyPresentTest() throws Exception {
         Files.createFile(tempDir.resolve("joularjx-3.0.1.jar"));
 
-        fetcher.fetchRelease(context);
+        ToolReleaseResult result = fetcher.fetchRelease();
 
         verifyNoInteractions(downloader);
-        assertEquals(tempDir.toString(), context.getEnergyToolPath());
+        assertEquals(tempDir.toString(), result.path());
+        assertEquals("3.0.1", result.version());
     }
 
     @Test
     void fetchReleaseShouldDownloadJarFileAndConfigTest() throws Exception {
-        fetcher.fetchRelease(context);
+        ToolReleaseResult result = fetcher.fetchRelease();
 
         verify(downloader).downloadFile(
                 URI.create("https://github.com/joular/joularjx/releases/download/3.0.1/joularjx-3.0.1.jar"),
@@ -65,15 +66,15 @@ class JoularJXFetcherTest {
                 tempDir
         );
 
-        assertEquals(tempDir.toString(), context.getEnergyToolPath());
-        assertEquals("3.0.1", context.getEnergyToolVersion());
+        assertEquals(tempDir.toString(), result.path());
+        assertEquals("3.0.1", result.version());
     }
 
     @Test
     void fetchShouldThrowExceptionIfDownloadFailsTest() throws IOException, InterruptedException {
         doThrow(new RuntimeException("Network error")).when(downloader).downloadFile(any(URI.class), any(Path.class));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> fetcher.fetchRelease(context));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> fetcher.fetchRelease());
         assertTrue(exception.getMessage().contains("Network error"));
     }
 }

@@ -9,5 +9,5 @@ public interface ToolReleaseFetcher {
      * @return the local installation directory of the tool
      * @throws Exception
      */
-    String fetchRelease(Context context) throws Exception;
+    ToolReleaseResult fetchRelease() throws Exception;
 }

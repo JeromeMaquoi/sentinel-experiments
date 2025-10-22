@@ -1,7 +1,6 @@
 package be.unamur.snail.tool;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.core.Context;
 import be.unamur.snail.utils.HttpReleaseDownloader;
 import be.unamur.snail.utils.ReleaseDownloader;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ public class JoularJXFetcher implements ToolReleaseFetcher {
     }
 
     @Override
-    public String fetchRelease(Context context) throws Exception {
+    public ToolReleaseResult fetchRelease() throws Exception {
         Config config = Config.getInstance();
 
         String version = config.getExecutionPlan().getEnergyMeasurements().getToolVersion();
@@ -39,8 +38,7 @@ public class JoularJXFetcher implements ToolReleaseFetcher {
 
         if (Files.exists(toolPath.resolve("joularjx-" + version + ".jar"))) {
             log.info("JoularJX v{} already downloaded at {}", version, toolPath);
-            context.setEnergyToolPath(targetDir);
-            return targetDir;
+            return new ToolReleaseResult(targetDir, version);
         }
 
         log.info("Fetching JoularJX v{} from GitHub release...", version);
@@ -53,9 +51,7 @@ public class JoularJXFetcher implements ToolReleaseFetcher {
         downloader.downloadFile(configUri, toolPath);
 
         log.info("Downloaded JoularJX release to {}", toolPath);
-        context.setEnergyToolPath(targetDir);
-        context.setEnergyToolVersion(version);
 
-        return targetDir;
+        return new ToolReleaseResult(targetDir, version);
     }
 }

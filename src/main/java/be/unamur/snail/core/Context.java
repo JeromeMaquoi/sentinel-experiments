@@ -1,5 +1,6 @@
 package be.unamur.snail.core;
 
+import java.io.File;
 import java.util.List;
 
 public class Context {
@@ -8,6 +9,7 @@ public class Context {
     private String commit;
     private String energyToolPath;
     private String energyToolVersion;
+    private File initScript;
 
     public List<String> getClassPath() {
         return classPath;
@@ -47,5 +49,13 @@ public class Context {
 
     public void setEnergyToolVersion(String energyToolVersion) {
         this.energyToolVersion = energyToolVersion;
+    }
+
+    public File getInitScript() {
+        return initScript;
+    }
+
+    public void setInitScript(File initScript) {
+        this.initScript = initScript;
     }
 }

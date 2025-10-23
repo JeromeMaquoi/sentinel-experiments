@@ -3,6 +3,7 @@ package be.unamur.snail.config;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.ConfigNotLoadedException;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -42,8 +43,8 @@ class ConfigTest {
         assertThrows(ConfigNotLoadedException.class, Config::getInstance);
     }
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setup() {
         Config.reset();
     }
 }

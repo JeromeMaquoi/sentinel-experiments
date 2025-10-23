@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
+import be.unamur.snail.utils.MavenPomModifier;
 import be.unamur.snail.utils.ProjectTypeDetector;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,17 +81,42 @@ class UpdateBuildConfigurationStageTest {
     }
 
     @Test
-    void executeShouldGenerateMavenInitScriptWhenProjectIsMavenTest() throws Exception {
-        File fakeRepo = new File("fakeRepo").getCanonicalFile();
-        File fakeInit = new File("pom.xml");
-        context.setRepoPath(fakeRepo.getAbsolutePath());
-        when(projectTypeDetector.isGradleProject(eq(fakeRepo))).thenReturn(false);
-        when(projectTypeDetector.isMavenProject(eq(fakeRepo))).thenReturn(true);
-        when(initScriptGenerator.createMavenArgLineFile(anyString())).thenReturn(fakeInit);
+    void executeShouldInjectJavaAgentWhenProjectIsMavenTest() throws Exception {
+        Path repoPath = Files.createTempDirectory("fakeRepo");
+        Path pomPath = repoPath.resolve("pom.xml");
+        Files.writeString(pomPath, """
+        <project>
+          <build>
+            <plugins>
+              <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration></configuration>
+              </plugin>
+            </plugins>
+          </build>
+        </project>
+    """);
+
+        when(projectTypeDetector.isGradleProject(eq(repoPath.toFile()))).thenReturn(false);
+        when(projectTypeDetector.isMavenProject(eq(repoPath.toFile()))).thenReturn(true);
+
+        Config.EnergyMeasurementConfig energyConfig = mock(Config.EnergyMeasurementConfig.class);
+        Config.ExecutionPlanConfig execConfig = mock(Config.ExecutionPlanConfig.class);
+        when(config.getExecutionPlan()).thenReturn(execConfig);
+        when(execConfig.getEnergyMeasurements()).thenReturn(energyConfig);
+        when(energyConfig.getToolPath()).thenReturn("/path/to/agent.jar");
+        context.setRepoPath(repoPath.toString());
 
         stage.execute(context);
 
-        assertEquals(fakeInit, context.getInitScript());
-        verify(initScriptGenerator).createMavenArgLineFile("/path/to/joular");
+        String modifiedPom = Files.readString(pomPath);
+        assertTrue(modifiedPom.contains("-javaagent:/path/to/agent.jar"),
+                "pom.xml should contain the javaagent argument");
+
+        Path backupPom = repoPath.resolve("pom.xml.bak");
+        assertTrue(Files.exists(backupPom), "Backup pom.xml should be created");
+
+        assertEquals(backupPom.toFile(), context.getBackupPom(),
+                "Context should reference the backup pom file");
     }
 }

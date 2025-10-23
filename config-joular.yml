@@ -3,9 +3,11 @@ project:
   show-project-logs: true
   package-prefix: "org.springframework"
 repo:
-  url: "https://github.com/spring-projects/spring-boot"
-  commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
-  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot-clone"
+#  url: "https://github.com/spring-projects/spring-boot"
+#  commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
+  url: "https://github.com/apache/commons-configuration"
+  commit: "59e5152722198526c6ffe5361de7d1a6a87275c7"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/commons-configuration-clone"
   overwrite: false
 log:
   level: INFO

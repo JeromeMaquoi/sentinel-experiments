@@ -10,6 +10,7 @@ public class Context {
     private String energyToolPath;
     private String energyToolVersion;
     private File initScript;
+    private File backupPom;
 
     public List<String> getClassPath() {
         return classPath;
@@ -57,5 +58,13 @@ public class Context {
 
     public void setInitScript(File initScript) {
         this.initScript = initScript;
+    }
+
+    public File getBackupPom() {
+        return backupPom;
+    }
+
+    public void setBackupPom(File backupPom) {
+        this.backupPom = backupPom;
     }
 }

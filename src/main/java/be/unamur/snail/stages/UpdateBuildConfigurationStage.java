@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
+import be.unamur.snail.utils.MavenPomModifier;
 import be.unamur.snail.utils.ProjectTypeDetector;
 import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
@@ -48,13 +49,15 @@ public class UpdateBuildConfigurationStage implements Stage {
         File initScript;
         if (projectTypeDetector.isGradleProject(repoPath)) {
             initScript = initScriptGenerator.generateGradleJavaAgentAndIterationIdInitScript(energyToolPath);
+            context.setInitScript(initScript);
             log.info("Gradle init script created at {}", initScript.getAbsolutePath());
         } else if (projectTypeDetector.isMavenProject(repoPath)) {
-            initScript = initScriptGenerator.createMavenArgLineFile(energyToolPath);
-            log.info("Maven init script created at {}", initScript.getAbsolutePath());
+            File pomFile = new File(repoPath, "pom.xml");
+            File backupPom = MavenPomModifier.injectJavaAgent(pomFile, energyToolPath);
+            context.setBackupPom(backupPom);
+            log.info("Maven pom.xml updated with javaagent: {}", pomFile.getAbsolutePath());
         } else {
             throw new UnknownProjectBuildException();
         }
-        context.setInitScript(initScript);
     }
 }

@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
+import be.unamur.snail.utils.ProjectTypeDetector;
 import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.slf4j.Logger;
@@ -20,13 +21,17 @@ public class UpdateBuildConfigurationStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(UpdateBuildConfigurationStage.class);
 
     private final InitScriptGenerator initScriptGenerator;
+    private final Config config;
+    private final ProjectTypeDetector projectTypeDetector;
 
     public UpdateBuildConfigurationStage() {
-        this(new InitScriptGenerator());
+        this(new InitScriptGenerator(), Config.getInstance(), new ProjectTypeDetector());
     }
 
-    public UpdateBuildConfigurationStage(InitScriptGenerator initScriptGenerator) {
+    public UpdateBuildConfigurationStage(InitScriptGenerator initScriptGenerator, Config config, ProjectTypeDetector projectTypeDetector) {
         this.initScriptGenerator = initScriptGenerator;
+        this.config = config;
+        this.projectTypeDetector = projectTypeDetector;
     }
 
     @Override
@@ -36,17 +41,16 @@ public class UpdateBuildConfigurationStage implements Stage {
         }
         File repoPath = new File(context.getRepoPath());
 
-        Config config = Config.getInstance();
         if (config.getExecutionPlan().getEnergyMeasurements().getToolPath() == null) {
             throw new MissingConfigKeyException("toolPath");
         }
         String energyToolPath = config.getExecutionPlan().getEnergyMeasurements().getToolPath();
         File initScript;
-        if (Utils.isGradleProject(repoPath)) {
+        if (projectTypeDetector.isGradleProject(repoPath)) {
             initScript = initScriptGenerator.generateGradleJavaAgentAndIterationIdInitScript(energyToolPath);
             log.info("Gradle init script created at {}", initScript.getAbsolutePath());
-        } else if (Utils.isMavenProject(repoPath)) {
-            initScript = initScriptGenerator.createMavenArgLineFile(repoPath);
+        } else if (projectTypeDetector.isMavenProject(repoPath)) {
+            initScript = initScriptGenerator.createMavenArgLineFile(energyToolPath);
             log.info("Maven init script created at {}", initScript.getAbsolutePath());
         } else {
             throw new UnknownProjectBuildException();

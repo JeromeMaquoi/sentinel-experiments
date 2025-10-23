@@ -88,7 +88,7 @@ public class InitScriptGenerator {
         return initScript;
     }
 
-    public File createMavenArgLineFile(File projectRoot) {
+    public File createMavenArgLineFile(String energyToolPath) {
         // TODO
         return null;
     }

@@ -2,6 +2,7 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
 import be.unamur.snail.utils.Utils;
@@ -30,12 +31,15 @@ public class UpdateBuildConfigurationStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
-        File repoPath = new File(context.getRepoPath());
-        if (!repoPath.exists() || !repoPath.isDirectory()) {
+        if (context.getRepoPath() == null) {
             throw new MissingContextKeyException("repoPath");
         }
+        File repoPath = new File(context.getRepoPath());
 
         Config config = Config.getInstance();
+        if (config.getExecutionPlan().getEnergyMeasurements().getToolPath() == null) {
+            throw new MissingConfigKeyException("toolPath");
+        }
         String energyToolPath = config.getExecutionPlan().getEnergyMeasurements().getToolPath();
         File initScript;
         if (Utils.isGradleProject(repoPath)) {

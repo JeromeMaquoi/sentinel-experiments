@@ -41,6 +41,7 @@ public class UpdateBuildConfigurationStage implements Stage {
             throw new MissingContextKeyException("repoPath");
         }
         File repoPath = new File(context.getRepoPath());
+        log.info("Repo path: {}", repoPath.getAbsolutePath());
 
         if (config.getExecutionPlan().getEnergyMeasurements().getToolPath() == null) {
             throw new MissingConfigKeyException("toolPath");

@@ -40,6 +40,7 @@ class ProjectTypeDetectorTest {
         assertTrue(buildGradle.createNewFile());
 
         assertTrue(detector.isGradleProject(tempFile));
+        assertFalse(detector.isMavenProject(tempFile));
     }
 
     @Test
@@ -48,5 +49,6 @@ class ProjectTypeDetectorTest {
         assertTrue(buildMaven.createNewFile());
 
         assertTrue(detector.isMavenProject(tempFile));
+        assertFalse(detector.isGradleProject(tempFile));
     }
 }

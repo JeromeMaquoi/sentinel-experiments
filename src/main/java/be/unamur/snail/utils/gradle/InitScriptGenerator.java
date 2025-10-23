@@ -63,4 +63,33 @@ public class InitScriptGenerator {
         Files.writeString(tempFile.toPath(), script);
         return tempFile;
     }
+
+    /**
+     * Create a temp file with init script in it to configure the
+     * project to use JoularJX as java agent during the test phase
+     * as well as using system property ITERATION_ID for the
+     * energy measurements runs
+     * @param energyToolPath the path of the energy tool used
+     * @return the new init script file created
+     * @throws IOException if there is a problem during the creation
+     * of the file
+     */
+    public File generateGradleJavaAgentAndIterationIdInitScript(String energyToolPath) throws IOException {
+        File initScript = File.createTempFile("sentinel-inject-agent", ".gradle");
+        String content = String.format("""
+                allprojects {
+                    tasks.withType(Test).configureEach { test ->
+                        test.systemProperty 'ITERATION_ID', project.findProperty('ITERATION_ID')
+                        test.jvmArgs += ["-javaagent:%s"]
+                    }
+                }
+                """, energyToolPath);
+        Files.writeString(initScript.toPath(), content);
+        return initScript;
+    }
+
+    public File createMavenArgLineFile(File projectRoot) {
+        // TODO
+        return null;
+    }
 }

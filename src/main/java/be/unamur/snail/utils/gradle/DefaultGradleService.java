@@ -18,8 +18,8 @@ public class DefaultGradleService implements GradleService {
 
         int exit = process.waitFor();
         if (exit != 0) {
-            log.error("Gradle classpath generation failed");
-            throw new ModuleException("Gradle classpath generation failed");
+            log.error("Init script generation failed");
+            throw new ModuleException("Init script generation failed");
         }
     }
 }

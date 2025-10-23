@@ -19,17 +19,17 @@ execution-plan:
     tool-version: "3.0.1"
     release-url: "https://github.com/joular/joularjx"
     tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
-backend:
-  mode: dev
-  server-host: localhost
-  server-port: 8080
-  server-timeout-seconds: 120
-  server-log-path: "/tmp/sentinel-backend.log"
-  server-ready-path: "/tmp/backend-ready"
-  endpoint: "/api/v2/constructor-contexts"
-  # dev-specific
-  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
-  nb-check-server-start: 20
-  # prod-specific
-  ssh-user: "jmaquoi"
-  ssh-host: "ava.info.unamur.be"
+#backend:
+#  mode: dev
+#  server-host: localhost
+#  server-port: 8080
+#  server-timeout-seconds: 120
+#  server-log-path: "/tmp/sentinel-backend.log"
+#  server-ready-path: "/tmp/backend-ready"
+#  endpoint: "/api/v2/constructor-contexts"
+#  # dev-specific
+#  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+#  nb-check-server-start: 20
+#  # prod-specific
+#  ssh-user: "jmaquoi"
+#  ssh-host: "ava.info.unamur.be"

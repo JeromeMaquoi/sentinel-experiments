@@ -7,7 +7,6 @@ import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
 import be.unamur.snail.utils.MavenPomModifier;
 import be.unamur.snail.utils.ProjectTypeDetector;
-import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

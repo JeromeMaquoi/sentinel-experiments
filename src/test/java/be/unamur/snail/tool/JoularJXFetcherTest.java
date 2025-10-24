@@ -42,13 +42,14 @@ class JoularJXFetcherTest {
     }
 
     @Test
-    void fetchReseaseShouldNotDownloadJarFileIfAlreadyPresentTest() throws Exception {
+    void fetchReleaseShouldNotDownloadJarFileIfAlreadyPresentTest() throws Exception {
         Files.createFile(tempDir.resolve("joularjx-3.0.1.jar"));
 
         ToolReleaseResult result = fetcher.fetchRelease();
 
         verifyNoInteractions(downloader);
-        assertEquals(tempDir.toString(), result.path());
+        String expectedToolPath = tempDir.toString() + "/joularjx-3.0.1.jar";
+        assertEquals(expectedToolPath, result.path());
         assertEquals("3.0.1", result.version());
     }
 
@@ -65,8 +66,8 @@ class JoularJXFetcherTest {
                 URI.create("https://github.com/joular/joularjx/releases/download/3.0.1/config.properties"),
                 tempDir
         );
-
-        assertEquals(tempDir.toString(), result.path());
+        String expectedToolPath = tempDir.toString() + "/joularjx-3.0.1.jar";
+        assertEquals(expectedToolPath, result.path());
         assertEquals("3.0.1", result.version());
     }
 

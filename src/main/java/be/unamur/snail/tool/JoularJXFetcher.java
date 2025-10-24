@@ -38,7 +38,8 @@ public class JoularJXFetcher implements ToolReleaseFetcher {
 
         if (Files.exists(toolPath.resolve("joularjx-" + version + ".jar"))) {
             log.info("JoularJX v{} already downloaded at {}", version, toolPath);
-            return new ToolReleaseResult(targetDir, version);
+            String toolStringPath = toolPath.resolve("joularjx-" + version + ".jar").toString();
+            return new ToolReleaseResult(toolStringPath, version);
         }
 
         log.info("Fetching JoularJX v{} from GitHub release...", version);
@@ -50,8 +51,9 @@ public class JoularJXFetcher implements ToolReleaseFetcher {
         downloader.downloadFile(jarUri, toolPath);
         downloader.downloadFile(configUri, toolPath);
 
-        log.info("Downloaded JoularJX release to {}", toolPath);
+        String toolStringPath = toolPath.resolve("joularjx-" + version + ".jar").toString();
+        log.info("Downloaded JoularJX release to {}", toolStringPath);
 
-        return new ToolReleaseResult(targetDir, version);
+        return new ToolReleaseResult(toolStringPath, version);
     }
 }

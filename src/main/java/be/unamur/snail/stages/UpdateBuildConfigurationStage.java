@@ -53,9 +53,13 @@ public class UpdateBuildConfigurationStage implements Stage {
             context.setInitScript(initScript);
             log.info("Gradle init script created at {}", initScript.getAbsolutePath());
         } else if (projectTypeDetector.isMavenProject(repoPath)) {
-            String mavenAgentArg = "-DargLine=-javaagent:" + energyToolPath;
-            context.setMavenAgentArg(mavenAgentArg);
-            log.info("Maven agent arg created: {}", mavenAgentArg);
+//            String mavenAgentArg = "-DargLine=-javaagent:" + energyToolPath;
+//            context.setMavenAgentArg(mavenAgentArg);
+//            log.info("Maven agent arg created: {}", mavenAgentArg);
+            File pomFile = new File(repoPath, "pom.xml");
+            File backupPom = MavenPomModifier.injectJavaAgent(pomFile, energyToolPath);
+            context.setBackupPom(backupPom);
+            log.info("Maven pom.xml updated with javaagent: {}", pomFile.getAbsolutePath());
         } else {
             throw new UnknownProjectBuildException();
         }

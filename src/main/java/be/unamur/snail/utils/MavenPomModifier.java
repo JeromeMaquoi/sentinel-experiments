@@ -16,6 +16,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class for modifying Maven pom.xml files to inject a javaagent in the
@@ -39,22 +41,23 @@ public class MavenPomModifier {
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(pomFile);
 
-        Element surefirePlugin = findSurefirePlugin(doc);
-        if (surefirePlugin == null) {
+        List<Element> surefirePlugins = findSurefirePlugins(doc);
+        if (surefirePlugins.isEmpty()) {
             throw new SurefirePluginNotFoundException();
         }
 
-        Element config = getOrCreateChild(doc, surefirePlugin, "configuration");
-        Element argLine = getOrCreateChild(doc, config, "argLine");
+        for (Element plugin : surefirePlugins) {
+            Element config = getOrCreateChild(doc, plugin, "configuration");
+            Element argLine = getOrCreateChild(doc, config, "argLine");
 
-        String newArgLine = "-javaagent:" + energyToolPath;
-        log.debug(newArgLine);
-        if (!argLine.getTextContent().contains("-javaagent")) {
-            argLine.setTextContent(argLine.getTextContent().trim() + " " + newArgLine);
-            log.debug("Added new arg line to the configuration: {}", argLine.getTextContent());
+            String newArgLine = "-javaagent:" + energyToolPath;
+            log.debug(newArgLine);
+            if (!argLine.getTextContent().contains("-javaagent")) {
+                argLine.setTextContent(argLine.getTextContent().trim() + " " + newArgLine);
+                log.debug("Added new arg line to the configuration: {}", argLine.getTextContent());
+            }
         }
 
-        // Write the modified POM
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(new DOMSource(doc), new StreamResult(pomFile));
@@ -70,16 +73,17 @@ public class MavenPomModifier {
         return child;
     }
 
-    private static Element findSurefirePlugin(Document doc) {
+    private static List<Element> findSurefirePlugins(Document doc) {
+        List<Element> pluginsFound = new ArrayList<>();
         NodeList plugins = doc.getElementsByTagName("plugin");
         for (int i = 0; i < plugins.getLength(); i++) {
             Element plugin = (Element) plugins.item(i);
             Node artifactIdNode = plugin.getElementsByTagName("artifactId").item(0);
             if (artifactIdNode != null && "maven-surefire-plugin".equals(artifactIdNode.getTextContent().trim())) {
-                return plugin;
+                pluginsFound.add(plugin);
             }
         }
-        return null;
+        return pluginsFound;
     }
 
     private static void copyFile(File from, File to) throws IOException {

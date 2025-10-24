@@ -42,6 +42,16 @@ class MavenPomModifierIT {
                  </plugin>
                </plugins>
              </build>
+             <profiles>
+                 <profile>
+                     <plugins>
+                         <plugin>
+                             <artifactId>maven-surefire-plugin</artifactId>
+                             <configuration></configuration>
+                         </plugin>
+                     </plugins>
+                 </profile>
+              </profiles>
            </project>
         """;
         Files.writeString(pomPath, originalPom);
@@ -53,6 +63,7 @@ class MavenPomModifierIT {
         assertTrue(backupContent.contains("<artifactId>maven-surefire-plugin</artifactId>"));
 
         String modifiedPom = Files.readString(pomPath);
-        assertTrue(modifiedPom.contains("-javaagent:/path/to/joular.jar"), "pom.xml should contain the javaagent argument");
+        long count = modifiedPom.lines().filter(line -> line.contains("-javaagent:/path/to/joular.jar")).count();
+        assertEquals(2, count);
     }
 }

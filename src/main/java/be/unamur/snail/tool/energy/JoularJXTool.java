@@ -15,8 +15,8 @@ public class JoularJXTool implements EnergyMeasurementTool {
     @Override
     public List<Stage> createSetupStages() {
         return List.of(
-                new RetrieveToolReleaseStage(),
-                new UpdateBuildConfigurationStage()
+                new RetrieveToolReleaseStage()//,
+                //new UpdateBuildConfigurationStage()
         );
     }
 

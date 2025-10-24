@@ -11,6 +11,7 @@ public class Context {
     private String energyToolVersion;
     private File initScript;
     private File backupPom;
+    private String mavenAgentArg;
 
     public List<String> getClassPath() {
         return classPath;
@@ -66,5 +67,13 @@ public class Context {
 
     public void setBackupPom(File backupPom) {
         this.backupPom = backupPom;
+    }
+
+    public String getMavenAgentArg() {
+        return mavenAgentArg;
+    }
+
+    public void setMavenAgentArg(String mavenAgentArg) {
+        this.mavenAgentArg = mavenAgentArg;
     }
 }

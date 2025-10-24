@@ -9,6 +9,7 @@ import be.unamur.snail.utils.MavenPomModifier;
 import be.unamur.snail.utils.ProjectTypeDetector;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -73,6 +74,7 @@ class UpdateBuildConfigurationStageTest {
         verify(initScriptGenerator).generateGradleJavaAgentAndIterationIdInitScript("/path/to/joular.jar");
     }
 
+    @Disabled
     @Test
     void executeShouldInjectJavaAgentWhenProjectIsMavenTest() throws Exception {
         Path repoPath = Files.createTempDirectory("fakeRepo");

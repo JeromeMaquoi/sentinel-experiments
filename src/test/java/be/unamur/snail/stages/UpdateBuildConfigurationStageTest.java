@@ -24,8 +24,6 @@ import static org.mockito.Mockito.*;
 class UpdateBuildConfigurationStageTest {
     private InitScriptGenerator initScriptGenerator;
     private Config config;
-    private Config.ExecutionPlanConfig executionPlanConfig;
-    private Config.EnergyMeasurementConfig energyMeasurementConfig;
     private ProjectTypeDetector projectTypeDetector;
     private Context context;
     private UpdateBuildConfigurationStage stage;
@@ -34,14 +32,9 @@ class UpdateBuildConfigurationStageTest {
     void setUp() {
         initScriptGenerator = mock(InitScriptGenerator.class);
         config = mock(Config.class);
-        executionPlanConfig = mock(Config.ExecutionPlanConfig.class);
-        energyMeasurementConfig = mock(Config.EnergyMeasurementConfig.class);
         projectTypeDetector = mock(ProjectTypeDetector.class);
         context = new Context();
-
-        when(config.getExecutionPlan()).thenReturn(executionPlanConfig);
-        when(executionPlanConfig.getEnergyMeasurements()).thenReturn(energyMeasurementConfig);
-        when(energyMeasurementConfig.getToolPath()).thenReturn("/path/to/joular");
+        context.setEnergyToolPath("/path/to/joular.jar");
 
         stage = new UpdateBuildConfigurationStage(initScriptGenerator, config, projectTypeDetector);
     }
@@ -52,10 +45,10 @@ class UpdateBuildConfigurationStageTest {
     }
 
     @Test
-    void executeShouldThrowExceptionIfToolPathIsNullTest() {
-        when(energyMeasurementConfig.getToolPath()).thenReturn(null);
+    void executeShouldThrowExceptionIfEnergyToolPathIsNullTest() {
         context.setRepoPath("/some/path");
-        assertThrows(MissingConfigKeyException.class, () -> stage.execute(context));
+        context.setEnergyToolPath(null);
+        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
     }
 
     @Test
@@ -77,7 +70,7 @@ class UpdateBuildConfigurationStageTest {
         stage.execute(context);
 
         assertEquals(fakeInit, context.getInitScript());
-        verify(initScriptGenerator).generateGradleJavaAgentAndIterationIdInitScript("/path/to/joular");
+        verify(initScriptGenerator).generateGradleJavaAgentAndIterationIdInitScript("/path/to/joular.jar");
     }
 
     @Test
@@ -99,18 +92,12 @@ class UpdateBuildConfigurationStageTest {
 
         when(projectTypeDetector.isGradleProject(eq(repoPath.toFile()))).thenReturn(false);
         when(projectTypeDetector.isMavenProject(eq(repoPath.toFile()))).thenReturn(true);
-
-        Config.EnergyMeasurementConfig energyConfig = mock(Config.EnergyMeasurementConfig.class);
-        Config.ExecutionPlanConfig execConfig = mock(Config.ExecutionPlanConfig.class);
-        when(config.getExecutionPlan()).thenReturn(execConfig);
-        when(execConfig.getEnergyMeasurements()).thenReturn(energyConfig);
-        when(energyConfig.getToolPath()).thenReturn("/path/to/agent.jar");
         context.setRepoPath(repoPath.toString());
 
         stage.execute(context);
 
         String modifiedPom = Files.readString(pomPath);
-        assertTrue(modifiedPom.contains("-javaagent:/path/to/agent.jar"),
+        assertTrue(modifiedPom.contains("-javaagent:/path/to/joular.jar"),
                 "pom.xml should contain the javaagent argument");
 
         Path backupPom = repoPath.resolve("pom.xml.bak");

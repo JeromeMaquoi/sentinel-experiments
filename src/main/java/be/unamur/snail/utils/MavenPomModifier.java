@@ -1,6 +1,8 @@
 package be.unamur.snail.utils;
 
 import be.unamur.snail.exceptions.SurefirePluginNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -20,6 +22,8 @@ import java.io.*;
  * test maven phase
  */
 public class MavenPomModifier {
+    private static final Logger log = LoggerFactory.getLogger(MavenPomModifier.class);
+
     /**
      * Injects the javaagent line into the pom.xml's surefire plugin
      * @param pomFile the pom file of the analyzed project
@@ -44,8 +48,10 @@ public class MavenPomModifier {
         Element argLine = getOrCreateChild(doc, config, "argLine");
 
         String newArgLine = "-javaagent:" + energyToolPath;
+        log.debug(newArgLine);
         if (!argLine.getTextContent().contains("-javaagent")) {
             argLine.setTextContent(argLine.getTextContent().trim() + " " + newArgLine);
+            log.debug("Added new arg line to the configuration: {}", argLine.getTextContent());
         }
 
         // Write the modified POM

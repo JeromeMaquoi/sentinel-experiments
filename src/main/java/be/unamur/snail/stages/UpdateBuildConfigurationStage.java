@@ -39,13 +39,14 @@ public class UpdateBuildConfigurationStage implements Stage {
         if (context.getRepoPath() == null) {
             throw new MissingContextKeyException("repoPath");
         }
+        if (context.getEnergyToolPath() == null) {
+            throw new MissingContextKeyException("energyToolPath");
+        }
         File repoPath = new File(context.getRepoPath());
         log.info("Repo path: {}", repoPath.getAbsolutePath());
 
-        if (config.getExecutionPlan().getEnergyMeasurements().getToolPath() == null) {
-            throw new MissingConfigKeyException("toolPath");
-        }
-        String energyToolPath = config.getExecutionPlan().getEnergyMeasurements().getToolPath();
+        String energyToolPath = context.getEnergyToolPath();
+        log.info("Energy Tool path: {}", energyToolPath);
         File initScript;
         if (projectTypeDetector.isGradleProject(repoPath)) {
             initScript = initScriptGenerator.generateGradleJavaAgentAndIterationIdInitScript(energyToolPath);

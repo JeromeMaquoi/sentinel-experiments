@@ -1,15 +1,13 @@
 package be.unamur.snail.jdk;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
 
-/**
- * Manages JDK installation and version switching via SDKMAN or jEnv.
- */
-public class JdkManager {
-    private static final Logger log = LoggerFactory.getLogger(JdkManager.class);
+public interface JdkManager {
+    boolean isInstalled(String version) throws IOException, InterruptedException;
 
-    public boolean ensureInstalled(String version) {
-        return false;
-    }
+    void install(String version) throws IOException, InterruptedException;
+
+    void use(String version) throws IOException, InterruptedException;
+
+    String getJavaHome(String version) throws IOException, InterruptedException;
 }

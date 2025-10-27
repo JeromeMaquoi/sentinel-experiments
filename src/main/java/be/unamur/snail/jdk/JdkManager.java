@@ -10,8 +10,6 @@ public class JdkManager {
     private static final Logger log = LoggerFactory.getLogger(JdkManager.class);
 
     public boolean ensureInstalled(String version) {
-        try {
-            Process check = new ProcessBuilder("")
-        }
+        return false;
     }
 }

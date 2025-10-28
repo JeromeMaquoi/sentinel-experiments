@@ -10,6 +10,7 @@ public class Context {
     private String energyToolPath;
     private String energyToolVersion;
     private File initScript;
+    private String javaHome;
 
     public List<String> getClassPath() {
         return classPath;
@@ -57,5 +58,13 @@ public class Context {
 
     public void setInitScript(File initScript) {
         this.initScript = initScript;
+    }
+
+    public String getJavaHome() {
+        return javaHome;
+    }
+
+    public void setJavaHome(String javaHome) {
+        this.javaHome = javaHome;
     }
 }

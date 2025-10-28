@@ -88,6 +88,10 @@ public class Config {
         return backend;
     }
 
+    public void setBackendForTests(BackendConfig backend) {
+        this.backend = backend;
+    }
+
     public static class ProjectConfig {
         @JsonProperty("sub-project")
         private String subProject;
@@ -121,6 +125,7 @@ public class Config {
         private String commit;
         @JsonProperty("target-dir")
         private String targetDir;
+        private String jdk;
         private boolean overwrite;
 
         public String getUrl() {
@@ -141,6 +146,14 @@ public class Config {
 
         public void setTargetDirForTests(String targetDir) {
             this.targetDir = targetDir;
+        }
+
+        public String getJdk() {
+            return jdk;
+        }
+
+        public void setJdkForTests(String jdk) {
+            this.jdk = jdk;
         }
 
         public boolean isOverwrite() {

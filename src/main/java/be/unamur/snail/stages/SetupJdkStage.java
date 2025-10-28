@@ -6,6 +6,7 @@ import be.unamur.snail.exceptions.JavaHomeNotFoundException;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.jdk.JdkManager;
 import be.unamur.snail.jdk.SdkmanJdkManager;
+import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +20,16 @@ public class SetupJdkStage implements Stage {
 
     private final JdkManager manager;
     private final Config config;
+    private final CommandRunner runner;
 
     public SetupJdkStage() {
-        this(new SdkmanJdkManager(new SimpleCommandRunner()), Config.getInstance());
+        this(new SdkmanJdkManager(new SimpleCommandRunner()), Config.getInstance(), new SimpleCommandRunner());
     }
 
-    public SetupJdkStage(JdkManager manager, Config config) {
+    public SetupJdkStage(JdkManager manager, Config config, CommandRunner runner) {
         this.manager = manager;
         this.config = config;
+        this.runner = runner;
     }
 
     @Override
@@ -47,9 +50,12 @@ public class SetupJdkStage implements Stage {
         String javaHome = manager.getJavaHome(jdkVersion);
         if (javaHome == null || javaHome.isBlank()) {
             throw new JavaHomeNotFoundException(jdkVersion);
-        } else {
-            context.setJavaHome(javaHome);
-            log.info("JAVA_HOME set to {}", javaHome);
         }
+        context.setJavaHome(javaHome);
+        log.info("JAVA_HOME set to {}", javaHome);
+
+        // Export JAVA_HOME in the shell for subsequent commands
+        String exportCommand = "export JAVA_HOME=" + javaHome;
+        runner.run(exportCommand);
     }
 }

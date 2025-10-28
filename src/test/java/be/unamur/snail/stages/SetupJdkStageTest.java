@@ -4,8 +4,10 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.jdk.JdkManager;
+import be.unamur.snail.utils.CommandRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.io.IOException;
 
@@ -18,6 +20,7 @@ class SetupJdkStageTest {
     private Config config;
     private Config.RepoConfig repo;
     private Context context;
+    private CommandRunner runner;
     private SetupJdkStage stage;
 
     @BeforeEach
@@ -26,9 +29,10 @@ class SetupJdkStageTest {
         config = mock(Config.class);
         repo = mock(Config.RepoConfig.class);
         context = new Context();
+        runner = mock(CommandRunner.class);
 
         when(config.getRepo()).thenReturn(repo);
-        stage = new SetupJdkStage(manager, config);
+        stage = new SetupJdkStage(manager, config, runner);
     }
 
     @Test
@@ -43,6 +47,9 @@ class SetupJdkStageTest {
         verify(manager, never()).install(jdkVersion);
         verify(manager).use(jdkVersion);
         verify(manager).getJavaHome(jdkVersion);
+
+        verify(runner).run("export JAVA_HOME=/path/to/jdk17");
+
         assertEquals("/path/to/jdk17", context.getJavaHome());
     }
 
@@ -57,6 +64,8 @@ class SetupJdkStageTest {
 
         verify(manager).install(jdkVersion);
         verify(manager).use(jdkVersion);
+
+        verify(runner).run("export JAVA_HOME=/path/to/jdk17");
         assertEquals("/path/to/jdk17", context.getJavaHome());
     }
 

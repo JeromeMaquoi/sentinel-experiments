@@ -92,13 +92,24 @@ public class Config {
         this.backend = backend;
     }
 
+
+
     public static class ProjectConfig {
+        private String name;
         @JsonProperty("sub-project")
         private String subProject;
         @JsonProperty("show-project-logs")
         private boolean showProjectLogs;
         @JsonProperty("package-prefix")
         private String packagePrefix;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setNameForTests(String name) {
+            this.name = name;
+        }
 
         public String getSubProject() {
             return subProject;

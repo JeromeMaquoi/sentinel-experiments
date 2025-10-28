@@ -190,5 +190,5 @@ test {
     // Set system property for ITERATION_ID
     systemProperty "ITERATION_ID", project.findProperty("ITERATION_ID")
     jvmArgs += "--add-opens=java.base/java.net=ALL-UNNAMED"
-    jvmArgs += "-javaagent:/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins/joularjx-2.8.2-modified.jar"
+    jvmArgs += "-javaagent:JOULARJX"
 }

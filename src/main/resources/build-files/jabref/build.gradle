@@ -413,7 +413,7 @@ javadoc {
 }
 
 test {
-    jvmArgs = ["-javaagent:/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins/joularjx-2.8.2-modified.jar"]
+    jvmArgs = ["-javaagent:JOULARJX"]
     useJUnitPlatform {
         excludeTags 'DatabaseTest', 'FetcherTest', 'GUITest'
     }

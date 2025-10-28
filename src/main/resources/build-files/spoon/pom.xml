@@ -223,7 +223,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                        -javaagent:/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins/joularjx-2.8.2-modified.jar
+                        -javaagent:JOULARJX.jar
                     </argLine>
                     <classpathDependencyExcludes>
                         <classpathDependencyExclude>ch.qos.logback:logback-classic</classpathDependencyExclude>

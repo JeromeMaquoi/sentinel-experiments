@@ -831,7 +831,7 @@
                             <argLine>
                                 --illegal-access=permit
                                 --add-opens java.base/java.lang=ALL-UNNAMED
-                                -javaagent:/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins/joularjx-2.8.2-modified.jar
+                                -javaagent:JOULARJX
                             </argLine>
                         </configuration>
                     </plugin>

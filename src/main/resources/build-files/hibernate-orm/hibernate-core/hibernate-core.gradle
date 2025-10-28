@@ -248,7 +248,7 @@ tasks.withType( Test.class ).each { test ->
 
     //Avoid Log4J2 classloader leaks:
     test.jvmArgs( ['-Dlog4j2.disableJmx=true'] )
-    test.jvmArgs( ["-javaagent:/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/plugins/joularjx-2.8.2-modified.jar"] )
+    test.jvmArgs( ["-javaagent:JOULARJX"] )
 
     test.beforeTest { descriptor ->
         //println "Starting test: " + descriptor

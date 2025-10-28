@@ -88,6 +88,10 @@ public class Config {
         return backend;
     }
 
+    public void setBackendForTests(BackendConfig backend) {
+        this.backend = backend;
+    }
+
     public static class ProjectConfig {
         @JsonProperty("sub-project")
         private String subProject;

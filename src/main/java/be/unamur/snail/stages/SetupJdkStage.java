@@ -6,7 +6,6 @@ import be.unamur.snail.exceptions.JavaHomeNotFoundException;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.jdk.JdkManager;
 import be.unamur.snail.jdk.SdkmanJdkManager;
-import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 public class SetupJdkStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(SetupJdkStage.class);
 
-    private final CommandRunner runner;
     private final JdkManager manager;
     private final Config config;
 
@@ -27,13 +25,8 @@ public class SetupJdkStage implements Stage {
     }
 
     public SetupJdkStage(JdkManager manager, Config config) {
-        this(manager, config, new SimpleCommandRunner());
-    }
-
-    public SetupJdkStage(JdkManager manager, Config config, CommandRunner runner) {
         this.manager = manager;
         this.config = config;
-        this.runner = runner;
     }
 
     @Override

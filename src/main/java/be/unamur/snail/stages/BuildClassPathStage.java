@@ -40,7 +40,7 @@ public class BuildClassPathStage implements Stage {
 
         String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
         File projectDir = new File(projectPath);
-        if (!projectDir.exists()) throw new TargetDirectoryNotFoundException("Project directory does not exist");
+        if (!projectDir.exists()) throw new TargetDirectoryNotFoundException();
         log.info("Starting build classpath stage for {}", projectPath);
 
         List<String> classPath;

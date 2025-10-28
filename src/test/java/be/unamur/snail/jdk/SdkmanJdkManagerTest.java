@@ -26,11 +26,15 @@ class SdkmanJdkManagerTest {
     @Test
     void isInstalledReturnsTrueWhenVersionFoundTest() throws IOException, InterruptedException {
         String version = "17.0.17-tem";
-        Utils.CompletedProcess process = new Utils.CompletedProcess("cmd", 0, "some text "+ version + " some more text", "");
+        String sdkListOutput = """
+                | >>> | 17.0.17      | tem     | installed  | 17.0.17-tem
+                |     | 17.0.16      | tem     |            | 17.0.16-tem
+                """;
+        Utils.CompletedProcess process = new Utils.CompletedProcess("cmd", 0, sdkListOutput, "");
         when(mockRunner.run(anyString())).thenReturn(process);
 
         boolean result = manager.isInstalled(version);
-        assertTrue(result);
+        assertTrue(result, "Expected version 17.0.17-tem to be detected as installed.");
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(mockRunner).run(captor.capture());
         assertTrue(captor.getValue().contains("sdk list java"));
@@ -40,7 +44,11 @@ class SdkmanJdkManagerTest {
     @Test
     void isInstalledReturnsFalseWhenVersionNotFoundTest() throws IOException, InterruptedException {
         String version = "17.0.17-tem";
-        Utils.CompletedProcess process = new Utils.CompletedProcess("cmd", 0, "some text without version", "");
+        String sdkListOutput = """
+                |     | 17.0.17      | tem     |            | 17.0.17-tem
+                |     | 17.0.16      | tem     | installed  | 17.0.16-tem
+                """;
+        Utils.CompletedProcess process = new Utils.CompletedProcess("cmd", 0, sdkListOutput, "");
         when(mockRunner.run(anyString())).thenReturn(process);
         boolean result = manager.isInstalled(version);
         assertFalse(result);

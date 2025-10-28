@@ -61,12 +61,14 @@ public class SdkmanJdkManager implements JdkManager {
     public String getJavaHome(String version) throws IOException, InterruptedException {
         Utils.CompletedProcess result = runner.run(withSdkmanInit("sdk home java " + version));
         String out = Optional.ofNullable(result.stdout()).orElse("").trim();
-        if (!out.isBlank()) {
-            String firstLine = out.split("\\R")[0].trim();
-            if (firstLine.startsWith("/")) {
-                log.debug("sdk home returned {}", firstLine);
-                return firstLine;
-            }
+        String firstLine = Arrays.stream(out.split("\\R"))
+                .map(String::trim)
+                .filter(line -> line.startsWith("/"))
+                .findFirst()
+                .orElse(null);
+        if (firstLine != null && firstLine.startsWith("/")) {
+            log.debug("sdk home returned {}", firstLine);
+            return firstLine;
         }
         String fallback = System.getProperty("user.home") + "/.sdkman/candidates/java/" + version;
         log.warn("Could not determine JAVA_HOME via 'sdk home', falling back to {}", fallback

@@ -11,6 +11,7 @@ public class Context {
     private String energyToolVersion;
     private File initScript;
     private String javaHome;
+    private String currentWorkingDir;
 
     public List<String> getClassPath() {
         return classPath;
@@ -66,5 +67,13 @@ public class Context {
 
     public void setJavaHome(String javaHome) {
         this.javaHome = javaHome;
+    }
+
+    public String getCurrentWorkingDir() {
+        return currentWorkingDir;
+    }
+
+    public void setCurrentWorkingDir(String currentWorkingDir) {
+        this.currentWorkingDir = currentWorkingDir;
     }
 }

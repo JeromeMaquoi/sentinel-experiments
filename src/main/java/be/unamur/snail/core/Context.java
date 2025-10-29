@@ -12,6 +12,7 @@ public class Context {
     private File initScript;
     private String javaHome;
     private String currentWorkingDir;
+    private String copiedBuildFilePath;
 
     public List<String> getClassPath() {
         return classPath;
@@ -75,5 +76,13 @@ public class Context {
 
     public void setCurrentWorkingDir(String currentWorkingDir) {
         this.currentWorkingDir = currentWorkingDir;
+    }
+
+    public String getCopiedBuildFilePath() {
+        return copiedBuildFilePath;
+    }
+
+    public void setCopiedBuildFilePath(String copiedBuildFilePath) {
+        this.copiedBuildFilePath = copiedBuildFilePath;
     }
 }

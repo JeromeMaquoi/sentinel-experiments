@@ -51,5 +51,6 @@ public class CopyFileStage implements Stage {
         Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
         log.info("Copied file from {} to {}", sourceFile.toAbsolutePath(), targetPath);
+        context.setCopiedBuildFilePath(relativeTargetFilePath.toString());
     }
 }

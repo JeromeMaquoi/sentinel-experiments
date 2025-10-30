@@ -14,15 +14,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class RunProjectTestsStageTest {
-    private RunProjectTestsStage stage;
+class RunInstrumentedProjectTestsStageTest {
+    private RunInstrumentedProjectTestsStage stage;
     private Context context;
     private Config config;
     private Config.ExecutionPlanConfig executionPlanConfig;
 
     @BeforeEach
     void setUp() {
-        stage = new RunProjectTestsStage();
+        stage = new RunInstrumentedProjectTestsStage();
 
         context = mock(Context.class);
         when(context.getRepoPath()).thenReturn("fake-repo");

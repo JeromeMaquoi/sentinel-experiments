@@ -22,12 +22,12 @@ import java.nio.file.Files;
  * into the db, data needed by the instrumented code in this stage to add constructor
  * context data into the db
  */
-public class RunProjectTestsStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(RunProjectTestsStage.class);
+public class RunInstrumentedProjectTestsStage implements Stage {
+    private static final Logger log = LoggerFactory.getLogger(RunInstrumentedProjectTestsStage.class);
 
     private final InitScriptGenerator initScriptGenerator;
 
-    public RunProjectTestsStage() {
+    public RunInstrumentedProjectTestsStage() {
         this.initScriptGenerator = new InitScriptGenerator();
     }
 

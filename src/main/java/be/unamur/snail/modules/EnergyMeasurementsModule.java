@@ -47,7 +47,7 @@ public class EnergyMeasurementsModule implements Module {
 
     @Override
     public void run(Context context) throws Exception {
-        log.info("Running energy measurements");
+        log.info("Running energy measurements stages...");
         for (Stage stage : stages) {
             stage.execute(context);
         }

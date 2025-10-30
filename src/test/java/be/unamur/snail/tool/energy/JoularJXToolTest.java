@@ -34,7 +34,8 @@ class JoularJXToolTest {
         Files.writeString(resourcePath.resolve("build.gradle"), "apply plugin: 'java'");
 
         JoularJXTool joularJXTool = new JoularJXTool(mockConfig);
-        String result = joularJXTool.detectBuildFileName(projectName, subProject);
+        String totalProjectPath = projectName + "/" + subProject;
+        String result = joularJXTool.detectBuildFileName(totalProjectPath);
         assertEquals("build.gradle", result);
     }
 
@@ -48,7 +49,8 @@ class JoularJXToolTest {
 
         JoularJXTool tool = new JoularJXTool(mockConfig);
 
-        String result = tool.detectBuildFileName(projectName, subProject);
+        String totalProjectPath = projectName + "/" + subProject;
+        String result = tool.detectBuildFileName(totalProjectPath);
 
         assertEquals("pom.xml", result);
     }
@@ -56,7 +58,7 @@ class JoularJXToolTest {
     @Test
     void detectBuildFileNameShouldThrowWhenNoBuildFileExistsTest() {
         JoularJXTool joularJXTool = new JoularJXTool(mockConfig);
-        assertThrows(BuildFileNotFoundException.class, () -> joularJXTool.detectBuildFileName("nonexistent", "project"));
+        assertThrows(BuildFileNotFoundException.class, () -> joularJXTool.detectBuildFileName("nonexistent/project"));
     }
 
     @Test
@@ -79,6 +81,20 @@ class JoularJXToolTest {
 
         assertEquals(expectedSource, getField(stage, "sourceFile"));
         assertEquals(expectedTarget, getField(stage, "relativeTargetFilePath"));
+    }
+
+    @Test
+    void createTotalProjectPathShouldConcatenateProjectAndSubProjectTest() {
+        JoularJXTool joularJXTool = new JoularJXTool(mockConfig);
+
+        String result = joularJXTool.createTotalProjectPath("my-project", "module1");
+        assertEquals("my-project/module1", result);
+
+        result = joularJXTool.createTotalProjectPath("my-project", "");
+        assertEquals("my-project", result);
+
+        result = joularJXTool.createTotalProjectPath("my-project", null);
+        assertEquals("my-project", result);
     }
 
     private Path getField(CopyFileStage stage, String fieldName) {

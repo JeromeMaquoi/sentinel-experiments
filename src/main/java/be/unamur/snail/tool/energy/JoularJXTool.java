@@ -33,6 +33,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
                 new RetrieveToolReleaseStage(),
                 //new UpdateBuildConfigurationStage()
                 createCopyBuildFileStage(),
+                new UpdateBuildFileStage(),
                 new SetupJdkStage()
         );
     }
@@ -52,7 +53,9 @@ public class JoularJXTool implements EnergyMeasurementTool {
     protected CopyFileStage createCopyBuildFileStage() {
         String projectName = config.getProject().getName();
         String subProject = config.getProject().getSubProject();
-        String buildFileName = detectBuildFileName(projectName, subProject);
+
+        String totalProjectPath = createTotalProjectPath(projectName, subProject);
+        String buildFileName = detectBuildFileName(totalProjectPath);
 
         Path sourceFile = Path.of("resources", "build-files")
                 .resolve(projectName)
@@ -65,8 +68,17 @@ public class JoularJXTool implements EnergyMeasurementTool {
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
-    public String detectBuildFileName(String projectName, String subProject) {
-        String basePath = String.format("build-files/%s/%s/", projectName, subProject);
+    public String createTotalProjectPath(String projectName, String subProject) {
+        if (subProject != null && !subProject.isBlank()) {
+            return projectName + "/" + subProject;
+        } else {
+            return projectName;
+        }
+    }
+
+    public String detectBuildFileName(String totalProjectPath) {
+        String basePath = String.format("build-files/%s/", totalProjectPath);
+        log.info("Base path for build file detection: {}", basePath);
         URL gradleURL = getClass().getClassLoader().getResource(basePath + "build.gradle");
         URL mavenURL = getClass().getClassLoader().getResource(basePath + "pom.xml");
 
@@ -75,7 +87,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
         } else if (mavenURL != null) {
             return "pom.xml";
         } else {
-            throw new BuildFileNotFoundException(projectName, subProject);
+            throw new BuildFileNotFoundException(totalProjectPath);
         }
     }
 }

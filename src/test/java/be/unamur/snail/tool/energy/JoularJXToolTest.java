@@ -34,7 +34,8 @@ class JoularJXToolTest {
         Files.writeString(resourcePath.resolve("build.gradle"), "apply plugin: 'java'");
 
         JoularJXTool joularJXTool = new JoularJXTool(mockConfig);
-        String result = joularJXTool.detectBuildFileName(projectName, subProject);
+        String totalProjectPath = projectName + "/" + subProject;
+        String result = joularJXTool.detectBuildFileName(totalProjectPath);
         assertEquals("build.gradle", result);
     }
 
@@ -48,7 +49,8 @@ class JoularJXToolTest {
 
         JoularJXTool tool = new JoularJXTool(mockConfig);
 
-        String result = tool.detectBuildFileName(projectName, subProject);
+        String totalProjectPath = projectName + "/" + subProject;
+        String result = tool.detectBuildFileName(totalProjectPath);
 
         assertEquals("pom.xml", result);
     }
@@ -56,7 +58,7 @@ class JoularJXToolTest {
     @Test
     void detectBuildFileNameShouldThrowWhenNoBuildFileExistsTest() {
         JoularJXTool joularJXTool = new JoularJXTool(mockConfig);
-        assertThrows(BuildFileNotFoundException.class, () -> joularJXTool.detectBuildFileName("nonexistent", "project"));
+        assertThrows(BuildFileNotFoundException.class, () -> joularJXTool.detectBuildFileName("nonexistent/project"));
     }
 
     @Test

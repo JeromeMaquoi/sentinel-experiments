@@ -34,6 +34,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
                 //new UpdateBuildConfigurationStage()
                 createCopyBuildFileStage(),
                 new UpdateBuildFileStage(),
+                createCopyConfigFileStage(),
                 new SetupJdkStage()
         );
     }
@@ -41,7 +42,8 @@ public class JoularJXTool implements EnergyMeasurementTool {
     @Override
     public List<Stage> createMeasurementStages() {
         return List.of(
-                new SetDirectoryStage()
+                new SetDirectoryStage(),
+                new RunProjectTestsStage()
         );
     }
 
@@ -50,6 +52,11 @@ public class JoularJXTool implements EnergyMeasurementTool {
         return List.of();
     }
 
+    /**
+     * This method creates a new CopyFileStage for copying the appropriate build file
+     * (either build.gradle or pom.xml) based on the project configuration.
+     * @return A CopyFileStage configured to copy the correct build file.
+     */
     protected CopyFileStage createCopyBuildFileStage() {
         String projectName = config.getProject().getName();
         String subProject = config.getProject().getSubProject();
@@ -57,23 +64,39 @@ public class JoularJXTool implements EnergyMeasurementTool {
         String totalProjectPath = createTotalProjectPath(projectName, subProject);
         String buildFileName = detectBuildFileName(totalProjectPath);
 
-        Path sourceFile = Path.of("resources", "build-files")
-                .resolve(projectName)
-                .resolve(subProject)
-                .resolve(buildFileName);
-
+        Path sourceFile = buildResourcePath(totalProjectPath, buildFileName);
         Path relativeTargetPath = Path.of(subProject).resolve(buildFileName);
 
         log.info("Configured CopyFileStage for {}: {} -> {}", projectName, sourceFile, relativeTargetPath);
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
+    /**
+     * Create a CopyFileStage to copy the config.properties file into the analyzed
+     * project directory
+     * @return A CopyFileStage for copying config.properties
+     */
+    protected CopyFileStage createCopyConfigFileStage() {
+        String projectName = config.getProject().getName();
+        String subProject = config.getProject().getSubProject();
+        String totalProjectPath = createTotalProjectPath(projectName, subProject);
+
+        Path sourceFile = buildResourcePath(totalProjectPath, "config.properties");
+        Path relativeTargePath = Path.of(subProject != null && !subProject.isBlank() ? subProject : "")
+                .resolve("config.properties");
+
+        log.info("Configured CopyFileStage for config.properties: {} -> {}", sourceFile, relativeTargePath);
+        return new CopyFileStage(sourceFile, relativeTargePath);
+    }
+
+    public Path buildResourcePath(String totalProjectPath, String fileName) {
+        return Path.of("resources", "build-files")
+                .resolve(totalProjectPath)
+                .resolve(fileName);
+    }
+
     public String createTotalProjectPath(String projectName, String subProject) {
-        if (subProject != null && !subProject.isBlank()) {
-            return projectName + "/" + subProject;
-        } else {
-            return projectName;
-        }
+        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
     }
 
     public String detectBuildFileName(String totalProjectPath) {

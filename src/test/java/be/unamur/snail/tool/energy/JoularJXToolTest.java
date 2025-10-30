@@ -17,12 +17,14 @@ import static org.mockito.Mockito.when;
 class JoularJXToolTest {
     private Config mockConfig;
     private Config.ProjectConfig mockProject;
+    private JoularJXTool tool;
 
     @BeforeEach
     void setUp() {
         mockConfig = mock(Config.class);
         mockProject = mock(Config.ProjectConfig.class);
         when(mockConfig.getProject()).thenReturn(mockProject);
+        tool = new JoularJXTool(mockConfig);
     }
 
     @Test
@@ -79,6 +81,55 @@ class JoularJXToolTest {
         Path expectedSource = Path.of("resources", "build-files", projectName, subProject, "build.gradle");
         Path expectedTarget = Path.of(subProject).resolve("build.gradle");
 
+        assertEquals(expectedSource, getField(stage, "sourceFile"));
+        assertEquals(expectedTarget, getField(stage, "relativeTargetFilePath"));
+    }
+
+    @Test
+    void createCopyConfigFileStageWithSubProjectTest() {
+        String projectName = "my-project";
+        String subProject = "module1";
+        when(mockProject.getName()).thenReturn(projectName);
+        when(mockProject.getSubProject()).thenReturn(subProject);
+
+        CopyFileStage stage = tool.createCopyConfigFileStage();
+
+        Path expectedSource = Path.of("resources", "build-files", projectName, subProject, "config.properties");
+        Path expectedTarget = Path.of(subProject).resolve("config.properties");
+
+        assertNotNull(stage);
+        assertEquals(expectedSource, getField(stage, "sourceFile"));
+        assertEquals(expectedTarget, getField(stage, "relativeTargetFilePath"));
+    }
+
+    @Test
+    void createCopyConfigFileStageWithoutSubProjectTest() {
+        String projectName = "my-project";
+        when(mockProject.getName()).thenReturn(projectName);
+        when(mockProject.getSubProject()).thenReturn(null);
+
+        CopyFileStage stage = tool.createCopyConfigFileStage();
+
+        Path expectedSource = Path.of("resources", "build-files", projectName, "config.properties");
+        Path expectedTarget = Path.of("").resolve("config.properties");
+
+        assertNotNull(stage);
+        assertEquals(expectedSource, getField(stage, "sourceFile"));
+        assertEquals(expectedTarget, getField(stage, "relativeTargetFilePath"));
+    }
+
+    @Test
+    void createCopyConfigFileStageWithEmptySubProjectTest() {
+        String projectName = "my-project";
+        when(mockProject.getName()).thenReturn(projectName);
+        when(mockProject.getSubProject()).thenReturn("");
+
+        CopyFileStage stage = tool.createCopyConfigFileStage();
+
+        Path expectedSource = Path.of("resources", "build-files", projectName, "config.properties");
+        Path expectedTarget = Path.of("").resolve("config.properties");
+
+        assertNotNull(stage);
         assertEquals(expectedSource, getField(stage, "sourceFile"));
         assertEquals(expectedTarget, getField(stage, "relativeTargetFilePath"));
     }

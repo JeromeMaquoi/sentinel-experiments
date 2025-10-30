@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * Stage responsible for updating build files (Maven or Gradle) to replace
  * lines containing "-javaagent" and JOULARJX with the actual tool path.
+ * This stages needs to be executed right after copying the build file into the repo.
  */
 public class UpdateBuildFileStage implements Stage {
     private static final Logger log = LoggerFactory.getLogger(UpdateBuildFileStage.class);

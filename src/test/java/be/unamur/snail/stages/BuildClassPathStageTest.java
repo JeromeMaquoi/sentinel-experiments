@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.exceptions.TargetDirectoryNotFoundException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.utils.gradle.GradleService;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.junit.jupiter.api.AfterEach;
@@ -25,11 +26,14 @@ class BuildClassPathStageTest {
 
     private GradleService gradleService;
     private InitScriptGenerator initScriptGenerator;
+    private Context context;
 
     @BeforeEach
     void setup() {
         gradleService = mock(GradleService.class);
         initScriptGenerator = mock(InitScriptGenerator.class);
+        context = new Context();
+        context.setLogger(new ConsolePipelineLogger(BuildClassPathStage.class));
     }
 
     @AfterEach
@@ -62,7 +66,6 @@ class BuildClassPathStageTest {
         when(initScriptGenerator.generateClasspathInitScript()).thenReturn(cpFile.toFile());
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
-        Context context = new Context();
 
         stage.execute(context);
 
@@ -95,7 +98,6 @@ class BuildClassPathStageTest {
         when(initScriptGenerator.generateClasspathInitScript()).thenReturn(cpFile.toFile());
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
-        Context context = new Context();
 
         stage.execute(context);
 
@@ -121,7 +123,6 @@ class BuildClassPathStageTest {
         when(initScriptGenerator.generateClasspathInitScript()).thenReturn(repoDir.resolve("dummy.gradle").toFile());
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
-        Context context = new Context();
 
         assertThrows(ModuleException.class, () -> stage.execute(context));
     }
@@ -139,7 +140,7 @@ class BuildClassPathStageTest {
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
 
-        assertThrows(TargetDirectoryNotFoundException.class, () -> stage.execute(new Context()));
+        assertThrows(TargetDirectoryNotFoundException.class, () -> stage.execute(context));
     }
 
     @Test
@@ -158,7 +159,7 @@ class BuildClassPathStageTest {
 
         BuildClassPathStage stage = new BuildClassPathStage(gradleService, initScriptGenerator);
 
-        assertThrows(IllegalArgumentException.class, () -> stage.execute(new Context()));
+        assertThrows(IllegalArgumentException.class, () -> stage.execute(context));
     }
 
 

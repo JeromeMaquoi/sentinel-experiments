@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.exceptions.TargetDirectoryNotFoundException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.utils.gradle.DefaultGradleService;
 import be.unamur.snail.utils.gradle.GradleService;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
@@ -19,10 +20,9 @@ import java.util.List;
  * project, so that it can be used by Spoon in other stages
  */
 public class BuildClassPathStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(BuildClassPathStage.class);
-
     private final GradleService gradleService;
     private final InitScriptGenerator initScriptGenerator;
+    private PipelineLogger log;
 
     public BuildClassPathStage() {
         this.gradleService = new DefaultGradleService();
@@ -36,6 +36,8 @@ public class BuildClassPathStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        log = context.getLogger();
+
         Config config = Config.getInstance();
 
         String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();

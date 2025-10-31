@@ -6,8 +6,6 @@ import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.ToolReleaseFetcher;
 import be.unamur.snail.tool.ToolReleaseFetcherFactory;
 import be.unamur.snail.tool.ToolReleaseResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Stage responsible for the retrieve of a release of the tool used

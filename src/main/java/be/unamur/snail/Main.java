@@ -28,7 +28,8 @@ public class Main {
         System.setProperty("log.level", config.getLog().getLevel());
 
         Path logFilePath = Path.of(config.getLog().getDirectory(), "pipeline.log");
-        PipelineLogger pipelineLogger = new FilePipelineLogger(logFilePath);
+        boolean alsoLogToConsole = config.getLog().getAlsoLogToConsole();
+        PipelineLogger pipelineLogger = new FilePipelineLogger(logFilePath, alsoLogToConsole);
 
         // Select module based on CLI argument
         Module module;

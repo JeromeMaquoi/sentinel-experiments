@@ -13,6 +13,7 @@ repo:
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/"
+  also-log-to-console: true
 execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks"
   ignore-failures: false

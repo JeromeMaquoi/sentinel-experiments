@@ -181,6 +181,8 @@ public class Config {
     public static class LogConfig {
         private String level;
         private String directory;
+        @JsonProperty("also-log-to-console")
+        private boolean alsoLogToConsole;
 
         public String getLevel() {
             return level;
@@ -188,6 +190,10 @@ public class Config {
 
         public String getDirectory() {
             return directory;
+        }
+
+        public boolean getAlsoLogToConsole() {
+            return alsoLogToConsole;
         }
     }
 

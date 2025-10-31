@@ -1,9 +1,12 @@
 package be.unamur.snail.core;
 
+import be.unamur.snail.logging.PipelineLogger;
+
 import java.io.File;
 import java.util.List;
 
 public class Context {
+    private PipelineLogger logger;
     private List<String> classPath;
     private String repoPath;
     private String commit;
@@ -13,6 +16,14 @@ public class Context {
     private String javaHome;
     private String currentWorkingDir;
     private String copiedBuildFilePath;
+
+    public PipelineLogger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(PipelineLogger logger) {
+        this.logger = logger;
+    }
 
     public List<String> getClassPath() {
         return classPath;

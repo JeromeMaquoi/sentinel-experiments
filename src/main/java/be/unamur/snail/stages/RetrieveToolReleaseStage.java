@@ -2,6 +2,7 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.ToolReleaseFetcher;
 import be.unamur.snail.tool.ToolReleaseFetcherFactory;
 import be.unamur.snail.tool.ToolReleaseResult;
@@ -13,7 +14,6 @@ import org.slf4j.LoggerFactory;
  * for measurements
  */
 public class RetrieveToolReleaseStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(RetrieveToolReleaseStage.class);
     private final ToolReleaseFetcherFactory fetcherFactory;
 
     public RetrieveToolReleaseStage() {
@@ -22,6 +22,8 @@ public class RetrieveToolReleaseStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         Config config = Config.getInstance();
         String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
         log.info("Retrieving release for tool {}", toolName);

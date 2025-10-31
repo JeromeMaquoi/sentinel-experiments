@@ -2,6 +2,7 @@ package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.stages.CloneAndCheckoutRepositoryStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.tool.energy.EnergyMeasurementTool;
@@ -47,9 +48,11 @@ public class EnergyMeasurementsModule implements Module {
 
     @Override
     public void run(Context context) throws Exception {
-        log.info("Running energy measurements stages...");
+        PipelineLogger log = context.getLogger();
         for (Stage stage : stages) {
+            log.stageStart(stage.getName());
             stage.execute(context);
+            log.stageEnd(stage.getName());
         }
     }
 }

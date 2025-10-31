@@ -12,6 +12,7 @@ repo:
   overwrite: true
 log:
   level: INFO
+  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/"
 execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks"
   ignore-failures: false

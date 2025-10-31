@@ -180,16 +180,14 @@ public class Config {
 
     public static class LogConfig {
         private String level;
+        private String directory;
 
         public String getLevel() {
             return level;
         }
 
-        @Override
-        public String toString() {
-            return "LogConfig{" +
-                    "level='" + level + '\'' +
-                    '}';
+        public String getDirectory() {
+            return directory;
         }
     }
 

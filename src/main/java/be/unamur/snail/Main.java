@@ -2,12 +2,14 @@ package be.unamur.snail;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.FilePipelineLogger;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.modules.EnergyMeasurementsModule;
 import be.unamur.snail.modules.Module;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -24,7 +26,9 @@ public class Main {
         // Override log level from config file params
         Config config = Config.getInstance();
         System.setProperty("log.level", config.getLog().getLevel());
-        Logger log = LoggerFactory.getLogger(Main.class);
+
+        Path logFilePath = Path.of(config.getLog().getDirectory(), "pipeline.log");
+        PipelineLogger pipelineLogger = new FilePipelineLogger(logFilePath);
 
         // Select module based on CLI argument
         Module module;
@@ -40,10 +44,12 @@ public class Main {
         }
 
         Context context = new Context();
+        context.setLogger(pipelineLogger);
+
         try {
             module.run(context);
         } catch (ModuleException e) {
-            log.error("Pipeline failed: {}", e.getMessage(), e);
+            pipelineLogger.error("Pipeline failed: ", e);
             System.exit(1);
         }
     }

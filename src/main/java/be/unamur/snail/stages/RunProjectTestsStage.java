@@ -37,9 +37,6 @@ public class RunProjectTestsStage implements Stage {
         }
 
         String cwd = context.getRepoPath();
-        if (cwd == null || cwd.isBlank()) {
-            throw new MissingContextKeyException("repoPath");
-        }
         Utils.CompletedProcess result = Utils.runCommand(testCommand, cwd);
 
         if (result.returnCode() != 0) {

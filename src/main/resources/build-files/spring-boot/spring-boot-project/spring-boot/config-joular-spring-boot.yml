@@ -1,0 +1,38 @@
+command-time-out: 3600
+project:
+  name: "spring-boot"
+  sub-project: "spring-boot-project/spring-boot"
+  show-project-logs: true
+  package-prefix: "org.springframework"
+repo:
+  url: "https://github.com/spring-projects/spring-boot"
+  commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot-clone"
+  jdk: "17.0.17-tem"
+  overwrite: false
+log:
+  level: INFO
+execution-plan:
+  test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks"
+  ignore-failures: false
+  ignore-spoon-failures: true
+  num-test-runs: 1
+  energy-measurements:
+    tool: "joularjx"
+    tool-version: "3.0.1"
+    release-url: "https://github.com/joular/joularjx"
+    tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
+backend:
+  mode: dev
+  server-host: localhost
+  server-port: 8080
+  server-timeout-seconds: 120
+  server-log-path: "/tmp/sentinel-backend.log"
+  server-ready-path: "/tmp/backend-ready"
+  endpoint: "/api/v2/constructor-contexts"
+  # dev-specific
+  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 20
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

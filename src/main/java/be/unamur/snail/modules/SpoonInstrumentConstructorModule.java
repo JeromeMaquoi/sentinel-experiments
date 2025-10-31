@@ -31,7 +31,7 @@ public class SpoonInstrumentConstructorModule implements Module {
                 new BuildClassPathStage(),
                 new InstrumentConstructorsStage(),
                 new CopySourceCodeStage(),
-                new RunProjectTestsStage()
+                new RunInstrumentedProjectTestsStage()
         );
     }
 

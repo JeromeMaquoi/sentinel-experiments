@@ -2,118 +2,85 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
-import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class RunProjectTestsStageTest {
     private RunProjectTestsStage stage;
-    private Context context;
-    private Config config;
-    private Config.ExecutionPlanConfig executionPlanConfig;
+    private Config mockConfig;
+    private Config.ExecutionPlanConfig mockExecutionPlan;
+    private Context mockContext;
 
     @BeforeEach
     void setUp() {
-        stage = new RunProjectTestsStage();
-
-        context = mock(Context.class);
-        when(context.getRepoPath()).thenReturn("fake-repo");
-
-        config = mock(Config.class);
-        executionPlanConfig = mock(Config.ExecutionPlanConfig.class);
-        when(config.getExecutionPlan()).thenReturn(executionPlanConfig);
+        mockConfig = mock(Config.class);
+        mockExecutionPlan = mock(Config.ExecutionPlanConfig.class);
+        mockContext = mock(Context.class);
+        stage = new RunProjectTestsStage(mockConfig);
     }
 
     @Test
-    void executedSuccessfulTest() {
-        when(executionPlanConfig.getTestCommand()).thenReturn("echo OK");
-        when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
+    void executeMissingRepoPathTest() {
+        when(mockContext.getRepoPath()).thenReturn(null);
+        assertThrows(MissingContextKeyException.class, () -> stage.execute(mockContext));
+        when(mockContext.getRepoPath()).thenReturn("");
+        assertThrows(MissingContextKeyException.class, () -> stage.execute(mockContext));
+    }
 
-        Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
-        when(config.getProject()).thenReturn(projectConfig);
-        when(projectConfig.getPackagePrefix()).thenReturn("be");
+    @Test
+    void executeMissingExecutionPlanTest() {
+        when(mockContext.getRepoPath()).thenReturn("repo");
+        when(mockConfig.getExecutionPlan()).thenReturn(null);
 
-        Config.BackendConfig backendConfig = mock(Config.BackendConfig.class);
-        when(config.getBackend()).thenReturn(backendConfig);
-        when(backendConfig.getServerPort()).thenReturn(8080);
-        when(backendConfig.getServerHost()).thenReturn("localhost");
+        assertThrows(MissingConfigKeyException.class, () -> stage.execute(mockContext));
+    }
 
-        try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
-            Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("echo OK", 0, "OK", "");
-            utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
+    @Test
+    void executeMissingTestCommandTest() {
+        when(mockContext.getRepoPath()).thenReturn("repo");
+        when(mockConfig.getExecutionPlan()).thenReturn(mockExecutionPlan);
+        when(mockExecutionPlan.getTestCommand()).thenReturn(null);
 
-            try (MockedStatic<Config> configMock = mockStatic(Config.class)) {
-                configMock.when(Config::getInstance).thenReturn(config);
-                assertDoesNotThrow(() -> stage.execute(context));
-            }
+        assertThrows(MissingConfigKeyException.class, () -> stage.execute(mockContext));
+
+        when(mockExecutionPlan.getTestCommand()).thenReturn("");
+        assertThrows(MissingConfigKeyException.class, () -> stage.execute(mockContext));
+    }
+
+    @Test
+    void executeSucessfulExecutionTest() {
+        when(mockContext.getRepoPath()).thenReturn("repo");
+        when(mockConfig.getExecutionPlan()).thenReturn(mockExecutionPlan);
+        when(mockExecutionPlan.getTestCommand()).thenReturn("mvn test");
+
+        Utils.CompletedProcess process = new Utils.CompletedProcess("output", 0, "", "");
+
+        try (MockedStatic<Utils> utils = mockStatic(Utils.class)) {
+            utils.when(() -> Utils.runCommand("mvn test", "repo")).thenReturn(process);
+            assertDoesNotThrow(() -> stage.execute(mockContext));
+            utils.verify(() -> Utils.runCommand("mvn test", "repo"), times(1));
         }
     }
 
     @Test
-    void executedFailedWithoutIgnoreFailuresTest() {
-        when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
-        when(executionPlanConfig.getIgnoreFailures()).thenReturn(false);
+    void executeFailsWhenCommandReturnsNonZeroTest() {
+        when(mockContext.getRepoPath()).thenReturn("repo");
+        when(mockConfig.getExecutionPlan()).thenReturn(mockExecutionPlan);
+        when(mockExecutionPlan.getTestCommand()).thenReturn("mvn test");
 
-        Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
-        when(config.getProject()).thenReturn(projectConfig);
-        when(projectConfig.getPackagePrefix()).thenReturn("be");
+        Utils.CompletedProcess process = new Utils.CompletedProcess("output", 1, "", "");
 
-        Config.BackendConfig backendConfig = mock(Config.BackendConfig.class);
-        when(config.getBackend()).thenReturn(backendConfig);
-        when(backendConfig.getServerPort()).thenReturn(8080);
-        when(backendConfig.getServerHost()).thenReturn("localhost");
-
-        try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
-            Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");
-            utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
-            try (MockedStatic<Config> configMock = Mockito.mockStatic(Config.class)) {
-                configMock.when(Config::getInstance).thenReturn(config);
-                assertThrows(TestSuiteExecutionFailedException.class, () -> stage.execute(context));
-            }
+        try (MockedStatic<Utils> utils = mockStatic(Utils.class)) {
+            utils.when(() -> Utils.runCommand("mvn test", "repo")).thenReturn(process);
+            assertThrows(Exception.class, () -> stage.execute(mockContext));
+            utils.verify(() -> Utils.runCommand("mvn test", "repo"), times(1));
         }
-    }
-
-    @Test
-    void executedFailedWithIgnoreFailuresTest() {
-        when(executionPlanConfig.getTestCommand()).thenReturn("failCommand");
-        when(executionPlanConfig.getIgnoreFailures()).thenReturn(true);
-
-        Config.ProjectConfig projectConfig = mock(Config.ProjectConfig.class);
-        when(config.getProject()).thenReturn(projectConfig);
-        when(projectConfig.getPackagePrefix()).thenReturn("be");
-
-        Config.BackendConfig backendConfig = mock(Config.BackendConfig.class);
-        when(config.getBackend()).thenReturn(backendConfig);
-        when(backendConfig.getServerPort()).thenReturn(8080);
-        when(backendConfig.getServerHost()).thenReturn("localhost");
-
-        try (MockedStatic<Utils> utilsMock = Mockito.mockStatic(Utils.class)) {
-            Utils.CompletedProcess mockProcess = new Utils.CompletedProcess("failCommand", 1, "", "error");
-            utilsMock.when(() -> Utils.runCommand(anyString(), anyString())).thenReturn(mockProcess);
-            try (MockedStatic<Config> configMock = Mockito.mockStatic(Config.class)) {
-                configMock.when(Config::getInstance).thenReturn(config);
-                assertDoesNotThrow(() -> stage.execute(context));
-            }
-        }
-    }
-
-    @Test
-    void executeThrowsMissingContextKeyTest() {
-        when(context.getRepoPath()).thenReturn(null);
-        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
-    }
-
-    @Test
-    void executeThrowsBlanckContextKeyTest() {
-        when(context.getRepoPath()).thenReturn("");
-        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
     }
 }

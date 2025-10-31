@@ -183,6 +183,8 @@ public class Config {
         private String directory;
         @JsonProperty("also-log-to-console")
         private boolean alsoLogToConsole;
+        @JsonProperty("clear-previous-logs")
+        private boolean clearPreviousLogs;
 
         public String getLevel() {
             return level;
@@ -194,6 +196,10 @@ public class Config {
 
         public boolean getAlsoLogToConsole() {
             return alsoLogToConsole;
+        }
+
+        public boolean getClearPreviousLogs() {
+            return clearPreviousLogs;
         }
     }
 

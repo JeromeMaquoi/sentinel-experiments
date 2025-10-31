@@ -10,24 +10,36 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
 
 public class FilePipelineLogger implements PipelineLogger {
     private final BufferedWriter writer;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final boolean alsoLogToConsole;
+    private final String loggerName;
 
-    public FilePipelineLogger(Path logFilePath, boolean alsoLogToConsole) {
+    public FilePipelineLogger(Class<?> clazz, Path logFilePath, boolean alsoLogToConsole, boolean clearPreviousLogs) {
         this.alsoLogToConsole = alsoLogToConsole;
+        this.loggerName = clazz.getName();
         try {
             Files.createDirectories(logFilePath.getParent());
-            writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            if (clearPreviousLogs) {
+                writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            } else {
+                writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
         } catch (IOException e) {
             throw new LogFileCreationFailedException();
         }
     }
 
     public void write(String level, String message) {
-        String line = String.format("%s [%s] %s", LocalDateTime.now().format(formatter), level, message);
+        String line = String.format("%s [%s] %-5s %s - %s",
+                LocalDateTime.now().format(formatter),
+                Thread.currentThread().getName(),
+                level,
+                loggerName,
+                message);
         try {
             writer.write(line);
             writer.newLine();
@@ -85,6 +97,10 @@ public class FilePipelineLogger implements PipelineLogger {
     }
 
     private String format(String message, Object... args) {
-        return args.length > 0 ? String.format(message, args) : message;
+        if (args == null || args.length == 0) return message;
+        for (Object arg : args) {
+            message = message.replaceFirst("\\{\\}", Matcher.quoteReplacement(String.valueOf(arg)));
+        }
+        return message;
     }
 }

@@ -29,7 +29,8 @@ public class Main {
 
         Path logFilePath = Path.of(config.getLog().getDirectory(), "pipeline.log");
         boolean alsoLogToConsole = config.getLog().getAlsoLogToConsole();
-        PipelineLogger pipelineLogger = new FilePipelineLogger(logFilePath, alsoLogToConsole);
+        boolean clearPreviousLogs = config.getLog().getClearPreviousLogs();
+        PipelineLogger pipelineLogger = new FilePipelineLogger(Main.class, logFilePath, alsoLogToConsole, clearPreviousLogs);
 
         // Select module based on CLI argument
         Module module;

@@ -5,13 +5,10 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RunProjectTestsStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(RunProjectTestsStage.class);
-
     private final Config config;
 
     public RunProjectTestsStage() {
@@ -24,6 +21,8 @@ public class RunProjectTestsStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         if (context.getRepoPath() == null || context.getRepoPath().isBlank()) {
             throw new MissingContextKeyException("repoPath");
         }
@@ -36,6 +35,7 @@ public class RunProjectTestsStage implements Stage {
             throw new MissingConfigKeyException("executionPlan.testCommand");
         }
 
+        log.info("Executing test suite with command: {}", testCommand);
         String cwd = context.getRepoPath();
         Utils.CompletedProcess result = Utils.runCommand(testCommand, cwd);
 

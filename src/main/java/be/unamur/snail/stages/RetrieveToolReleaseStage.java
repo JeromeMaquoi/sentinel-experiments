@@ -24,7 +24,7 @@ public class RetrieveToolReleaseStage implements Stage {
 
         Config config = Config.getInstance();
         String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
-        log.info("Retrieving release for tool {}", toolName);
+        log.debug("Retrieving release for tool {}", toolName);
 
         ToolReleaseFetcher fetcher = fetcherFactory.createFectcher(toolName);
         ToolReleaseResult result = fetcher.fetchRelease();

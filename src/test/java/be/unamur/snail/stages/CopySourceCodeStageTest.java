@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.CommitMissingException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.exceptions.TargetDirMissingException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ class CopySourceCodeStageTest {
 
     private Config config;
     private CopySourceCodeStage stage;
+    private Context context;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -40,6 +42,10 @@ class CopySourceCodeStageTest {
         config = Config.getInstance();
         config.setRepoForTests(new Config.RepoConfig());
         config.setProjectForTests(new Config.ProjectConfig());
+
+        context = new Context();
+        context.setLogger(new ConsolePipelineLogger(CopySourceCodeStage.class));
+
         stage = new CopySourceCodeStage();
     }
 
@@ -60,8 +66,6 @@ class CopySourceCodeStageTest {
         config.getRepo().setCommitForTests("abc123");
         config.getProject().setSubProjectForTests("");
 
-        Context context = new Context();
-
         // Act
         stage.execute(context);
 
@@ -78,8 +82,6 @@ class CopySourceCodeStageTest {
         config.getRepo().setTargetDirForTests(tempDir.resolve("target-project").toString());
         config.getRepo().setCommitForTests("abc123");
         config.getProject().setSubProjectForTests("");
-
-        Context context = new Context();
 
         // Act + Assert
         assertThatThrownBy(() -> stage.execute(context))

@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class RunInstrumentedProjectTestsStageTest {
 
         context = mock(Context.class);
         when(context.getRepoPath()).thenReturn("fake-repo");
+        when(context.getLogger()).thenReturn(new ConsolePipelineLogger(RunInstrumentedProjectTestsStage.class));
 
         config = mock(Config.class);
         executionPlanConfig = mock(Config.ExecutionPlanConfig.class);

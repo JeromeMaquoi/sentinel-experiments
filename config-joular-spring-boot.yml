@@ -11,7 +11,7 @@ repo:
   jdk: "17.0.17-tem"
   overwrite: false
 log:
-  level: DEBUG
+  level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/"
   also-log-to-console: true
   clear-previous-logs: true

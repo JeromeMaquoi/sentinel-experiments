@@ -3,6 +3,8 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.NoBuildLineUpdatedException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
+import be.unamur.snail.logging.PipelineLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,11 +22,13 @@ class UpdateBuildFileStageTest {
     Path tempRepo;
 
     private Context mockContext;
+    PipelineLogger log = new ConsolePipelineLogger(UpdateBuildFileStage.class);
     private UpdateBuildFileStage stage;
 
     @BeforeEach
     void setUp() {
         mockContext = mock(Context.class);
+        when(mockContext.getLogger()).thenReturn(log);
         stage = new UpdateBuildFileStage();
     }
 
@@ -81,14 +85,14 @@ class UpdateBuildFileStageTest {
     void updateBuildFileShouldThrowExceptionIfJavaAgentWithoutJoularJXLineTest() throws IOException {
         Path buildFile = tempRepo.resolve("build.gradle");
         Files.writeString(buildFile, "-javaagent:SomeOtherAgent");
-        assertThrows(NoBuildLineUpdatedException.class, () -> stage.updateBuildFile(buildFile, "/some/tool/path"));
+        assertThrows(NoBuildLineUpdatedException.class, () -> stage.updateBuildFile(buildFile, "/some/tool/path", log));
     }
 
     @Test
     void updateBuildFileShouldThrowExceptionIfNoJavaAgentButJoularJXLineTest() throws IOException {
         Path buildFile = tempRepo.resolve("build.gradle");
         Files.writeString(buildFile, "some config\\nJOULARJX without javaagent");
-        assertThrows(NoBuildLineUpdatedException.class, () -> stage.updateBuildFile(buildFile, "/some/tool/path"));
+        assertThrows(NoBuildLineUpdatedException.class, () -> stage.updateBuildFile(buildFile, "/some/tool/path", log));
     }
 
     @Test
@@ -96,7 +100,7 @@ class UpdateBuildFileStageTest {
         Path buildFile = tempRepo.resolve("build.gradle");
         Files.writeString(buildFile, "some config\\n-javaagent:JOULARJX\\nother line");
 
-        stage.updateBuildFile(buildFile, "/tool/joularjx.jar");
+        stage.updateBuildFile(buildFile, "/tool/joularjx.jar", log);
 
         String updated = Files.readString(buildFile);
         assertTrue(updated.contains("-javaagent:/tool/joularjx.jar"));

@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ class RunProjectTestsStageTest {
         mockConfig = mock(Config.class);
         mockExecutionPlan = mock(Config.ExecutionPlanConfig.class);
         mockContext = mock(Context.class);
+        when(mockContext.getLogger()).thenReturn(new ConsolePipelineLogger(RunProjectTestsStage.class));
         stage = new RunProjectTestsStage(mockConfig);
     }
 

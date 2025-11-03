@@ -5,11 +5,10 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.database.DatabasePreparer;
 import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
 import be.unamur.snail.utils.CommandRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -17,8 +16,6 @@ import org.slf4j.LoggerFactory;
  * database and the relevant APIs to access it
  */
 public class PrepareBackendStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(PrepareBackendStage.class);
-
     private final CommandRunner runner;
     private final BackendServiceManagerFactory backendFactory;
     private final DatabasePreparerFactory databaseFactory;
@@ -31,6 +28,8 @@ public class PrepareBackendStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         Config config = Config.getInstance();
         String mode = config.getBackend().getMode();
         if (mode == null || mode.isEmpty()) {

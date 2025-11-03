@@ -6,18 +6,15 @@ import be.unamur.snail.exceptions.JavaHomeNotFoundException;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.jdk.JdkManager;
 import be.unamur.snail.jdk.SdkmanJdkManager;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Stage responsible for detecting, installing and configuring the correct
  * JDK version for the analyzed project.
  */
 public class SetupJdkStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(SetupJdkStage.class);
-
     private final JdkManager manager;
     private final Config config;
     private final CommandRunner runner;
@@ -34,6 +31,8 @@ public class SetupJdkStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         String jdkVersion = config.getRepo().getJdk();
         if (jdkVersion == null || jdkVersion.isBlank()) {
             throw new MissingConfigKeyException("repo.jdk");

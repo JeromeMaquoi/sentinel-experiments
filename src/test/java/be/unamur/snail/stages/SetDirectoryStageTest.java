@@ -3,6 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TargetDirectoryNotFoundException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ class SetDirectoryStageTest {
     void setUp() throws IOException {
         stage = new SetDirectoryStage();
         context = new Context();
+        context.setLogger(new ConsolePipelineLogger(SetDirectoryStage.class));
         originalUserDir = System.getProperty("user.dir");
         tempDir = Files.createTempDirectory("testRepoDir");
     }

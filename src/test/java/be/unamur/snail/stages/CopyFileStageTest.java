@@ -2,6 +2,7 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.SourceFileNotFoundException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,6 +23,7 @@ class CopyFileStageTest {
     @BeforeEach
     void setUp() {
         context = mock(Context.class);
+        when(context.getLogger()).thenReturn(new ConsolePipelineLogger(CopyFileStage.class));
     }
 
     @Test

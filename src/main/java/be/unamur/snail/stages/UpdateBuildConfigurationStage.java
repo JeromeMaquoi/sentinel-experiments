@@ -5,11 +5,9 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.utils.ProjectTypeDetector;
-import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -18,8 +16,6 @@ import java.io.File;
  * as java agent during the test execution phase of the analyzed project
  */
 public class UpdateBuildConfigurationStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(UpdateBuildConfigurationStage.class);
-
     private final InitScriptGenerator initScriptGenerator;
     private final Config config;
     private final ProjectTypeDetector projectTypeDetector;
@@ -36,6 +32,8 @@ public class UpdateBuildConfigurationStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         if (context.getRepoPath() == null) {
             throw new MissingContextKeyException("repoPath");
         }

@@ -2,10 +2,9 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.PipelineLogger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -14,10 +13,10 @@ import java.io.File;
  * desired commit
  */
 public class CloneAndCheckoutRepositoryStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(CloneAndCheckoutRepositoryStage.class);
-
     @Override
     public void execute(Context context) {
+        PipelineLogger log = context.getLogger();
+
         Config config = Config.getInstance();
         String repoUrl = config.getRepo().getUrl();
         String commit = config.getRepo().getCommit();

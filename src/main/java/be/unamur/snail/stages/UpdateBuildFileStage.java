@@ -4,8 +4,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.BuildFilesNotFoundException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.NoBuildLineUpdatedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import be.unamur.snail.logging.PipelineLogger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,10 +18,12 @@ import java.util.List;
  * This stages needs to be executed right after copying the build file into the repo.
  */
 public class UpdateBuildFileStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(UpdateBuildFileStage.class);
+    private PipelineLogger log;
 
     @Override
     public void execute(Context context) throws Exception {
+        log = context.getLogger();
+
         String repoPath = context.getRepoPath();
         if (repoPath == null || repoPath.isBlank()) {
             throw new MissingContextKeyException("repoPath");
@@ -45,11 +46,11 @@ public class UpdateBuildFileStage implements Stage {
             throw new BuildFilesNotFoundException();
         }
 
-        updateBuildFile(buildFile, toolPath);
+        updateBuildFile(buildFile, toolPath, log);
         log.info("Copied build file from {} to {}", buildFile.toAbsolutePath(), repoPath);
     }
 
-    public void updateBuildFile(Path buildFile, String toolPath) throws IOException {
+    public void updateBuildFile(Path buildFile, String toolPath, PipelineLogger log) throws IOException {
         log.debug("Updating build file: {}", buildFile);
         List<String> lines = Files.readAllLines(buildFile);
         boolean modified = false;
@@ -62,7 +63,7 @@ public class UpdateBuildFileStage implements Stage {
                 String newLine = line.replaceAll("-javaagent:.*JOULARJX", "-javaagent:" + toolPath);
                 lines.set(i, newLine);
                 modified = true;
-                log.info("Updated javaagent line in {}", buildFile);
+                log.debug("Updated javaagent line in {}", buildFile);
             }
         }
 

@@ -17,10 +17,13 @@ public class FilePipelineLogger implements PipelineLogger {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final boolean alsoLogToConsole;
     private final String loggerName;
+    private final LogLevel minLevel;
 
-    public FilePipelineLogger(Class<?> clazz, Path logFilePath, boolean alsoLogToConsole, boolean clearPreviousLogs) {
+    public FilePipelineLogger(Class<?> clazz, Path logFilePath, boolean alsoLogToConsole, boolean clearPreviousLogs, String minLevelStr) {
         this.alsoLogToConsole = alsoLogToConsole;
         this.loggerName = clazz.getName();
+        this.minLevel = LogLevel.fromString(minLevelStr);
+
         try {
             Files.createDirectories(logFilePath.getParent());
             if (clearPreviousLogs) {
@@ -33,11 +36,13 @@ public class FilePipelineLogger implements PipelineLogger {
         }
     }
 
-    public void write(String level, String message) {
+    public void write(LogLevel level, String message) {
+        if (!minLevel.isEnabledFor(level)) return; // Skip logs below threshold
+
         String line = String.format("%s [%s] %-5s %s - %s",
                 LocalDateTime.now().format(formatter),
                 Thread.currentThread().getName(),
-                level,
+                level.name(),
                 loggerName,
                 message);
         try {
@@ -54,27 +59,27 @@ public class FilePipelineLogger implements PipelineLogger {
 
     @Override
     public void debug(String format, Object... args) {
-        write("DEBUG", format(format, args));
+        write(LogLevel.DEBUG, format(format, args));
     }
 
     @Override
     public void info(String format, Object... args) {
-        write("INFO", format(format, args));
+        write(LogLevel.INFO, format(format, args));
     }
 
     @Override
     public void warn(String format, Object... args) {
-        write("WARN", format(format, args));
+        write(LogLevel.WARN, format(format, args));
     }
 
     @Override
     public void error(String format, Throwable throwable) {
-        write("ERROR", format + " - " + throwable.getMessage());
+        write(LogLevel.ERROR, format + " - " + throwable.getMessage());
     }
 
     @Override
     public void error(String format, Object... args) {
-        write("ERROR", format(format, args));
+        write(LogLevel.ERROR, format(format, args));
     }
 
     @Override

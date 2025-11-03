@@ -8,6 +8,7 @@ import be.unamur.snail.modules.EnergyMeasurementsModule;
 import be.unamur.snail.modules.Module;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
+import be.unamur.snail.utils.Utils;
 
 import java.nio.file.Path;
 
@@ -32,6 +33,7 @@ public class Main {
         boolean clearPreviousLogs = config.getLog().getClearPreviousLogs();
         String configuredLevel = config.getLog().getLevel();
         PipelineLogger pipelineLogger = new FilePipelineLogger(Main.class, logFilePath, alsoLogToConsole, clearPreviousLogs, configuredLevel);
+        Utils.setPipelineLogger(pipelineLogger);
 
         // Select module based on CLI argument
         Module module;

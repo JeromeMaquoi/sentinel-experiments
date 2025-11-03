@@ -2,8 +2,7 @@ package be.unamur.snail.utils;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.CommandTimedOutException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import be.unamur.snail.logging.PipelineLogger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +11,11 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {
-    private static final Logger log = LoggerFactory.getLogger(Utils.class);
+    private static PipelineLogger log;
+
+    public static void setPipelineLogger(PipelineLogger logger) {
+        log = logger;
+    }
 
     public static CompletedProcess runCommand(String command) throws IOException, InterruptedException {
         return runCommand(command, null);

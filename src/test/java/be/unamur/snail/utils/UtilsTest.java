@@ -2,6 +2,8 @@ package be.unamur.snail.utils;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.CommandTimedOutException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
+import be.unamur.snail.logging.PipelineLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UtilsTest {
     @TempDir
-    Path tempDir;
+    private Path tempDir;
+
+    private PipelineLogger logger;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -32,6 +36,9 @@ class UtilsTest {
               level: "DEBUG"
         """);
         Config.load(yaml.toString());
+
+        logger = new ConsolePipelineLogger(Utils.class);
+        Utils.setPipelineLogger(logger);
     }
 
     @AfterEach

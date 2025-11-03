@@ -180,16 +180,26 @@ public class Config {
 
     public static class LogConfig {
         private String level;
+        private String directory;
+        @JsonProperty("also-log-to-console")
+        private boolean alsoLogToConsole;
+        @JsonProperty("clear-previous-logs")
+        private boolean clearPreviousLogs;
 
         public String getLevel() {
             return level;
         }
 
-        @Override
-        public String toString() {
-            return "LogConfig{" +
-                    "level='" + level + '\'' +
-                    '}';
+        public String getDirectory() {
+            return directory;
+        }
+
+        public boolean getAlsoLogToConsole() {
+            return alsoLogToConsole;
+        }
+
+        public boolean getClearPreviousLogs() {
+            return clearPreviousLogs;
         }
     }
 

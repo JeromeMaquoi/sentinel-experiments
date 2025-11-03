@@ -4,10 +4,9 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -23,8 +22,6 @@ import java.nio.file.Files;
  * context data into the db
  */
 public class RunInstrumentedProjectTestsStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(RunInstrumentedProjectTestsStage.class);
-
     private final InitScriptGenerator initScriptGenerator;
 
     public RunInstrumentedProjectTestsStage() {
@@ -33,6 +30,8 @@ public class RunInstrumentedProjectTestsStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         if (context.getRepoPath() == null || context.getRepoPath().isBlank()) {
             throw new MissingContextKeyException("repoPath");
         }

@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,6 +26,7 @@ class CopyDirectoryStageTest {
     void setUp() throws Exception {
         stage = new CopyDirectoryStage();
         context = new Context();
+        context.setLogger(new ConsolePipelineLogger(CopyDirectoryStage.class));
         Path yaml = tempDir.resolve("config.yaml");
         Files.writeString(yaml, """
             project:

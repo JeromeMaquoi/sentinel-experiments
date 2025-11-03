@@ -6,8 +6,7 @@ import be.unamur.snail.exceptions.DirectoryNotCopiedException;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import be.unamur.snail.logging.PipelineLogger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,10 +19,10 @@ import java.nio.file.StandardCopyOption;
  * directory
  */
 public class CopyDirectoryStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(CopyDirectoryStage.class);
-
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         Config config = Config.getInstance();
         String targetDir = config.getRepo().getTargetDir();
         String commit = config.getRepo().getCommit();

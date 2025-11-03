@@ -6,6 +6,7 @@ import be.unamur.snail.database.DatabasePreparer;
 import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.UnsupportedDatabaseMode;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
 import be.unamur.snail.utils.CommandRunner;
@@ -45,6 +46,7 @@ class PrepareBackendStageTest {
         Config.load(yaml.toString());
         config = Config.getInstance();
         context = new Context();
+        context.setLogger(new ConsolePipelineLogger(PrepareBackendStage.class));
 
         runner = mock(CommandRunner.class);
         backendManager = mock(BackendServiceManager.class);

@@ -3,8 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import be.unamur.snail.logging.PipelineLogger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,10 +16,10 @@ import java.nio.file.StandardCopyOption;
  * analyzed project
  */
 public class CopySourceCodeStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(CopySourceCodeStage.class);
-
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         Config config = Config.getInstance();
         String fromDir = config.getCodeConstructorsInstrumentationPath();
         Path from = Paths.get(fromDir);

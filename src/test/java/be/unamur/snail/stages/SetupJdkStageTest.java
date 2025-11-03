@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.jdk.JdkManager;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.utils.CommandRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ class SetupJdkStageTest {
         config = mock(Config.class);
         repo = mock(Config.RepoConfig.class);
         context = new Context();
+        context.setLogger(new ConsolePipelineLogger(SetupJdkStage.class));
         runner = mock(CommandRunner.class);
 
         when(config.getRepo()).thenReturn(repo);

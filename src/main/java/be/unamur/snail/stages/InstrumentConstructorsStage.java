@@ -5,9 +5,8 @@ import be.unamur.snail.core.Context;
 
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.ModuleException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.SpoonException;
 
@@ -19,9 +18,10 @@ import java.util.List;
  * about the constructors of this project
  */
 public class InstrumentConstructorsStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(InstrumentConstructorsStage.class);
     @Override
     public void execute(Context context) throws ModuleException {
+        PipelineLogger log = context.getLogger();
+
         if (context.getClassPath() == null || context.getClassPath().isEmpty()) {
             throw new MissingContextKeyException("classPath");
         }

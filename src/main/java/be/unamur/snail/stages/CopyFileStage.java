@@ -3,8 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.SourceFileNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import be.unamur.snail.logging.PipelineLogger;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -16,8 +15,6 @@ import java.nio.file.StandardCopyOption;
  * Can be used for build files (pom.xml, build.gradle, etc.) or any other file needed during the process
  */
 public class CopyFileStage implements Stage {
-    private static final Logger log = LoggerFactory.getLogger(CopyFileStage.class);
-
     private final Path sourceFile;
     private final Path relativeTargetFilePath;
 
@@ -33,6 +30,8 @@ public class CopyFileStage implements Stage {
      */
     @Override
     public void execute(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
+
         String classPathResource = sourceFile.toString().replace("\\", "/").replaceFirst("^resources/", "");
         InputStream in = getClass().getClassLoader().getResourceAsStream(classPathResource);
         if (in == null) {

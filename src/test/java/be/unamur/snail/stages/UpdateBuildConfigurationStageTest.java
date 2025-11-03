@@ -5,13 +5,13 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.UnknownProjectBuildException;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.utils.ProjectTypeDetector;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +35,7 @@ class UpdateBuildConfigurationStageTest {
         energyMeasurementConfig = mock(Config.EnergyMeasurementConfig.class);
         projectTypeDetector = mock(ProjectTypeDetector.class);
         context = new Context();
+        context.setLogger(new ConsolePipelineLogger(UpdateBuildConfigurationStage.class));
 
         when(config.getExecutionPlan()).thenReturn(executionPlanConfig);
         when(executionPlanConfig.getEnergyMeasurements()).thenReturn(energyMeasurementConfig);

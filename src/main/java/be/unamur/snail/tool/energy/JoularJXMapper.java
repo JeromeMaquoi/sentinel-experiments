@@ -9,31 +9,27 @@ import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import java.util.List;
 
 public class JoularJXMapper {
-    public static CallTreeMeasurementDTO mapCallTreelLine(String line, RunIterationDTO iteration, String commitSha, String scope) {
-        String[] split = line.split(",");
-        if (split.length < 2) return null;
-
-        List<String> callstack = List.of(split[0].split(";"));
-        float value = Float.parseFloat(split[1]);
-
-        CallTreeMeasurementDTO dto = new CallTreeMeasurementDTO();
-        dto.setIteration(iteration);
-        dto.setCommit(createCommitSimpleDTO(commitSha));
-        dto.setCallstack(callstack);
-        dto.setValue(value);
-        dto.setScope();
+    public static Scope mapScope(String folderName) {
+        return switch (folderName.toLowerCase()) {
+            case "app" -> Scope.APP;
+            case "all" -> Scope.ALL;
+            default -> throw new IllegalArgumentException("Unknown scope: " + folderName);
+        };
     }
 
-    public static CommitSimpleDTO createCommitSimpleDTO(String commitSha) {
-        CommitSimpleDTO commit = new CommitSimpleDTO();
-        commit.setSha(commitSha);
+    public static MeasurementType mapMeasurementType(String folderName) {
+        return switch (folderName.toLowerCase()) {
+            case "runtime" -> MeasurementType.RUNTIME;
+            case "total" -> MeasurementType.TOTAL;
+            default -> throw new IllegalArgumentException("Unknown measurement type: " + folderName);
+        };
+    }
 
-        Config config = Config.getInstance();
-        RepositorySimpleDTO repository = new RepositorySimpleDTO();
-        repository.setName(config.getProject().getName());
-        repository.setOwner(config.getProject().getOwner());
-
-        commit.setRepository(repository);
-        return commit;
+    public static MonitoringType mapMonitoringType(String folderName) {
+        return switch (folderName.toLowerCase()) {
+            case "calltrees" -> MonitoringType.CALLTREES;
+            case "methods" -> MonitoringType.METHODS;
+            default -> throw new IllegalArgumentException("Unknown monitoring type: " + folderName);
+        };
     }
 }

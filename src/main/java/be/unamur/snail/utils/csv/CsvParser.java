@@ -1,6 +1,9 @@
 package be.unamur.snail.utils.csv;
 
 import be.unamur.snail.tool.energy.*;
+import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
+import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
+import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 
 import java.io.BufferedReader;
@@ -22,5 +25,13 @@ public class CsvParser {
             }
         }
         return result;
+    }
+
+    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
+
+    }
+
+    public static List<MethodMeasurementDTO> parseMethodFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
+
     }
 }

@@ -2,9 +2,8 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.tool.energy.CsvLineMapper;
-import be.unamur.snail.tool.energy.JoularJXMapper;
-import be.unamur.snail.tool.energy.MeasurementSender;
+import be.unamur.snail.tool.energy.*;
+import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import be.unamur.snail.utils.csv.CsvParser;
 
@@ -34,23 +33,13 @@ public class ImportJoularJXMeasurementsStage implements Stage {
             log.warn("Results root directory does not exist or is not a directory: {}", resultsRoot);
             return;
         }
-         Files.list(resultsRoot)
-                 .filter(Files::isDirectory)
-                 .forEach(pidFolder -> {
-                     try {
-                         RunIterationDTO iteration = parseIterationFromFolder(pidFolder);
-
-                         Path callTreePath = pidFolder.resolve("app/runtime/calltrees");
-                         Path methodsPath = pidFolder.resolve("app/runtime/methods");
-
-                         processFolder(callTreePath, iteration, log, JoularJXMapper::mapCallTreelLine, "/api/v2/call-tree-measurements-entities");
-
-                         Path totalCalltreePath = pidFolder.resolve("app/total/calltrees");
-                         processFolder(totalCalltreePath, iteration, log, JoularJXMapper::mapCallTreelLine, "/api/v2/call-tree-measurements-entities");
-                     } catch (IOException e) {
-                         throw new RuntimeException(e);
-                     }
-                 });
+         List<Path> iterationFolders = Files.list(resultsRoot)
+                         .filter(Files::isDirectory)
+                        .toList();
+        for (Path iterationFolder : iterationFolders) {
+            RunIterationDTO iteration = parseIterationFromFolder(iterationFolder);
+            processFolder(iterationFolder, iteration, log);
+        }
         log.info("Finished importing results from results root: {}", resultsRoot);
     }
 
@@ -59,19 +48,31 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         return Stage.super.getName();
     }
 
-    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, CsvLineMapper<T> mapper, String endpoint) throws IOException {
-        if (!Files.exists(folder)) return;
-        try (Stream<Path> files = Files.list(folder)) {
-            files.filter(f -> f.toString().endsWith(".csv"))
-                    .forEach(file -> {
-                        try {
-                            List<T> dtos = CsvParser.parseCsvFile(file, iteration, commitSha, mapper);
-                            sender.sendMeasurement(dtos, endpoint);
-                        } catch (IOException e) {
-                            log.error("Failed to parse CSV file: {}", file, e);
+    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log) throws IOException {
+        Files.walk(folder)
+                .filter(Files::isRegularFile)
+                .forEach(path -> {
+                    try {
+                        List<String> folderNames = List.of(path.getParent().toAbsolutePath().toString().split("/"));
+                        int n = folderNames.size();
+                        String scope = String.valueOf(JoularJXMapper.mapScope(folderNames.get(n-3)));
+                        MeasurementType measurementType = JoularJXMapper.mapMeasurementType(folderNames.get(n-2));
+                        String monitoringType = String.valueOf(JoularJXMapper.mapMonitoringType(folderNames.get(n-1)));
+
+                        if (monitoringType.equals(MonitoringType.CALLTREES)) {
+                            List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
+                                    path,
+                                    JoularJXMapper.mapScope(scope),
+                                    measurementType,
+                                    JoularJXMapper.mapMonitoringType(monitoringType),
+                                    iteration,
+                                    null
+                            );
                         }
-                    });
-        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     public RunIterationDTO parseIterationFromFolder(Path folder) {

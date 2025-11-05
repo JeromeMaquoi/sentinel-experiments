@@ -96,6 +96,7 @@ public class Config {
 
     public static class ProjectConfig {
         private String name;
+        private String owner;
         @JsonProperty("sub-project")
         private String subProject;
         @JsonProperty("show-project-logs")
@@ -109,6 +110,14 @@ public class Config {
 
         public void setNameForTests(String name) {
             this.name = name;
+        }
+
+        public String getOwner() {
+            return owner;
+        }
+
+        public void setOwnerForTests(String owner) {
+            this.owner = owner;
         }
 
         public String getSubProject() {

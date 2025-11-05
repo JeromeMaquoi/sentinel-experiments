@@ -1,6 +1,7 @@
 command-time-out: 3600
 project:
   name: "spring-boot"
+  owner: "spring-projects"
   sub-project: "spring-boot-project/spring-boot"
   show-project-logs: true
   package-prefix: "org.springframework"

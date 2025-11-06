@@ -67,60 +67,8 @@ public class ImportJoularJXMeasurementsStage implements Stage {
     }
 
     public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig, Context context) throws IOException {
-        Files.walk(folder)
-                .filter(Files::isRegularFile)
-                .forEach(path -> {
-                    try {
-                        JoularJXPathParser.PathInfo pathInfo;
-                        try {
-                            pathInfo = JoularJXPathParser.parse(path);
-                        } catch (IllegalArgumentException e) {
-                            log.debug("Skipping file {}: {}", path, e.getMessage());
-                            return;
-                        }
-
-                        Scope scopeEnum;
-                        MeasurementType measurementEnum;
-                        MonitoringType monitoringEnum;
-
-                         try {
-                            scopeEnum = JoularJXMapper.mapScope(pathInfo.scope());
-                            measurementEnum = JoularJXMapper.mapMeasurementType(pathInfo.measurementType());
-                            monitoringEnum = JoularJXMapper.mapMonitoringType(pathInfo.monitoringType());
-                         } catch (IllegalArgumentException e) {
-                                log.debug("Skipping file {} due to invalid type: {}", path, e.getMessage());
-                                return;
-                         }
-
-                        if (!importConfig.getScopes().contains(scopeEnum.toString()) || !importConfig.getMeasurementTypes().contains(measurementEnum.toString()) || !importConfig.getMonitoringTypes().contains(monitoringEnum.toString())) {
-                            log.debug("Skipping file {} due to import config filters", path);
-                            return;
-                        }
-
-                        log.info("Importing file: {}", path);
-
-                        CommitSimpleDTO commit = JoularJXMapper.mapCommit();
-
-                        if (monitoringEnum == MonitoringType.CALLTREES) {
-                            List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
-                                    path,
-                                    scopeEnum,
-                                    measurementEnum,
-                                    monitoringEnum,
-                                    iteration,
-                                    commit,
-                                    context
-                            );
-                            log.info("DTOs parsed from file {}: {}", path, dtos.size());
-                            String json = serializer.serialize(dtos);
-                            httpClient.post("/api/v2/call-tree-measurements-entities", json);
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        JoularJXFileProcessor fileProcessor = new JoularJXFileProcessor(serializer, httpClient, importConfig, log);
+        new JoularJXFolderProcessor(fileProcessor, log).processFolder(folder, iteration, context);
     }
 
     public RunIterationDTO parseIterationFromFolder(Path folder) {

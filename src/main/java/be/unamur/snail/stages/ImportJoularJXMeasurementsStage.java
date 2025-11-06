@@ -56,7 +56,7 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         for (Path iterationFolder : iterationFolders) {
             log.info("Importing iteration folder: {}", iterationFolder);
             RunIterationDTO iteration = parseIterationFromFolder(iterationFolder);
-            processFolder(iterationFolder, iteration, log, importConfig);
+            processFolder(iterationFolder, iteration, log, importConfig, context);
         }
         log.info("Finished importing results from results root: {}", totalPath);
     }
@@ -66,12 +66,19 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         return Stage.super.getName();
     }
 
-    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig) throws IOException {
+    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig, Context context) throws IOException {
         Files.walk(folder)
                 .filter(Files::isRegularFile)
                 .forEach(path -> {
                     try {
-                        JoularJXPathParser.PathInfo pathInfo = JoularJXPathParser.parse(path);
+                        JoularJXPathParser.PathInfo pathInfo;
+                        try {
+                            pathInfo = JoularJXPathParser.parse(path);
+                        } catch (IllegalArgumentException e) {
+                            log.debug("Skipping file {}: {}", path, e.getMessage());
+                            return;
+                        }
+
                         String scope = pathInfo.scope();
                         String measurementType = pathInfo.measurementType();
                         String monitoringType = pathInfo.monitoringType();
@@ -82,7 +89,7 @@ public class ImportJoularJXMeasurementsStage implements Stage {
                             return;
                         }
 
-                        log.info("Importing file: {}", path);
+                        log.debug("Importing file: {}", path);
 
                         CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
@@ -93,7 +100,8 @@ public class ImportJoularJXMeasurementsStage implements Stage {
                                     JoularJXMapper.mapMeasurementType(measurementType),
                                     JoularJXMapper.mapMonitoringType(monitoringType),
                                     iteration,
-                                    commit
+                                    commit,
+                                    context
                             );
                             log.info("DTOs parsed from file {}: {}", path, dtos.size());
                             String json = serializer.serialize(dtos);

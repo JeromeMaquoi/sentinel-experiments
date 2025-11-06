@@ -1,5 +1,7 @@
 package be.unamur.snail.utils.parser;
 
+import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.tool.energy.MeasurementType;
 import be.unamur.snail.tool.energy.MonitoringType;
 import be.unamur.snail.tool.energy.Scope;
@@ -22,6 +24,7 @@ class CsvParserTest {
     private Path tempFile;
     private RunIterationDTO iteration;
     private CommitSimpleDTO commit;
+    private Context context;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -31,6 +34,8 @@ class CsvParserTest {
         iteration.setStartTimestamp(56789L);
         commit = new CommitSimpleDTO();
         commit.setSha("abcdef123456");
+        context = new Context();
+        context.setLogger(new ConsolePipelineLogger(CsvParser.class));
     }
 
     @AfterEach
@@ -49,7 +54,8 @@ class CsvParserTest {
                 MeasurementType.TOTAL,
                 MonitoringType.CALLTREES,
                 iteration,
-                commit
+                commit,
+                context
         );
 
         assertEquals(2, result.size());
@@ -79,7 +85,8 @@ class CsvParserTest {
                 MeasurementType.RUNTIME,
                 MonitoringType.CALLTREES,
                 iteration,
-                commit
+                commit,
+                context
         );
         System.out.println(result);
 
@@ -98,7 +105,8 @@ class CsvParserTest {
                 MeasurementType.RUNTIME,
                 MonitoringType.CALLTREES,
                 iteration,
-                commit
+                commit,
+                context
         ));
     }
 }

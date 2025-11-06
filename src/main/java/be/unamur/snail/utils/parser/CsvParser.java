@@ -1,5 +1,7 @@
 package be.unamur.snail.utils.parser;
 
+import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.*;
 import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
@@ -13,7 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CsvParser {
-    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
+    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
+        PipelineLogger log = context.getLogger();
+
+        log.info("Parsing call tree file: {}", csvPath);
         List<CallTreeMeasurementDTO> results = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
             String line;

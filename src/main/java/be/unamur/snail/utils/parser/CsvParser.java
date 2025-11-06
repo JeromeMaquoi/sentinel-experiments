@@ -18,7 +18,7 @@ public class CsvParser {
     public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
         PipelineLogger log = context.getLogger();
 
-        log.info("Parsing call tree file: {}", csvPath);
+        log.debug("Parsing call tree file: {}", csvPath);
         List<CallTreeMeasurementDTO> results = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
             String line;

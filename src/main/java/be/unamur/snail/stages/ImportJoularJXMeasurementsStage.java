@@ -79,26 +79,34 @@ public class ImportJoularJXMeasurementsStage implements Stage {
                             return;
                         }
 
-                        String scope = pathInfo.scope();
-                        String measurementType = pathInfo.measurementType();
-                        String monitoringType = pathInfo.monitoringType();
-                        log.debug("Scope: {}, MeasurementType: {}, MonitoringType: {}", scope, measurementType, monitoringType);
+                        Scope scopeEnum;
+                        MeasurementType measurementEnum;
+                        MonitoringType monitoringEnum;
 
-                        if (!importConfig.getScopes().contains(scope) || !importConfig.getMeasurementTypes().contains(measurementType) || !importConfig.getMonitoringTypes().contains(monitoringType)) {
+                         try {
+                            scopeEnum = JoularJXMapper.mapScope(pathInfo.scope());
+                            measurementEnum = JoularJXMapper.mapMeasurementType(pathInfo.measurementType());
+                            monitoringEnum = JoularJXMapper.mapMonitoringType(pathInfo.monitoringType());
+                         } catch (IllegalArgumentException e) {
+                                log.debug("Skipping file {} due to invalid type: {}", path, e.getMessage());
+                                return;
+                         }
+
+                        if (!importConfig.getScopes().contains(scopeEnum.toString()) || !importConfig.getMeasurementTypes().contains(measurementEnum.toString()) || !importConfig.getMonitoringTypes().contains(monitoringEnum.toString())) {
                             log.debug("Skipping file {} due to import config filters", path);
                             return;
                         }
 
-                        log.debug("Importing file: {}", path);
+                        log.info("Importing file: {}", path);
 
                         CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
-                        if (Objects.equals(monitoringType, MonitoringType.CALLTREES.toString())) {
+                        if (monitoringEnum == MonitoringType.CALLTREES) {
                             List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
                                     path,
-                                    JoularJXMapper.mapScope(scope),
-                                    JoularJXMapper.mapMeasurementType(measurementType),
-                                    JoularJXMapper.mapMonitoringType(monitoringType),
+                                    scopeEnum,
+                                    measurementEnum,
+                                    monitoringEnum,
                                     iteration,
                                     commit,
                                     context

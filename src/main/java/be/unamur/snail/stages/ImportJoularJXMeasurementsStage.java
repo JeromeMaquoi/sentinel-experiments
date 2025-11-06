@@ -10,7 +10,8 @@ import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
-import be.unamur.snail.utils.csv.CsvParser;
+import be.unamur.snail.utils.parser.CsvParser;
+import be.unamur.snail.utils.parser.JoularJXPathParser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -70,16 +71,10 @@ public class ImportJoularJXMeasurementsStage implements Stage {
                 .filter(Files::isRegularFile)
                 .forEach(path -> {
                     try {
-                        List<String> folderNames = List.of(path.getParent().toAbsolutePath().toString().split("/"));
-                        int n = folderNames.size();
-                        if (n < 3) {
-                            log.info("Skipping file {} due to insufficient folder hierarchy", path);
-                            return;
-                        }
-
-                        String scope = String.valueOf(JoularJXMapper.mapScope(folderNames.get(n-3)));
-                        String measurementType = String.valueOf(JoularJXMapper.mapMeasurementType(folderNames.get(n-2)));
-                        String monitoringType = String.valueOf(JoularJXMapper.mapMonitoringType(folderNames.get(n-1)));
+                        JoularJXPathParser.PathInfo pathInfo = JoularJXPathParser.parse(path);
+                        String scope = pathInfo.scope();
+                        String measurementType = pathInfo.measurementType();
+                        String monitoringType = pathInfo.monitoringType();
                         log.debug("Scope: {}, MeasurementType: {}, MonitoringType: {}", scope, measurementType, monitoringType);
 
                         if (!importConfig.getScopes().contains(scope) || !importConfig.getMeasurementTypes().contains(measurementType) || !importConfig.getMonitoringTypes().contains(monitoringType)) {

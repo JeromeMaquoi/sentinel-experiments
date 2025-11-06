@@ -1,9 +1,8 @@
-package be.unamur.snail.utils.csv;
+package be.unamur.snail.utils.parser;
 
 import be.unamur.snail.tool.energy.*;
 import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
-import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 
 import java.io.BufferedReader;

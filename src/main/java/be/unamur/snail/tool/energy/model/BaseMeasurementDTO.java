@@ -2,8 +2,6 @@ package be.unamur.snail.tool.energy.model;
 
 import be.unamur.snail.tool.energy.*;
 
-import java.util.List;
-
 public class BaseMeasurementDTO {
     private Scope scope;
     private MeasurementType type;
@@ -29,7 +27,7 @@ public class BaseMeasurementDTO {
         return type;
     }
 
-    public void setType(MeasurementType type) {
+    public void setMeasurementType(MeasurementType type) {
         this.type = type;
     }
 

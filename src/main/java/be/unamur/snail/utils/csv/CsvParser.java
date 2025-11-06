@@ -12,26 +12,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class CsvParser {
-    public static <T> List<T> parseCsvFile(Path csvFile, RunIterationDTO iteration, String commitSha, CsvLineMapper<T> mapper) throws IOException {
-        List<T> result = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(csvFile)) {
+    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
+        List<CallTreeMeasurementDTO> results = new ArrayList<>();
+        try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                T dto = mapper.map(line, iteration, commitSha);
-                if (dto != null) result.add(dto);
+            while ((line = reader.readLine()) != null && !line.isBlank()) {
+                String[] parts = line.split(",");
+                if (parts.length != 2) continue;
+
+                String callstackStr = parts[0];
+                float value = Float.parseFloat(parts[1]);
+
+                CallTreeMeasurementDTO dto = new CallTreeMeasurementDTO();
+                dto.setScope(scope);
+                dto.setMeasurementType(measurementType);
+                dto.setMonitoringType(monitoringType);
+                dto.setIteration(iteration);
+                dto.setCommit(commit);
+                dto.setCallstack(List.of(callstackStr.split(";")));
+                dto.setValue(value);
+
+                results.add(dto);
             }
         }
-        return result;
+        return results;
     }
 
-    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
-
-    }
-
-    public static List<MethodMeasurementDTO> parseMethodFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
-
-    }
+//    public static List<MethodMeasurementDTO> parseMethodFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit) throws IOException {
+//
+//    }
 }

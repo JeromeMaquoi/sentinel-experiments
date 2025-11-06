@@ -1,12 +1,8 @@
 package be.unamur.snail.tool.energy;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
 import be.unamur.snail.tool.energy.model.RepositorySimpleDTO;
-import be.unamur.snail.tool.energy.model.RunIterationDTO;
-
-import java.util.List;
 
 public class JoularJXMapper {
     public static Scope mapScope(String folderName) {
@@ -31,5 +27,18 @@ public class JoularJXMapper {
             case "methods" -> MonitoringType.METHODS;
             default -> throw new IllegalArgumentException("Unknown monitoring type: " + folderName);
         };
+    }
+
+    public static CommitSimpleDTO mapCommit() {
+        Config config = Config.getInstance();
+
+        CommitSimpleDTO dto = new CommitSimpleDTO();
+        dto.setSha(config.getRepo().getCommit());
+
+        RepositorySimpleDTO repository = new RepositorySimpleDTO();
+        repository.setOwner(config.getProject().getOwner());
+        repository.setName(config.getProject().getName());
+        dto.setRepository(repository);
+        return dto;
     }
 }

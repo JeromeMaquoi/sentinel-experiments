@@ -7,14 +7,11 @@ import be.unamur.snail.stages.CloneAndCheckoutRepositoryStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.tool.energy.EnergyMeasurementTool;
 import be.unamur.snail.tool.energy.EnergyMeasurementToolFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EnergyMeasurementsModule implements Module {
-    private static final Logger log = LoggerFactory.getLogger(EnergyMeasurementsModule.class);
     private final List<Stage> stages;
 
     public EnergyMeasurementsModule() {

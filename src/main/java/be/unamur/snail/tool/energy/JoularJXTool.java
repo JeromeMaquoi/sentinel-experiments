@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class JoularJXTool implements EnergyMeasurementTool {
@@ -30,26 +31,33 @@ public class JoularJXTool implements EnergyMeasurementTool {
     @Override
     public List<Stage> createSetupStages() {
         return List.of(
-                new RetrieveToolReleaseStage(),
-                //new UpdateBuildConfigurationStage()
-                createCopyBuildFileStage(),
-                new UpdateBuildFileStage(),
-                createCopyConfigFileStage(),
-                new SetupJdkStage()
+//                new RetrieveToolReleaseStage(),
+//                createCopyBuildFileStage(),
+//                new UpdateBuildFileStage(),
+//                createCopyConfigFileStage(),
+//                new SetupJdkStage()
         );
     }
 
     @Override
     public List<Stage> createMeasurementStages() {
         return List.of(
-                new SetDirectoryStage(),
-                new RunProjectTestsStage()
+//                new SetDirectoryStage(),
+//                new RunProjectTestsStage()
         );
     }
 
     @Override
     public List<Stage> createPostProcessingStages() {
-        return List.of();
+        return List.of(createImportMeasurementsStage());
+    }
+
+    protected ImportJoularJXMeasurementsStage createImportMeasurementsStage() {
+        String subProject = config.getProject().getSubProject();
+        String totalProjectString = subProject != null && !subProject.isBlank() ? subProject + "/joularjx-result" : "joularjx-result";
+        Path totalProjectPath = Paths.get(totalProjectString).normalize();
+        log.debug("Configured ImportJoularJXMeasurementsStage with results root: {}", totalProjectPath);
+        return new ImportJoularJXMeasurementsStage(totalProjectPath);
     }
 
     /**

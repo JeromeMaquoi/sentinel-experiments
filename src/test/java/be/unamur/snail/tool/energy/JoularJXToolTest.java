@@ -3,6 +3,7 @@ package be.unamur.snail.tool.energy;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.exceptions.BuildFileNotFoundException;
 import be.unamur.snail.stages.CopyFileStage;
+import be.unamur.snail.stages.ImportJoularJXMeasurementsStage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,42 @@ class JoularJXToolTest {
         mockProject = mock(Config.ProjectConfig.class);
         when(mockConfig.getProject()).thenReturn(mockProject);
         tool = new JoularJXTool(mockConfig);
+    }
+
+    @Test
+    void createImportMeasurementsStageShouldReturnStageWithCorrectResultsRootTest() {
+        when(mockProject.getSubProject()).thenReturn("sub-project");
+        ImportJoularJXMeasurementsStage stage = tool.createImportMeasurementsStage();
+
+        assertNotNull(stage);
+
+        Path expectedPath = Path.of("sub-project").resolve("joularjx-result").normalize();
+        Path actualPath = getField(stage, "resultsRoot");
+        assertEquals(expectedPath, actualPath);
+    }
+
+    @Test
+    void createImportMeasurementsStageShouldReturnStageWithDefaultResultsRootWhenNoSubProjectTest() {
+        when(mockProject.getSubProject()).thenReturn(null);
+        ImportJoularJXMeasurementsStage stage = tool.createImportMeasurementsStage();
+
+        assertNotNull(stage);
+
+        Path expectedPath = Path.of("joularjx-result").normalize();
+        Path actualPath = getField(stage, "resultsRoot");
+        assertEquals(expectedPath, actualPath);
+    }
+
+    @Test
+    void createImportMeasurementsStageShouldReturnStageWithDefaultResultsRootWhenEmptySubProjectTest() {
+        when(mockProject.getSubProject()).thenReturn("");
+        ImportJoularJXMeasurementsStage stage = tool.createImportMeasurementsStage();
+
+        assertNotNull(stage);
+
+        Path expectedPath = Path.of("joularjx-result").normalize();
+        Path actualPath = getField(stage, "resultsRoot");
+        assertEquals(expectedPath, actualPath);
     }
 
     @Test
@@ -151,6 +188,17 @@ class JoularJXToolTest {
     private Path getField(CopyFileStage stage, String fieldName) {
         try {
             var field = CopyFileStage.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return (Path) field.get(stage);
+        } catch (Exception e) {
+            fail("Unable to read field " + fieldName + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Path getField(ImportJoularJXMeasurementsStage stage, String fieldName) {
+        try {
+            var field = ImportJoularJXMeasurementsStage.class.getDeclaredField(fieldName);
             field.setAccessible(true);
             return (Path) field.get(stage);
         } catch (Exception e) {

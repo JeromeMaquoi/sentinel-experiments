@@ -1,5 +1,6 @@
 package be.unamur.snail.stages;
 
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
@@ -37,6 +38,9 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         if (context.getRepoPath() == null || context.getRepoPath().isBlank()) {
             throw new MissingContextKeyException("repoPath");
         }
+        Config config = Config.getInstance();
+        Config.ImportConfig importConfig = config.getExecutionPlan().getEnergyMeasurements().getImportConfig();
+
         PipelineLogger log = context.getLogger();
 
         Path totalPath = Path.of(context.getRepoPath()).resolve(resultsRoot).normalize();
@@ -51,7 +55,7 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         for (Path iterationFolder : iterationFolders) {
             log.info("Importing iteration folder: {}", iterationFolder);
             RunIterationDTO iteration = parseIterationFromFolder(iterationFolder);
-            processFolder(iterationFolder, iteration, log);
+            processFolder(iterationFolder, iteration, log, importConfig);
         }
         log.info("Finished importing results from results root: {}", totalPath);
     }
@@ -61,28 +65,42 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         return Stage.super.getName();
     }
 
-    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log) throws IOException {
+    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig) throws IOException {
         Files.walk(folder)
                 .filter(Files::isRegularFile)
                 .forEach(path -> {
-                    log.debug("Processing file: {}", path);
                     try {
                         List<String> folderNames = List.of(path.getParent().toAbsolutePath().toString().split("/"));
                         int n = folderNames.size();
+                        if (n < 3) {
+                            log.info("Skipping file {} due to insufficient folder hierarchy", path);
+                            return;
+                        }
+
                         String scope = String.valueOf(JoularJXMapper.mapScope(folderNames.get(n-3)));
-                        MeasurementType measurementType = JoularJXMapper.mapMeasurementType(folderNames.get(n-2));
+                        String measurementType = String.valueOf(JoularJXMapper.mapMeasurementType(folderNames.get(n-2)));
                         String monitoringType = String.valueOf(JoularJXMapper.mapMonitoringType(folderNames.get(n-1)));
+                        log.debug("Scope: {}, MeasurementType: {}, MonitoringType: {}", scope, measurementType, monitoringType);
+
+                        if (!importConfig.getScopes().contains(scope) || !importConfig.getMeasurementTypes().contains(measurementType) || !importConfig.getMonitoringTypes().contains(monitoringType)) {
+                            log.debug("Skipping file {} due to import config filters", path);
+                            return;
+                        }
+
+                        log.info("Importing file: {}", path);
+
                         CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
                         if (Objects.equals(monitoringType, MonitoringType.CALLTREES.toString())) {
                             List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
                                     path,
                                     JoularJXMapper.mapScope(scope),
-                                    measurementType,
+                                    JoularJXMapper.mapMeasurementType(measurementType),
                                     JoularJXMapper.mapMonitoringType(monitoringType),
                                     iteration,
                                     commit
                             );
+                            log.info("DTOs parsed from file {}: {}", path, dtos.size());
                             String json = serializer.serialize(dtos);
                             httpClient.post("/api/v2/call-tree-measurements-entities", json);
                         }

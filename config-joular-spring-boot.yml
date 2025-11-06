@@ -26,6 +26,10 @@ execution-plan:
     tool-version: "3.0.1"
     release-url: "https://github.com/joular/joularjx"
     tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
+    import-config:
+      scopes: ["app"]
+      measurement-types: ["runtime"]
+      monitoring-types: ["calltrees"]
 backend:
   mode: dev
   server-host: localhost

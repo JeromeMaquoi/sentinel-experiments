@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.File;
+import java.util.List;
 
 public class Config {
     private static Config instance;
@@ -254,6 +255,8 @@ public class Config {
         private String releaseUrl;
         @JsonProperty("tool-path")
         private String toolPath;
+        @JsonProperty("import-config")
+        private ImportConfig importConfig;
 
         public String getTool() {
             return tool;
@@ -267,6 +270,9 @@ public class Config {
         public String getToolPath() {
             return toolPath;
         }
+        public ImportConfig getImportConfig() {
+            return importConfig;
+        }
 
         @Override
         public String toString() {
@@ -275,6 +281,38 @@ public class Config {
                     ", toolVersion='" + toolVersion + '\'' +
                     ", releaseUrl='" + releaseUrl + '\'' +
                     ", toolPath='" + toolPath + '\'' +
+                    ", importConfig=" + importConfig +
+                    '}';
+        }
+    }
+
+
+
+    public static class ImportConfig {
+        private List<String> scopes;
+        @JsonProperty("measurement-types")
+        private List<String> measurementTypes;
+        @JsonProperty("monitoring-types")
+        private List<String> monitoringTypes;
+
+        public List<String> getScopes() {
+            return scopes;
+        }
+
+        public List<String> getMeasurementTypes() {
+            return measurementTypes;
+        }
+
+        public List<String> getMonitoringTypes() {
+            return monitoringTypes;
+        }
+
+        @Override
+        public String toString() {
+            return "ImportConfig{" +
+                    "scopes=" + scopes +
+                    ", measurementTypes=" + measurementTypes +
+                    ", monitoringTypes=" + monitoringTypes +
                     '}';
         }
     }

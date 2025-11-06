@@ -17,7 +17,10 @@ public class CsvParser {
         List<CallTreeMeasurementDTO> results = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
             String line;
-            while ((line = reader.readLine()) != null && !line.isBlank()) {
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isBlank()) continue;
+
                 String[] parts = line.split(",");
                 if (parts.length != 2) continue;
 

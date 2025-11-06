@@ -17,6 +17,13 @@ public class CallTreeMeasurementDTO extends BaseMeasurementDTO {
         this.callstack = callstack;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "CallTreeMeasurementDTO{" +
+                "callstack=" + callstack +
+                '}';
+    }
 }
 
 

@@ -23,7 +23,7 @@ public class BaseMeasurementDTO {
         return this;
     }
 
-    public MeasurementType getType() {
+    public MeasurementType getMeasurementType() {
         return type;
     }
 
@@ -86,5 +86,17 @@ public class BaseMeasurementDTO {
     public BaseMeasurementDTO withValue(Float value) {
         this.value = value;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseMeasurementDTO{" +
+                "scope=" + scope +
+                ", type=" + type +
+                ", monitoringType=" + monitoringType +
+                ", iteration=" + iteration +
+                ", commit=" + commit +
+                ", value=" + value +
+                '}';
     }
 }

@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
+import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
 import be.unamur.snail.utils.parser.CsvParser;
@@ -46,6 +47,10 @@ public class JoularJXFileProcessor {
 
             if (monitoringType == MonitoringType.CALLTREES) {
                 processCallTree(path, scope, measurementType, monitoringType, iteration, commit, context);
+            } else if (monitoringType == MonitoringType.METHODS) {
+                processMethod(path, scope, measurementType, monitoringType, iteration, commit, context);
+            } else {
+                log.debug("Skipping file {}: unsupported monitoring type {}", path, monitoringType);
             }
         } catch (Exception e) {
             log.error("Error processing file {}: {}", path, e.getMessage());
@@ -78,8 +83,23 @@ public class JoularJXFileProcessor {
                 commit,
                 context
         );
-        log.info("DTOs parsed from file {}: {}", path, dtos.size());
+        log.info("Calltrees DTOs parsed from file {}: {}", path, dtos.size());
         String json = serializer.serialize(dtos);
         httpClient.post("/api/v2/call-tree-measurements-entities", json);
+    }
+
+    public void processMethod(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
+        List<MethodMeasurementDTO> dtos = CsvParser.parseMethodFile(
+                path,
+                scope,
+                measurementType,
+                monitoringType,
+                iteration,
+                commit,
+                context
+        );
+        log.info("Methods DTOs parsed from file {}: {}", path, dtos.size());
+        String json = serializer.serialize(dtos);
+        httpClient.post("/api/v2/method-measurements-entities", json);
     }
 }

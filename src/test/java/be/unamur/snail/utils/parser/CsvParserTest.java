@@ -2,104 +2,63 @@ package be.unamur.snail.utils.parser;
 
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.ConsolePipelineLogger;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.MeasurementType;
 import be.unamur.snail.tool.energy.MonitoringType;
 import be.unamur.snail.tool.energy.Scope;
 import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
+import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CsvParserTest {
-    private Path tempFile;
-    private RunIterationDTO iteration;
-    private CommitSimpleDTO commit;
+    @Mock
+    private PipelineLogger log;
+    @Mock
     private Context context;
 
+    private RunIterationDTO iteration;
+    private CommitSimpleDTO commit;
+
+    private AutoCloseable mocks;
+
     @BeforeEach
-    void setUp() throws IOException {
-        tempFile = Files.createTempFile("test", ".csv");
+    void setUp() {
+        mocks = MockitoAnnotations.openMocks(this);
+        when(context.getLogger()).thenReturn(log);
         iteration = new RunIterationDTO();
-        iteration.setPid(1234);
-        iteration.setStartTimestamp(56789L);
         commit = new CommitSimpleDTO();
-        commit.setSha("abcdef123456");
-        context = new Context();
-        context.setLogger(new ConsolePipelineLogger(CsvParser.class));
     }
 
     @AfterEach
-    void tearDown() throws IOException {
-        Files.deleteIfExists(tempFile);
+    void tearDown() throws Exception {
+        mocks.close();
     }
 
     @Test
-    void parseCallTreeFileShouldParseValidCsvTest() throws IOException {
-        String csvContent = "methodA;methodB;methodC,12.34\n" +
-                            "methodX;methodY,56.78\n";
-        Files.writeString(tempFile, csvContent);
-        List<CallTreeMeasurementDTO> result = CsvParser.parseCallTreeFile(
-                tempFile,
-                Scope.APP,
-                MeasurementType.TOTAL,
-                MonitoringType.CALLTREES,
-                iteration,
-                commit,
-                context
-        );
+    void parseCallTreeFileShouldParseValidFileTest() throws IOException {
+        Path tempFile = Files.createTempFile("calltree", ".csv");
+        Files.writeString(tempFile, "methodA;methodB,1.23\nmethodC;methodD,4.56");
 
-        assertEquals(2, result.size());
-
-        CallTreeMeasurementDTO first = result.get(0);
-        assertEquals(Scope.APP, first.getScope());
-        assertEquals(MeasurementType.TOTAL, first.getMeasurementType());
-        assertEquals(MonitoringType.CALLTREES, first.getMonitoringType());
-        assertEquals(iteration, first.getIteration());
-        assertEquals(commit, first.getCommit());
-        assertEquals(List.of("methodA", "methodB", "methodC"), first.getCallstack());
-        assertEquals(12.34f, first.getValue());
-    }
-
-    @Test
-    void parseCallTreeFileShouldSkipInvalidLinesTest() throws IOException {
-        String csvContent = "methodA;methodB,10.0\n" +
-                "invalid_line_without_comma\n" +
-                "too,many,commas,here\n" +
-                "\n" +
-                "methodC,20.0\n";
-        Files.writeString(tempFile, csvContent, StandardOpenOption.TRUNCATE_EXISTING);
-
-        List<CallTreeMeasurementDTO> result = CsvParser.parseCallTreeFile(
-                tempFile,
-                Scope.ALL,
-                MeasurementType.RUNTIME,
-                MonitoringType.CALLTREES,
-                iteration,
-                commit,
-                context
-        );
-        System.out.println(result);
-
-        assertEquals(2, result.size());
-        assertEquals(10.0f, result.get(0).getValue());
-        assertEquals(20.0f, result.get(1).getValue());
-    }
-
-    @Test
-    void parseCallTreeFileShouldThrowNumberFormatExceptionForInvalidFloatTest() throws IOException {
-        Files.writeString(tempFile, "methodA;methodB,not_a_number\n");
-
-        assertThrows(NumberFormatException.class, () -> CsvParser.parseCallTreeFile(
+        List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
                 tempFile,
                 Scope.APP,
                 MeasurementType.RUNTIME,
@@ -107,6 +66,103 @@ class CsvParserTest {
                 iteration,
                 commit,
                 context
-        ));
+        );
+
+        assertEquals(2, dtos.size());
+        CallTreeMeasurementDTO resultDto1 = dtos.get(0);
+        assertEquals(List.of("methodA", "methodB"), resultDto1.getCallstack());
+        assertEquals(1.23f, resultDto1.getValue());
+        assertEquals(Scope.APP, resultDto1.getScope());
+        assertEquals(MeasurementType.RUNTIME, resultDto1.getMeasurementType());
+        assertEquals(MonitoringType.CALLTREES, resultDto1.getMonitoringType());
+        assertEquals(iteration, resultDto1.getIteration());
+        assertEquals(commit, resultDto1.getCommit());
+    }
+
+    @Test
+    void parseMethodFileShouldParseValidFileTest() throws IOException {
+        Path tempFile = Files.createTempFile("method", ".csv");
+        Files.writeString(tempFile, "methodX,7.89\nmethodY,0.12");
+
+        List<MethodMeasurementDTO> dtos = CsvParser.parseMethodFile(
+                tempFile,
+                Scope.APP,
+                MeasurementType.RUNTIME,
+                MonitoringType.METHODS,
+                iteration,
+                commit,
+                context
+        );
+
+        assertEquals(2, dtos.size());
+        MethodMeasurementDTO resultDto1 = dtos.get(0);
+        assertEquals("methodX", resultDto1.getMethod());
+        assertEquals(7.89f, resultDto1.getValue());
+        assertEquals(Scope.APP, resultDto1.getScope());
+        assertEquals(MeasurementType.RUNTIME, resultDto1.getMeasurementType());
+        assertEquals(MonitoringType.METHODS, resultDto1.getMonitoringType());
+        assertEquals(iteration, resultDto1.getIteration());
+        assertEquals(commit, resultDto1.getCommit());
+    }
+
+    @Test
+    void parseCsvFileShouldSkipInvalidLinesAndTrimTest() throws IOException {
+        Path tempFile = Files.createTempFile("generic", ".csv");
+        Files.writeString(tempFile, """
+                validLine,1.0
+                invalidLine
+                ,2.0
+                
+                anotherValidLine,3.0
+                ,
+                """);
+        Function<String[], String> builder = parts -> parts[0] + ":" + parts[1];
+        List<String> results = CsvParser.parseCsvFile(
+                tempFile,
+                builder,
+                context,
+                "test"
+        );
+        assertEquals(List.of("validLine:1.0", "anotherValidLine:3.0"), results);
+    }
+
+    @Test
+    void buildCallTreeDtoShouldCreateDtoCorrectlyTest() {
+        String[] parts = {"methodA;methodB;methodC", "2.34"};
+        CallTreeMeasurementDTO dto = CsvParser.buildCallTreeDto(
+                parts,
+                Scope.APP,
+                MeasurementType.RUNTIME,
+                MonitoringType.CALLTREES,
+                iteration,
+                commit
+        );
+        assertEquals(List.of("methodA", "methodB", "methodC"), dto.getCallstack());
+        assertEquals(2.34f, dto.getValue());
+        assertEquals(Scope.APP, dto.getScope());
+        assertEquals(MeasurementType.RUNTIME, dto.getMeasurementType());
+        assertEquals(MonitoringType.CALLTREES, dto.getMonitoringType());
+        assertEquals(iteration, dto.getIteration());
+        assertEquals(commit, dto.getCommit());
+    }
+
+    @Test
+    void buildMethodDtoShouldCreateDtoCorrectlyTest() {
+        String[] parts = {"methodX", "5.67"};
+        MethodMeasurementDTO dto = CsvParser.buildMethodDto(
+                parts,
+                Scope.APP,
+                MeasurementType.RUNTIME,
+                MonitoringType.METHODS,
+                iteration,
+                commit
+        );
+        assertEquals("methodX", dto.getMethod());
+        assertEquals(5.67f, dto.getValue());
+        assertEquals(Scope.APP, dto.getScope());
+        assertEquals(MeasurementType.RUNTIME, dto.getMeasurementType());
+        assertEquals(MonitoringType.METHODS, dto.getMonitoringType());
+        assertEquals(iteration, dto.getIteration());
+        assertEquals(commit, dto.getCommit());
     }
 }

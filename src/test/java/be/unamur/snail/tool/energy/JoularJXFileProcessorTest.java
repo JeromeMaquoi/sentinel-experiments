@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
+import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
 import be.unamur.snail.utils.parser.CsvParser;
@@ -111,7 +112,7 @@ class JoularJXFileProcessorTest {
 
             verify(serializer).serialize(dtos);
             verify(httpClient).post("/api/v2/call-tree-measurements-entities", "{json}");
-            verify(log).info(contains("DTOs parsed from file"), eq(path), eq(dtos.size()));
+            verify(log).info(contains("Calltrees DTOs parsed from file"), eq(path), eq(dtos.size()));
         }
     }
 
@@ -131,6 +132,53 @@ class JoularJXFileProcessorTest {
             assertThrows(IOException.class, () -> fileProcessor.processCallTree(
                     path, Scope.APP, MeasurementType.RUNTIME,
                     MonitoringType.CALLTREES, iteration, commit, context
+            ));
+        }
+    }
+
+    @Test
+    void processMethodShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
+        List<MethodMeasurementDTO> dtos = List.of(mock(MethodMeasurementDTO.class));
+
+        try (var csvMock = mockStatic(CsvParser.class)) {
+            csvMock.when(() -> CsvParser.parseMethodFile(
+                    any(), any(), any(), any(), any(), any(), any())
+            ).thenReturn(dtos);
+
+            when(serializer.serialize(dtos)).thenReturn("{json}");
+
+            fileProcessor.processMethod(
+                    path,
+                    Scope.APP,
+                    MeasurementType.RUNTIME,
+                    MonitoringType.METHODS,
+                    iteration,
+                    commit,
+                    context
+            );
+
+            verify(serializer).serialize(dtos);
+            verify(httpClient).post("/api/v2/method-measurements-entities", "{json}");
+            verify(log).info(contains("Methods DTOs parsed from file"), eq(path), eq(dtos.size()));
+        }
+    }
+
+    @Test
+    void processMethodShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
+        List<MethodMeasurementDTO> dtos = List.of(mock(MethodMeasurementDTO.class));
+
+        try (var csvMock = mockStatic(CsvParser.class)) {
+            csvMock.when(() -> CsvParser.parseMethodFile(
+                    any(), any(), any(), any(), any(), any(), any())
+            ).thenReturn(dtos);
+
+            when(serializer.serialize(dtos)).thenReturn("{json}");
+            doThrow(new IOException("HTTP error"))
+                    .when(httpClient).post(anyString(), anyString());
+
+            assertThrows(IOException.class, () -> fileProcessor.processMethod(
+                    path, Scope.APP, MeasurementType.RUNTIME,
+                    MonitoringType.METHODS, iteration, commit, context
             ));
         }
     }
@@ -161,6 +209,36 @@ class JoularJXFileProcessorTest {
             fileProcessor.process(path, iteration, context);
 
             verify(httpClient).post("/api/v2/call-tree-measurements-entities", "{json}");
+            verify(log).info(contains("Importing file"), eq(path));
+        }
+    }
+
+    @Test
+    void processShouldParseAndHandleMethodSucessfullyTest() throws IOException, InterruptedException {
+        JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "methods");
+
+        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class);
+             MockedStatic<JoularJXMapper> mapperMock = mockStatic(JoularJXMapper.class);
+             MockedStatic<CsvParser> csvMock = mockStatic(CsvParser.class)) {
+            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
+
+            mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMonitoringType("methods")).thenReturn(MonitoringType.METHODS);
+            mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
+
+            when(importConfig.getScopes()).thenReturn(List.of("app"));
+            when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
+            when(importConfig.getMonitoringTypes()).thenReturn(List.of("methods"));
+
+            csvMock.when(() -> CsvParser.parseMethodFile(any(), any(), any(), any(), any(), any(), any()))
+                    .thenReturn(List.of(mock(MethodMeasurementDTO.class)));
+
+            when(serializer.serialize(any())).thenReturn("{json}");
+
+            fileProcessor.process(path, iteration, context);
+
+            verify(httpClient).post("/api/v2/method-measurements-entities", "{json}");
             verify(log).info(contains("Importing file"), eq(path));
         }
     }

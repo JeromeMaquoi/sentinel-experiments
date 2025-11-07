@@ -60,7 +60,7 @@ class JoularJXFileProcessorTest {
 
     @Test
     void parsePathShouldReturnNullWhenInvalidPathTest() {
-        try (MockedStatic mocked = mockStatic(JoularJXPathParser.class)) {
+        try (MockedStatic<JoularJXPathParser> mocked = mockStatic(JoularJXPathParser.class)) {
             mocked.when(() -> JoularJXPathParser.parse(path)).thenThrow(new IllegalArgumentException("Invalid path"));
             JoularJXPathParser.PathInfo result = fileProcessor.parsePath(path);
             assertNull(result);
@@ -139,15 +139,15 @@ class JoularJXFileProcessorTest {
     void processShouldParseAndHandleCallTreeSucessfullyTest() throws IOException, InterruptedException {
         JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
 
-        try (MockedStatic parserMock = mockStatic(JoularJXPathParser.class);
-        MockedStatic mapperMock = mockStatic(JoularJXMapper.class);
-        MockedStatic csvMock = mockStatic(CsvParser.class)) {
+        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class);
+             MockedStatic<JoularJXMapper> mapperMock = mockStatic(JoularJXMapper.class);
+             MockedStatic<CsvParser> csvMock = mockStatic(CsvParser.class)) {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
             mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
-            mapperMock.when(() -> JoularJXMapper.mapCommit()).thenReturn(commit);
+            mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
 
             when(importConfig.getScopes()).thenReturn(List.of("app"));
             when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
@@ -162,6 +162,46 @@ class JoularJXFileProcessorTest {
 
             verify(httpClient).post("/api/v2/call-tree-measurements-entities", "{json}");
             verify(log).info(contains("Importing file"), eq(path));
+        }
+    }
+
+    @Test
+    void processShouldSkipFileWhenNotAllowedTest() {
+        JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
+
+        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class);
+             MockedStatic<JoularJXMapper> mapperMock = mockStatic(JoularJXMapper.class)) {
+            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
+
+            mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
+
+            when(importConfig.getScopes()).thenReturn(List.of("all"));
+            when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
+            when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
+
+            fileProcessor.process(path, iteration, context);
+
+            verify(log).debug(contains("Skipping file"), eq(path), eq(Scope.APP), eq(MeasurementType.RUNTIME), eq(MonitoringType.CALLTREES));
+        }
+    }
+
+    @Test
+    void processShouldLogAndThrowRuntimeExceptionOnErrorTest() {
+        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class)) {
+            parserMock.when(() -> JoularJXPathParser.parse(path)).thenThrow(new RuntimeException("Parse failed"));
+            assertThrows(RuntimeException.class, () -> fileProcessor.process(path, iteration, context));
+            verify(log).error(contains("Error processing file"), eq(path), contains("Parse failed"));
+        }
+    }
+
+    @Test
+    void processShouldReturnImmediatelyWhenPathInfoIsNullTest() {
+        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class)) {
+            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(null);
+            fileProcessor.process(path, iteration, context);
+            verifyNoInteractions(log);
         }
     }
 }

@@ -62,7 +62,8 @@ public class JoularJXTool implements EnergyMeasurementTool {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
         return List.of(
                 new PrepareBackendStage(runner, backendFactory, databaseFactory),
-                createImportMeasurementsStage()
+                createImportMeasurementsStage(),
+                new StopBackendStage(runner, backendFactory, databaseFactory)
         );
     }
 

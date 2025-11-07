@@ -56,6 +56,33 @@ public class DevBackendServiceManager implements BackendServiceManager {
         return isServerRunning();
     }
 
+    @Override
+    public boolean stopBackend() throws IOException, InterruptedException {
+        log.info("Stopping backend...");
+        String command = "screen -S " + sessionName + " -X quit";
+        runner.run(command);
+        log.info("Screen session terminated. Waiting 1 second...");
+
+        Thread.sleep(1000);
+
+        Config config = Config.getInstance();
+        int backendPort = config.getBackend().getServerPort();
+        if (isPortInUse(backendPort)) {
+            Utils.CompletedProcess result = runner.run("lsof -t -i:" + backendPort);
+            if (result.returnCode() == 0 && !result.stdout().isBlank()) {
+                String pid = result.stdout().trim();
+                log.info("Killing process with PID {} using port {}", pid, backendPort);
+                runner.run("kill -9 " + pid);
+            } else {
+                log.warn("No PID found for backend on port {}", backendPort);
+            }
+        } else {
+            log.info("Backend stopped successfully.");
+        }
+
+        return !isPortInUse(backendPort);
+    }
+
     public boolean isBackendAlreadyRunning(String host, int port) {
         try {
             String command = "curl http://" + host + ":" + port + "/management/health";

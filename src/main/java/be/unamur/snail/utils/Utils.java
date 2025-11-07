@@ -67,4 +67,12 @@ public class Utils {
 
     public record CompletedProcess(String args, int returnCode, String stdout, String stderr) {
     }
+
+    public static String createEndpointURL(Config config, String endpoint) {
+        String host = config.getBackend().getServerHost();
+        int port = config.getBackend().getServerPort();
+        return endpoint.startsWith("/") ?
+                String.format("http://%s:%d%s", host, port, endpoint) :
+                String.format("http://%s:%d/%s", host, port, endpoint);
+    }
 }

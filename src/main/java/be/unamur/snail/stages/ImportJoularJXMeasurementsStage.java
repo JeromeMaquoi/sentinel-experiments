@@ -6,18 +6,13 @@ import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.*;
-import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
-import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
-import be.unamur.snail.utils.parser.CsvParser;
-import be.unamur.snail.utils.parser.JoularJXPathParser;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 
 public class ImportJoularJXMeasurementsStage implements Stage {
     private final Path resultsRoot;
@@ -66,7 +61,7 @@ public class ImportJoularJXMeasurementsStage implements Stage {
         return Stage.super.getName();
     }
 
-    public <T> void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig, Context context) throws IOException {
+    public void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig, Context context) throws IOException {
         JoularJXFileProcessor fileProcessor = new JoularJXFileProcessor(serializer, httpClient, importConfig, log);
         new JoularJXFolderProcessor(fileProcessor, log).processFolder(folder, iteration, context);
     }

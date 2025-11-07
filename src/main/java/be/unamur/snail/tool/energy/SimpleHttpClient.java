@@ -20,13 +20,13 @@ public class SimpleHttpClient {
         this.httpClient = httpClient;
     }
 
-    public String post(String endpoint, String payload) throws IOException, InterruptedException {
+    public String post(String url, String payload) throws IOException, InterruptedException {
         if (payload == null) {
             throw new InvalidPropertiesFormatException("No data to send to the server");
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
+                .uri(URI.create(url))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();

@@ -8,6 +8,7 @@ import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
 import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
+import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.parser.CsvParser;
 import be.unamur.snail.utils.parser.JoularJXPathParser;
 
@@ -85,7 +86,8 @@ public class JoularJXFileProcessor {
         );
         log.info("Calltrees DTOs parsed from file {}: {}", path, dtos.size());
         String json = serializer.serialize(dtos);
-        httpClient.post("/api/v2/call-tree-measurements-entities", json);
+        String url = Utils.createEndpointURL(Config.getInstance(), "/api/v2/call-tree-measurements-entities");
+        httpClient.post(url, json);
     }
 
     public void processMethod(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {

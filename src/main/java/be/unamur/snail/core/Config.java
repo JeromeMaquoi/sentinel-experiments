@@ -394,6 +394,10 @@ public class Config {
             return serverHost;
         }
 
+        public void setServerHostForTests(String serverHost) {
+            this.serverHost = serverHost;
+        }
+
         public String getServerReadyPath() {
             return serverReadyPath;
         }

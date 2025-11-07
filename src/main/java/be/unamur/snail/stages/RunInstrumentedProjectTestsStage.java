@@ -54,9 +54,7 @@ public class RunInstrumentedProjectTestsStage implements Stage {
         // Add API endpoint as system property for data sending to the db
         String endpoint = config.getBackend().getEndpoint();
         if (endpoint != null && !endpoint.isBlank()) {
-            String host = config.getBackend().getServerHost();
-            int port = config.getBackend().getServerPort();
-            String completeEndpoint = "http://" + host + ":" + port + endpoint;
+            String completeEndpoint = Utils.createEndpointURL(config, endpoint);
             log.info("Setting endpoint to {}", completeEndpoint);
             commandWithInit += " -DapiUrl=" + completeEndpoint;
         }

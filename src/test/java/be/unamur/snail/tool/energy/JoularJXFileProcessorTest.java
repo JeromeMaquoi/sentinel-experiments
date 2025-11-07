@@ -32,6 +32,7 @@ class JoularJXFileProcessorTest {
     private Context context;
     private Path path;
     private CommitSimpleDTO commit;
+    private Config config;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +47,13 @@ class JoularJXFileProcessorTest {
         context = mock(Context.class);
         path = mock(Path.class);
         commit = mock(CommitSimpleDTO.class);
+
+        config = new Config();
+        var backendConfig = new Config.BackendConfig();
+        backendConfig.setServerHostForTests("localhost");
+        backendConfig.setServerPortForTests(8080);
+        config.setBackendForTests(backendConfig);
+        Config.setInstanceForTests(config);
     }
 
     @Test
@@ -111,7 +119,7 @@ class JoularJXFileProcessorTest {
             );
 
             verify(serializer).serialize(dtos);
-            verify(httpClient).post("/api/v2/call-tree-measurements-entities", "{json}");
+            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities", "{json}");
             verify(log).info(contains("Calltrees DTOs parsed from file"), eq(path), eq(dtos.size()));
         }
     }
@@ -208,7 +216,7 @@ class JoularJXFileProcessorTest {
 
             fileProcessor.process(path, iteration, context);
 
-            verify(httpClient).post("/api/v2/call-tree-measurements-entities", "{json}");
+            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities", "{json}");
             verify(log).info(contains("Importing file"), eq(path));
         }
     }

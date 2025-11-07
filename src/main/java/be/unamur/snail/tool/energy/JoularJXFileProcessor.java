@@ -47,9 +47,9 @@ public class JoularJXFileProcessor {
             CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
             if (monitoringType == MonitoringType.CALLTREES) {
-                processCallTree(path, scope, measurementType, monitoringType, iteration, commit, context);
+                processCallTrees(path, scope, measurementType, monitoringType, iteration, commit, context);
             } else if (monitoringType == MonitoringType.METHODS) {
-                processMethod(path, scope, measurementType, monitoringType, iteration, commit, context);
+                processMethods(path, scope, measurementType, monitoringType, iteration, commit, context);
             } else {
                 log.debug("Skipping file {}: unsupported monitoring type {}", path, monitoringType);
             }
@@ -74,7 +74,7 @@ public class JoularJXFileProcessor {
                importConfig.getMonitoringTypes().contains(monitoringType.toString());
     }
 
-    public void processCallTree(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
+    public void processCallTrees(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
         List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
                 path,
                 scope,
@@ -86,11 +86,11 @@ public class JoularJXFileProcessor {
         );
         log.info("Calltrees DTOs parsed from file {}: {}", path, dtos.size());
         String json = serializer.serialize(dtos);
-        String url = Utils.createEndpointURL(Config.getInstance(), "/api/v2/call-tree-measurements-entities");
+        String url = Utils.createEndpointURL(Config.getInstance(), "/api/v2/call-tree-measurements-entities/bulk");
         httpClient.post(url, json);
     }
 
-    public void processMethod(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
+    public void processMethods(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
         List<MethodMeasurementDTO> dtos = CsvParser.parseMethodFile(
                 path,
                 scope,
@@ -102,6 +102,6 @@ public class JoularJXFileProcessor {
         );
         log.info("Methods DTOs parsed from file {}: {}", path, dtos.size());
         String json = serializer.serialize(dtos);
-        httpClient.post("/api/v2/method-measurements-entities", json);
+        httpClient.post("/api/v2/method-measurements-entities/bulk", json);
     }
 }

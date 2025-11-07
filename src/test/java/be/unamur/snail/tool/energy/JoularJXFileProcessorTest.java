@@ -98,7 +98,7 @@ class JoularJXFileProcessorTest {
     }
 
     @Test
-    void processCallTreeShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
+    void processCallTreesShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
         List<CallTreeMeasurementDTO> dtos = List.of(mock(CallTreeMeasurementDTO.class));
 
         try (var csvMock = mockStatic(CsvParser.class)) {
@@ -108,7 +108,7 @@ class JoularJXFileProcessorTest {
 
             when(serializer.serialize(dtos)).thenReturn("{json}");
 
-            fileProcessor.processCallTree(
+            fileProcessor.processCallTrees(
                     path,
                     Scope.APP,
                     MeasurementType.RUNTIME,
@@ -119,13 +119,13 @@ class JoularJXFileProcessorTest {
             );
 
             verify(serializer).serialize(dtos);
-            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities", "{json}");
+            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities/bulk", "{json}");
             verify(log).info(contains("Calltrees DTOs parsed from file"), eq(path), eq(dtos.size()));
         }
     }
 
     @Test
-    void processCallTreeShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
+    void processCallTreesShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
         List<CallTreeMeasurementDTO> dtos = List.of(mock(CallTreeMeasurementDTO.class));
 
         try (var csvMock = mockStatic(CsvParser.class)) {
@@ -137,7 +137,7 @@ class JoularJXFileProcessorTest {
             doThrow(new IOException("HTTP error"))
                     .when(httpClient).post(anyString(), anyString());
 
-            assertThrows(IOException.class, () -> fileProcessor.processCallTree(
+            assertThrows(IOException.class, () -> fileProcessor.processCallTrees(
                     path, Scope.APP, MeasurementType.RUNTIME,
                     MonitoringType.CALLTREES, iteration, commit, context
             ));
@@ -145,7 +145,7 @@ class JoularJXFileProcessorTest {
     }
 
     @Test
-    void processMethodShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
+    void processMethodsShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
         List<MethodMeasurementDTO> dtos = List.of(mock(MethodMeasurementDTO.class));
 
         try (var csvMock = mockStatic(CsvParser.class)) {
@@ -155,7 +155,7 @@ class JoularJXFileProcessorTest {
 
             when(serializer.serialize(dtos)).thenReturn("{json}");
 
-            fileProcessor.processMethod(
+            fileProcessor.processMethods(
                     path,
                     Scope.APP,
                     MeasurementType.RUNTIME,
@@ -166,13 +166,13 @@ class JoularJXFileProcessorTest {
             );
 
             verify(serializer).serialize(dtos);
-            verify(httpClient).post("/api/v2/method-measurements-entities", "{json}");
+            verify(httpClient).post("/api/v2/method-measurements-entities/bulk", "{json}");
             verify(log).info(contains("Methods DTOs parsed from file"), eq(path), eq(dtos.size()));
         }
     }
 
     @Test
-    void processMethodShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
+    void processMethodsShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
         List<MethodMeasurementDTO> dtos = List.of(mock(MethodMeasurementDTO.class));
 
         try (var csvMock = mockStatic(CsvParser.class)) {
@@ -184,7 +184,7 @@ class JoularJXFileProcessorTest {
             doThrow(new IOException("HTTP error"))
                     .when(httpClient).post(anyString(), anyString());
 
-            assertThrows(IOException.class, () -> fileProcessor.processMethod(
+            assertThrows(IOException.class, () -> fileProcessor.processMethods(
                     path, Scope.APP, MeasurementType.RUNTIME,
                     MonitoringType.METHODS, iteration, commit, context
             ));
@@ -216,7 +216,7 @@ class JoularJXFileProcessorTest {
 
             fileProcessor.process(path, iteration, context);
 
-            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities", "{json}");
+            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities/bulk", "{json}");
             verify(log).info(contains("Importing file"), eq(path));
         }
     }
@@ -246,7 +246,7 @@ class JoularJXFileProcessorTest {
 
             fileProcessor.process(path, iteration, context);
 
-            verify(httpClient).post("/api/v2/method-measurements-entities", "{json}");
+            verify(httpClient).post("/api/v2/method-measurements-entities/bulk", "{json}");
             verify(log).info(contains("Importing file"), eq(path));
         }
     }

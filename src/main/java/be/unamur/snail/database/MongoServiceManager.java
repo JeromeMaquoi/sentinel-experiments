@@ -31,4 +31,16 @@ public class MongoServiceManager {
         }
         return false;
     }
+
+    public boolean stopMongoService() throws IOException, InterruptedException {
+        log.info("Stopping MongoDB service...");
+        runner.run("sudo systemctl stop mongod");
+
+        for (int i = 0; i < nbRetries; i++) {
+            Utils.CompletedProcess status = runner.run("systemctl is-active mongod");
+            if (status.stdout().trim().equals("inactive")) return true;
+            Thread.sleep(delayMs);
+        }
+        return false;
+    }
 }

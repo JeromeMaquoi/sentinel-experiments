@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,6 +47,10 @@ class ConfigTest {
                 tool-version: "1.0.0"
                 release-url: "https://example.com/jrapl.zip"
                 tool-path: "/tools/jrapl"
+                import-config:
+                    scopes: ["app", "all"]
+                    measurement-types: ["runtime", "total"]
+                    monitoring-types: ["methods", "calltrees"]
             backend:
               mode: dev
               server-timeout-seconds: 60
@@ -65,7 +70,7 @@ class ConfigTest {
 
         // Project config
         assertEquals("sub/module", config.getProject().getSubProject());
-        assertEquals(true, config.getProject().isShowProjectLogs());
+        assertTrue(config.getProject().isShowProjectLogs());
         assertEquals("org.springframework", config.getProject().getPackagePrefix());
 
         // Repo config
@@ -73,7 +78,7 @@ class ConfigTest {
         assertEquals("123abc", config.getRepo().getCommit());
         assertEquals("/tmp/repo", config.getRepo().getTargetDir());
         assertEquals("17-tem", config.getRepo().getJdk());
-        assertEquals(true, config.getRepo().isOverwrite());
+        assertTrue(config.getRepo().isOverwrite());
 
         // Log config
         assertEquals("DEBUG", config.getLog().getLevel());
@@ -83,8 +88,8 @@ class ConfigTest {
 
         // Execution plan config
         assertEquals("mvn test", config.getExecutionPlan().getTestCommand());
-        assertEquals(true, config.getExecutionPlan().getIgnoreFailures());
-        assertEquals(false, config.getExecutionPlan().getIgnoreSpoonFailures());
+        assertTrue(config.getExecutionPlan().getIgnoreFailures());
+        assertFalse(config.getExecutionPlan().getIgnoreSpoonFailures());
         assertEquals(5, config.getExecutionPlan().getNumTestRuns());
 
         Config.EnergyMeasurementConfig em = config.getExecutionPlan().getEnergyMeasurements();
@@ -93,6 +98,12 @@ class ConfigTest {
         assertEquals("1.0.0", em.getToolVersion());
         assertEquals("https://example.com/jrapl.zip", em.getReleaseUrl());
         assertEquals("/tools/jrapl", em.getToolPath());
+
+        Config.ImportConfig importConfig = em.getImportConfig();
+        assertNotNull(importConfig);
+        assertEquals(List.of("app", "all"), importConfig.getScopes());
+        assertEquals(List.of("runtime", "total"), importConfig.getMeasurementTypes());
+        assertEquals(List.of("methods", "calltrees"), importConfig.getMonitoringTypes());
 
         // Backend config
         assertEquals("dev", config.getBackend().getMode());

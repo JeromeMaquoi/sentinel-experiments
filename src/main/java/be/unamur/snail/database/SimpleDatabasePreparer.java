@@ -1,6 +1,7 @@
 package be.unamur.snail.database;
 
 import be.unamur.snail.exceptions.MongoServiceNotStartedException;
+import be.unamur.snail.exceptions.MongoServiceNotStoppedException;
 import be.unamur.snail.exceptions.ServerNotStartedException;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import org.slf4j.Logger;
@@ -26,5 +27,17 @@ public class SimpleDatabasePreparer implements DatabasePreparer {
             throw new ServerNotStartedException();
         }
         log.info("Backend service started");
+    }
+
+    @Override
+    public void stopBackendAndDatabase() throws Exception {
+        if (!backendServiceManager.stopBackend()) {
+            throw new ServerNotStartedException();
+        }
+        log.info("Backend service stopped");
+        if (!mongoServiceManager.stopMongoService()) {
+            throw new MongoServiceNotStoppedException();
+        }
+        log.info("Mongo service stopped");
     }
 }

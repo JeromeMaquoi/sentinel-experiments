@@ -22,4 +22,10 @@ public class ProdBackendServiceManager implements BackendServiceManager {
         // TODO
         return false;
     }
+
+    @Override
+    public boolean stopBackend() throws IOException, InterruptedException {
+        // TODO
+        return false;
+    }
 }

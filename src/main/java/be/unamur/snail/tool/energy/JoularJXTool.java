@@ -1,8 +1,15 @@
 package be.unamur.snail.tool.energy;
 
 import be.unamur.snail.core.Config;
+import be.unamur.snail.database.DatabasePreparerFactory;
+import be.unamur.snail.database.MongoServiceManager;
+import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.exceptions.BuildFileNotFoundException;
+import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
+import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.stages.*;
+import be.unamur.snail.utils.CommandRunner;
+import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +56,14 @@ public class JoularJXTool implements EnergyMeasurementTool {
 
     @Override
     public List<Stage> createPostProcessingStages() {
-        return List.of(createImportMeasurementsStage());
+        CommandRunner runner = new SimpleCommandRunner();
+        MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);
+        BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
+        DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
+        return List.of(
+                new PrepareBackendStage(runner, backendFactory, databaseFactory),
+                createImportMeasurementsStage()
+        );
     }
 
     protected ImportJoularJXMeasurementsStage createImportMeasurementsStage() {

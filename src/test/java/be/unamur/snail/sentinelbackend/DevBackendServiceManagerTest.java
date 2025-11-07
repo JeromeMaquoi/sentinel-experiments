@@ -209,6 +209,66 @@ class DevBackendServiceManagerTest {
     }
 
     @Test
+    void stopBackendIfPortNoInUseTest() {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+
+        try {
+            doReturn(false).when(manager).isPortInUse(anyInt());
+
+            boolean result = manager.stopBackend();
+
+            assertTrue(result);
+            verify(runnerMock).run("screen -S sentinel-backend -X quit");
+        } catch (IOException | InterruptedException e) {
+            fail("Exception should not be thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void stopBackendIfNoPidFoundTest() {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+
+        try {
+            doReturn(true).when(manager).isPortInUse(anyInt());
+            Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);
+            when(completedProcess.stdout()).thenReturn("");
+            when(runnerMock.run("lsof -t -i:8080")).thenReturn(completedProcess);
+
+            boolean result = manager.stopBackend();
+
+            assertFalse(result);
+            verify(runnerMock).run("screen -S sentinel-backend -X quit");
+            verify(runnerMock).run("lsof -t -i:8080");
+        } catch (IOException | InterruptedException e) {
+            fail("Exception should not be thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void stopBackendShouldKillProcessIfPortStillInUseTest() {
+        CommandRunner runnerMock = mock(CommandRunner.class);
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runnerMock, backendPath, 5, 100));
+
+        try {
+            doReturn(true).when(manager).isPortInUse(anyInt());
+            Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);
+            when(completedProcess.stdout()).thenReturn("1234\n");
+            when(runnerMock.run("lsof -t -i:8080")).thenReturn(completedProcess);
+
+            boolean result = manager.stopBackend();
+
+            assertFalse(result);
+            verify(runnerMock).run("screen -S sentinel-backend -X quit");
+            verify(runnerMock).run("lsof -t -i:8080");
+            verify(runnerMock).run("kill -9 1234");
+        } catch (IOException | InterruptedException e) {
+            fail("Exception should not be thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
     void isPortInUseShouldReturnTrueTest() throws IOException, InterruptedException {
         CommandRunner runnerMock = mock(CommandRunner.class);
         Utils.CompletedProcess completedProcess = mock(Utils.CompletedProcess.class);

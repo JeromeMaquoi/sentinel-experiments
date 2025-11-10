@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.model.*;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
+import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.parser.CsvParser;
 import be.unamur.snail.utils.parser.JoularJXPathParser;
 
@@ -43,12 +44,15 @@ public class JoularJXFileProcessor {
 
             List<? extends BaseMeasurementDTO> dtos = CsvParser.parseCsvFile(path, scope, measurementLevel, monitoringType, iteration, commit, context);
             String json = serializer.serialize(dtos);
+
             String endpoint = String.format(
                     "/api/v2/measurements/%s/%s/bulk",
                     measurementLevel.name().toLowerCase(),
                     monitoringType.name().toLowerCase()
             );
-            httpClient.post(endpoint, json);
+            String url = Utils.createEndpointURL(Config.getInstance(), endpoint);
+
+            httpClient.post(url, json);
         } catch (Exception e) {
             log.error("Error processing file {}: {}", path, e.getMessage());
             throw new RuntimeException(e);

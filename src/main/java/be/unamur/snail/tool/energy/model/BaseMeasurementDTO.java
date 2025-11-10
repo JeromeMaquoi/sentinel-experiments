@@ -4,7 +4,7 @@ import be.unamur.snail.tool.energy.*;
 
 public class BaseMeasurementDTO {
     private Scope scope;
-    private MeasurementLevel type;
+    private MeasurementLevel measurementLevel;
     private MonitoringType monitoringType;
     private RunIterationDTO iteration;
     private CommitSimpleDTO commit;
@@ -18,22 +18,12 @@ public class BaseMeasurementDTO {
         this.scope = scope;
     }
 
-    public BaseMeasurementDTO withScope(Scope scope) {
-        this.scope = scope;
-        return this;
+    public MeasurementLevel getMeasurementLevel() {
+        return measurementLevel;
     }
 
-    public MeasurementLevel getMeasurementType() {
-        return type;
-    }
-
-    public void setMeasurementType(MeasurementLevel type) {
-        this.type = type;
-    }
-
-    public BaseMeasurementDTO withMeasurementType(MeasurementLevel type) {
-        this.type = type;
-        return this;
+    public void setMeasurementLevel(MeasurementLevel type) {
+        this.measurementLevel = type;
     }
 
     public MonitoringType getMonitoringType() {
@@ -44,22 +34,12 @@ public class BaseMeasurementDTO {
         this.monitoringType = monitoringType;
     }
 
-    public BaseMeasurementDTO withMonitoringType(MonitoringType monitoringType) {
-        this.monitoringType = monitoringType;
-        return this;
-    }
-
     public RunIterationDTO getIteration() {
         return iteration;
     }
 
     public void setIteration(RunIterationDTO iteration) {
         this.iteration = iteration;
-    }
-
-    public BaseMeasurementDTO withIteration(RunIterationDTO iteration) {
-        this.iteration = iteration;
-        return this;
     }
 
     public CommitSimpleDTO getCommit() {
@@ -70,11 +50,6 @@ public class BaseMeasurementDTO {
         this.commit = commit;
     }
 
-    public BaseMeasurementDTO withCommit(CommitSimpleDTO commit) {
-        this.commit = commit;
-        return this;
-    }
-
     public Float getValue() {
         return value;
     }
@@ -83,16 +58,11 @@ public class BaseMeasurementDTO {
         this.value = value;
     }
 
-    public BaseMeasurementDTO withValue(Float value) {
-        this.value = value;
-        return this;
-    }
-
     @Override
     public String toString() {
         return "BaseMeasurementDTO{" +
                 "scope=" + scope +
-                ", type=" + type +
+                ", type=" + measurementLevel +
                 ", monitoringType=" + monitoringType +
                 ", iteration=" + iteration +
                 ", commit=" + commit +

@@ -3,10 +3,7 @@ package be.unamur.snail.utils.parser;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.*;
-import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
-import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
-import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
-import be.unamur.snail.tool.energy.model.RunIterationDTO;
+import be.unamur.snail.tool.energy.model.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,28 +16,27 @@ import java.util.function.Function;
 public class CsvParser {
     private CsvParser() {}
 
-    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
-        return parseCsvFile(
-                csvPath,
-                line -> buildCallTreeDto(line, scope, measurementLevel, monitoringType, iteration, commit),
-                context,
-                "call tree"
-        );
-    }
-
-    public static List<MethodMeasurementDTO> parseMethodFile(Path csvPath, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
-        return parseCsvFile(
-                csvPath,
-                line -> buildMethodDto(line, scope, measurementLevel, monitoringType, iteration, commit),
-                context,
-                "method"
-        );
-    }
-
-    public static <T> List<T> parseCsvFile(Path csvPath, Function<String[], T> dtoBuilder, Context context, String label) throws IOException {
+    public static List<? extends BaseMeasurementDTO> parseCsvFile(
+            Path csvPath,
+            Scope scope,
+            MeasurementLevel measurementLevel,
+            MonitoringType monitoringType,
+            RunIterationDTO iteration,
+            CommitSimpleDTO commit,
+            Context context
+    ) throws IOException {
         PipelineLogger log = context.getLogger();
+        log.debug("Parsing {} file: {}", measurementLevel, csvPath);
 
-        log.debug("Parsing {} file: {}", label, csvPath);
+        if (measurementLevel == MeasurementLevel.RUNTIME) {
+            long timestamp = JoularJXPathParser.extractTimestamp(csvPath);
+            return parseCsv(csvPath, line -> buildRuntimeDTO(line, timestamp, scope, measurementLevel, monitoringType, iteration, commit));
+        } else {
+            return parseCsv(csvPath, line -> buildTotalDTO(line, scope, measurementLevel, monitoringType, iteration, commit));
+        }
+    }
+
+    public static <T> List<T> parseCsv(Path csvPath, Function<String[], T> dtoBuilder) throws IOException {
         List<T> results = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
             String line;
@@ -59,30 +55,29 @@ public class CsvParser {
         return results;
     }
 
-    public static CallTreeMeasurementDTO buildCallTreeDto(
+    public static BaseMeasurementDTO buildRuntimeDTO(
             String[] parts,
+            long timestamp,
             Scope scope,
             MeasurementLevel measurementLevel,
             MonitoringType monitoringType,
             RunIterationDTO iteration,
             CommitSimpleDTO commit
     ) {
-        String callstackStr = parts[0];
-        float value = Float.parseFloat(parts[1]);
-
-        CallTreeMeasurementDTO dto = new CallTreeMeasurementDTO();
-        dto.setScope(scope);
-        dto.setMeasurementType(measurementLevel);
-        dto.setMonitoringType(monitoringType);
-        dto.setIteration(iteration);
-        dto.setCommit(commit);
-        dto.setCallstack(List.of(callstackStr.split(";")));
-        dto.setValue(value);
-
-        return dto;
+        if (monitoringType == MonitoringType.CALLTREES) {
+            RuntimeCallTreeMeasurementDTO dto = new RuntimeCallTreeMeasurementDTO();
+            dto.setCallstack(List.of(parts[0].split(";")));
+            fillCommonFields(dto, timestamp, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
+            return dto;
+        } else {
+            RuntimeMethodMeasurementDTO dto = new RuntimeMethodMeasurementDTO();
+            dto.setMethod(parts[0]);
+            fillCommonFields(dto, timestamp, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
+            return dto;
+        }
     }
 
-    public static MethodMeasurementDTO buildMethodDto(
+    public static BaseMeasurementDTO buildTotalDTO(
             String[] parts,
             Scope scope,
             MeasurementLevel measurementLevel,
@@ -90,18 +85,37 @@ public class CsvParser {
             RunIterationDTO iteration,
             CommitSimpleDTO commit
     ) {
-        String method = parts[0];
-        float value = Float.parseFloat(parts[1]);
+        if (monitoringType == MonitoringType.CALLTREES) {
+            TotalCallTreeMeasurementDTO dto = new TotalCallTreeMeasurementDTO();
+            dto.setCallstack(List.of(parts[0].split(";")));
+            fillCommonFields(dto, null, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
+            return dto;
+        } else {
+            TotalMethodMeasurementDTO dto = new TotalMethodMeasurementDTO();
+            dto.setMethod(parts[0]);
+            fillCommonFields(dto, null, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
+            return dto;
+        }
+    }
 
-        MethodMeasurementDTO dto = new MethodMeasurementDTO();
+    public static void fillCommonFields(
+            BaseMeasurementDTO dto,
+            Long timestamp,
+            Scope scope,
+            MeasurementLevel measurementLevel,
+            MonitoringType monitoringType,
+            RunIterationDTO iteration,
+            CommitSimpleDTO commit,
+            Float value
+    ) {
         dto.setScope(scope);
-        dto.setMeasurementType(measurementLevel);
+        dto.setMeasurementLevel(measurementLevel);
         dto.setMonitoringType(monitoringType);
         dto.setIteration(iteration);
         dto.setCommit(commit);
-        dto.setMethod(method);
         dto.setValue(value);
-
-        return dto;
+        if (dto instanceof RuntimeMeasurementDTO runtimeDTO && timestamp != null) {
+            runtimeDTO.setTimestamp(timestamp);
+        }
     }
 }

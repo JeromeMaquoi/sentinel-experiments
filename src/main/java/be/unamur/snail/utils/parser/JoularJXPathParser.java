@@ -1,7 +1,11 @@
 package be.unamur.snail.utils.parser;
 
+import be.unamur.snail.exceptions.TimestampNotFoundException;
+
 import java.nio.file.Path;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JoularJXPathParser {
     public record PathInfo(String scope, String measurementLevel, String monitoringType) {
@@ -28,5 +32,15 @@ public class JoularJXPathParser {
             }
         }
         return null;
+    }
+
+    public static long extractTimestamp(Path path) {
+        String fileName = path.getFileName().toString();
+        Pattern pattern = Pattern.compile("joularJX-\\d+-(\\d+)-filtered-.*");
+        Matcher matcher = pattern.matcher(fileName);
+        if (matcher.matches()) {
+            return Long.parseLong(matcher.group(1));
+        }
+        throw new TimestampNotFoundException(fileName);
     }
 }

@@ -3,16 +3,11 @@ package be.unamur.snail.tool.energy;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
-import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
-import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
-import be.unamur.snail.tool.energy.model.RunIterationDTO;
+import be.unamur.snail.tool.energy.model.*;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
-import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.parser.CsvParser;
 import be.unamur.snail.utils.parser.JoularJXPathParser;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -46,13 +41,14 @@ public class JoularJXFileProcessor {
             log.info("Importing file: {}", path);
             CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
-            if (monitoringType == MonitoringType.CALLTREES) {
-                processCallTrees(path, scope, measurementLevel, monitoringType, iteration, commit, context);
-            } else if (monitoringType == MonitoringType.METHODS) {
-                processMethods(path, scope, measurementLevel, monitoringType, iteration, commit, context);
-            } else {
-                log.debug("Skipping file {}: unsupported monitoring type {}", path, monitoringType);
-            }
+            List<? extends BaseMeasurementDTO> dtos = CsvParser.parseCsvFile(path, scope, measurementLevel, monitoringType, iteration, commit, context);
+            String json = serializer.serialize(dtos);
+            String endpoint = String.format(
+                    "/api/v2/measurements/%s/%s/bulk",
+                    measurementLevel.name().toLowerCase(),
+                    monitoringType.name().toLowerCase()
+            );
+            httpClient.post(endpoint, json);
         } catch (Exception e) {
             log.error("Error processing file {}: {}", path, e.getMessage());
             throw new RuntimeException(e);
@@ -72,36 +68,5 @@ public class JoularJXFileProcessor {
         return importConfig.getScopes().contains(scope.toString()) &&
                importConfig.getMeasurementTypes().contains(measurementLevel.toString()) &&
                importConfig.getMonitoringTypes().contains(monitoringType.toString());
-    }
-
-    public void processCallTrees(Path path, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
-        List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
-                path,
-                scope,
-                measurementLevel,
-                monitoringType,
-                iteration,
-                commit,
-                context
-        );
-        log.info("Calltrees DTOs parsed from file {}: {}", path, dtos.size());
-        String json = serializer.serialize(dtos);
-        String url = Utils.createEndpointURL(Config.getInstance(), "/api/v2/call-tree-measurements-entities/bulk");
-        httpClient.post(url, json);
-    }
-
-    public void processMethods(Path path, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
-        List<MethodMeasurementDTO> dtos = CsvParser.parseMethodFile(
-                path,
-                scope,
-                measurementLevel,
-                monitoringType,
-                iteration,
-                commit,
-                context
-        );
-        log.info("Methods DTOs parsed from file {}: {}", path, dtos.size());
-        String json = serializer.serialize(dtos);
-        httpClient.post("/api/v2/method-measurements-entities/bulk", json);
     }
 }

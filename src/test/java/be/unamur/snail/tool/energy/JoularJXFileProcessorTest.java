@@ -3,10 +3,10 @@ package be.unamur.snail.tool.energy;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
+import be.unamur.snail.tool.energy.model.BaseMeasurementDTO;
 import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
-import be.unamur.snail.tool.energy.model.MethodMeasurementDTO;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
+import be.unamur.snail.tool.energy.model.RuntimeMethodMeasurementDTO;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
 import be.unamur.snail.utils.parser.CsvParser;
 import be.unamur.snail.utils.parser.JoularJXPathParser;
@@ -31,7 +31,6 @@ class JoularJXFileProcessorTest {
     private RunIterationDTO iteration;
     private Context context;
     private Path path;
-    private CommitSimpleDTO commit;
     private Config config;
 
     @BeforeEach
@@ -46,7 +45,6 @@ class JoularJXFileProcessorTest {
         iteration = mock(RunIterationDTO.class);
         context = mock(Context.class);
         path = mock(Path.class);
-        commit = mock(CommitSimpleDTO.class);
 
         config = new Config();
         var backendConfig = new Config.BackendConfig();
@@ -59,7 +57,7 @@ class JoularJXFileProcessorTest {
     @Test
     void parsePathShouldReturnPathInfoWhenValidPathTest() {
         JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
-        try (MockedStatic mocked = mockStatic(JoularJXPathParser.class)) {
+        try (MockedStatic<JoularJXPathParser> mocked = mockStatic(JoularJXPathParser.class)) {
             mocked.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             JoularJXPathParser.PathInfo result = fileProcessor.parsePath(path);
@@ -83,7 +81,7 @@ class JoularJXFileProcessorTest {
         when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
         when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
 
-        boolean allowed = fileProcessor.isAllowed(Scope.APP, MeasurementType.RUNTIME, MonitoringType.CALLTREES);
+        boolean allowed = fileProcessor.isAllowed(Scope.APP, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES);
         assertTrue(allowed);
     }
 
@@ -93,201 +91,111 @@ class JoularJXFileProcessorTest {
         when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
         when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
 
-        boolean allowed = fileProcessor.isAllowed(Scope.ALL, MeasurementType.RUNTIME, MonitoringType.CALLTREES);
+        boolean allowed = fileProcessor.isAllowed(Scope.ALL, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES);
         assertFalse(allowed);
     }
 
     @Test
-    void processCallTreesShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
-        List<CallTreeMeasurementDTO> dtos = List.of(mock(CallTreeMeasurementDTO.class));
+    void processShouldImportFileWhenAllowedTest() throws IOException, InterruptedException {
+        Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-app-runtime-calltrees.csv");
+        JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
+        BaseMeasurementDTO dto = new RuntimeMethodMeasurementDTO();
+        dto.setValue(1.23f);
 
-        try (var csvMock = mockStatic(CsvParser.class)) {
-            csvMock.when(() -> CsvParser.parseCallTreeFile(
-                    any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(dtos);
+        when(importConfig.getScopes()).thenReturn(List.of("app"));
+        when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
+        when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
 
-            when(serializer.serialize(dtos)).thenReturn("{json}");
+        when(serializer.serialize(any())).thenReturn("[json]");
 
-            fileProcessor.processCallTrees(
-                    path,
-                    Scope.APP,
-                    MeasurementType.RUNTIME,
-                    MonitoringType.CALLTREES,
-                    iteration,
-                    commit,
-                    context
-            );
+        try (MockedStatic<JoularJXPathParser> pathParser = mockStatic(JoularJXPathParser.class);
+             MockedStatic<CsvParser> csvParser = mockStatic(CsvParser.class);
+             MockedStatic<JoularJXMapper> mapper = mockStatic(JoularJXMapper.class)) {
+            pathParser.when(() -> JoularJXPathParser.parse(filePath)).thenReturn(pathInfo);
 
-            verify(serializer).serialize(dtos);
-            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities/bulk", "{json}");
-            verify(log).info(contains("Calltrees DTOs parsed from file"), eq(path), eq(dtos.size()));
-        }
-    }
+            mapper.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
+            mapper.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
+            mapper.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
+            mapper.when(JoularJXMapper::mapCommit).thenReturn(new CommitSimpleDTO());
 
-    @Test
-    void processCallTreesShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
-        List<CallTreeMeasurementDTO> dtos = List.of(mock(CallTreeMeasurementDTO.class));
+            csvParser.when(() -> CsvParser.parseCsvFile(filePath, Scope.APP, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES, iteration, new CommitSimpleDTO(), context))
+                    .thenReturn(List.of(dto));
 
-        try (var csvMock = mockStatic(CsvParser.class)) {
-            csvMock.when(() -> CsvParser.parseCallTreeFile(
-                    any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(dtos);
+            fileProcessor.process(filePath, iteration, context);
 
-            when(serializer.serialize(dtos)).thenReturn("{json}");
-            doThrow(new IOException("HTTP error"))
-                    .when(httpClient).post(anyString(), anyString());
-
-            assertThrows(IOException.class, () -> fileProcessor.processCallTrees(
-                    path, Scope.APP, MeasurementType.RUNTIME,
-                    MonitoringType.CALLTREES, iteration, commit, context
-            ));
-        }
-    }
-
-    @Test
-    void processMethodsShouldSerializeAndPostDataTest() throws IOException, InterruptedException {
-        List<MethodMeasurementDTO> dtos = List.of(mock(MethodMeasurementDTO.class));
-
-        try (var csvMock = mockStatic(CsvParser.class)) {
-            csvMock.when(() -> CsvParser.parseMethodFile(
-                    any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(dtos);
-
-            when(serializer.serialize(dtos)).thenReturn("{json}");
-
-            fileProcessor.processMethods(
-                    path,
-                    Scope.APP,
-                    MeasurementType.RUNTIME,
-                    MonitoringType.METHODS,
-                    iteration,
-                    commit,
-                    context
-            );
-
-            verify(serializer).serialize(dtos);
-            verify(httpClient).post("/api/v2/method-measurements-entities/bulk", "{json}");
-            verify(log).info(contains("Methods DTOs parsed from file"), eq(path), eq(dtos.size()));
-        }
-    }
-
-    @Test
-    void processMethodsShouldThrowRuntimeExceptionWhenHttpFailsTest() throws IOException, InterruptedException {
-        List<MethodMeasurementDTO> dtos = List.of(mock(MethodMeasurementDTO.class));
-
-        try (var csvMock = mockStatic(CsvParser.class)) {
-            csvMock.when(() -> CsvParser.parseMethodFile(
-                    any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(dtos);
-
-            when(serializer.serialize(dtos)).thenReturn("{json}");
-            doThrow(new IOException("HTTP error"))
-                    .when(httpClient).post(anyString(), anyString());
-
-            assertThrows(IOException.class, () -> fileProcessor.processMethods(
-                    path, Scope.APP, MeasurementType.RUNTIME,
-                    MonitoringType.METHODS, iteration, commit, context
-            ));
-        }
-    }
-
-    @Test
-    void processShouldParseAndHandleCallTreeSucessfullyTest() throws IOException, InterruptedException {
-        JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
-
-        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class);
-             MockedStatic<JoularJXMapper> mapperMock = mockStatic(JoularJXMapper.class);
-             MockedStatic<CsvParser> csvMock = mockStatic(CsvParser.class)) {
-            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
-
-            mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
-            mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
-            mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
-
-            when(importConfig.getScopes()).thenReturn(List.of("app"));
-            when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
-            when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
-
-            csvMock.when(() -> CsvParser.parseCallTreeFile(any(), any(), any(), any(), any(), any(), any()))
-                    .thenReturn(List.of(mock(CallTreeMeasurementDTO.class)));
-
-            when(serializer.serialize(any())).thenReturn("{json}");
-
-            fileProcessor.process(path, iteration, context);
-
-            verify(httpClient).post("http://localhost:8080/api/v2/call-tree-measurements-entities/bulk", "{json}");
-            verify(log).info(contains("Importing file"), eq(path));
-        }
-    }
-
-    @Test
-    void processShouldParseAndHandleMethodSucessfullyTest() throws IOException, InterruptedException {
-        JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "methods");
-
-        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class);
-             MockedStatic<JoularJXMapper> mapperMock = mockStatic(JoularJXMapper.class);
-             MockedStatic<CsvParser> csvMock = mockStatic(CsvParser.class)) {
-            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
-
-            mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
-            mapperMock.when(() -> JoularJXMapper.mapMonitoringType("methods")).thenReturn(MonitoringType.METHODS);
-            mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
-
-            when(importConfig.getScopes()).thenReturn(List.of("app"));
-            when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
-            when(importConfig.getMonitoringTypes()).thenReturn(List.of("methods"));
-
-            csvMock.when(() -> CsvParser.parseMethodFile(any(), any(), any(), any(), any(), any(), any()))
-                    .thenReturn(List.of(mock(MethodMeasurementDTO.class)));
-
-            when(serializer.serialize(any())).thenReturn("{json}");
-
-            fileProcessor.process(path, iteration, context);
-
-            verify(httpClient).post("/api/v2/method-measurements-entities/bulk", "{json}");
-            verify(log).info(contains("Importing file"), eq(path));
+            verify(serializer).serialize(any());
+            verify(httpClient).post(eq("http://localhost:8080/api/v2/measurements/runtime/calltrees/bulk"), eq("[json]"));
+            verify(log).info(contains("Importing file"), eq(filePath));
         }
     }
 
     @Test
     void processShouldSkipFileWhenNotAllowedTest() {
-        JoularJXPathParser.PathInfo info = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
+        Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-all-total-methods.csv");
+        JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
 
-        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class);
-             MockedStatic<JoularJXMapper> mapperMock = mockStatic(JoularJXMapper.class)) {
-            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
+        when(importConfig.getScopes()).thenReturn(List.of("all"));
+        when(importConfig.getMeasurementTypes()).thenReturn(List.of("total"));
+        when(importConfig.getMonitoringTypes()).thenReturn(List.of("methods"));
 
-            mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
-            mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
+        try (MockedStatic<JoularJXPathParser> pathParser = mockStatic(JoularJXPathParser.class);
+        MockedStatic<JoularJXMapper> mapper = mockStatic(JoularJXMapper.class)) {
+            pathParser.when(() -> JoularJXPathParser.parse(filePath)).thenReturn(pathInfo);
 
-            when(importConfig.getScopes()).thenReturn(List.of("all"));
-            when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
-            when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
+            mapper.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
+            mapper.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
+            mapper.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
 
-            fileProcessor.process(path, iteration, context);
+            fileProcessor.process(filePath, iteration, context);
 
-            verify(log).debug(contains("Skipping file"), eq(path), eq(Scope.APP), eq(MeasurementType.RUNTIME), eq(MonitoringType.CALLTREES));
+            verify(log).debug(eq("Skipping file {}: scope {}, measurement type {}, monitoring type {} not allowed by config"), eq(filePath), any(), any(), any());
+            verifyNoInteractions(serializer);
+            verifyNoInteractions(httpClient);
         }
     }
 
     @Test
-    void processShouldLogAndThrowRuntimeExceptionOnErrorTest() {
-        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class)) {
-            parserMock.when(() -> JoularJXPathParser.parse(path)).thenThrow(new RuntimeException("Parse failed"));
-            assertThrows(RuntimeException.class, () -> fileProcessor.process(path, iteration, context));
-            verify(log).error(contains("Error processing file"), eq(path), contains("Parse failed"));
+    void processShouldSkipWhenPathParsingFailsTest() {
+        Path filePath = Path.of("/some/invalid/path/file.csv");
+
+        try (MockedStatic<JoularJXPathParser> pathParser = mockStatic(JoularJXPathParser.class)) {
+            pathParser.when(() -> JoularJXPathParser.parse(filePath)).thenThrow(new IllegalArgumentException("Invalid path"));
+
+            fileProcessor.process(filePath, iteration, context);
+
+            verify(log).debug(contains("Skipping file"), eq(filePath), contains("Invalid path"));
+            verifyNoInteractions(serializer);
+            verifyNoInteractions(httpClient);
         }
     }
 
     @Test
-    void processShouldReturnImmediatelyWhenPathInfoIsNullTest() {
-        try (MockedStatic<JoularJXPathParser> parserMock = mockStatic(JoularJXPathParser.class)) {
-            parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(null);
-            fileProcessor.process(path, iteration, context);
-            verifyNoInteractions(log);
+    void processShouldThrowRuntimeExceptionOnUnexpectedErrorTest() throws IOException {
+        Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-app-runtime-calltrees.csv");
+        JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
+
+        when(importConfig.getScopes()).thenReturn(List.of("app"));
+        when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
+        when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
+
+        try (MockedStatic<JoularJXPathParser> pathParser = mockStatic(JoularJXPathParser.class);
+        MockedStatic<CsvParser> csvParser = mockStatic(CsvParser.class);
+        MockedStatic<JoularJXMapper> mapper = mockStatic(JoularJXMapper.class)) {
+            pathParser.when(() -> JoularJXPathParser.parse(filePath)).thenReturn(pathInfo);
+
+            mapper.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
+            mapper.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
+            mapper.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
+            mapper.when(JoularJXMapper::mapCommit).thenReturn(new CommitSimpleDTO());
+
+            csvParser.when(() -> CsvParser.parseCsvFile(any(), any(), any(), any(), any(), any(), any()))
+                    .thenThrow(new IOException("File read error"));
+
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+                fileProcessor.process(filePath, iteration, context);
+            });
+            assertInstanceOf(IOException.class, ex.getCause());
+            verify(log).error(contains("Error processing file"), eq(filePath), contains("File read error"));
         }
     }
 }

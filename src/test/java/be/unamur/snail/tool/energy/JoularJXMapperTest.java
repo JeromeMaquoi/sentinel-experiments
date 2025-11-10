@@ -23,16 +23,16 @@ class JoularJXMapperTest {
     }
 
     @Test
-    void mapMeasurementTypeValidTest() {
-        assertEquals(MeasurementType.RUNTIME, JoularJXMapper.mapMeasurementType("runtime"));
-        assertEquals(MeasurementType.TOTAL, JoularJXMapper.mapMeasurementType("total"));
-        assertEquals(MeasurementType.TOTAL, JoularJXMapper.mapMeasurementType("TOTAL"));
+    void mapMeasurementLevelValidTest() {
+        assertEquals(MeasurementLevel.RUNTIME, JoularJXMapper.mapMeasurementLevel("runtime"));
+        assertEquals(MeasurementLevel.TOTAL, JoularJXMapper.mapMeasurementLevel("total"));
+        assertEquals(MeasurementLevel.TOTAL, JoularJXMapper.mapMeasurementLevel("TOTAL"));
     }
 
     @Test
-    void mapMeasurementTypeInvalidTest() {
+    void mapMeasurementLevelInvalidTest() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            JoularJXMapper.mapMeasurementType("invalid");
+            JoularJXMapper.mapMeasurementLevel("invalid");
         });
         assertTrue(exception.getMessage().contains("Unknown measurement type"));
     }

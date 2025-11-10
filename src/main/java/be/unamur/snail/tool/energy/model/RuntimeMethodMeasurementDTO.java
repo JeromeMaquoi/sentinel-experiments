@@ -1,6 +1,6 @@
 package be.unamur.snail.tool.energy.model;
 
-public class MethodMeasurementDTO extends BaseMeasurementDTO {
+public class RuntimeMethodMeasurementDTO extends RuntimeMeasurementDTO {
     private String method;
 
     public String getMethod() {

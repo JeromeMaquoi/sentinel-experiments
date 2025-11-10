@@ -1,6 +1,6 @@
 package be.unamur.snail.tool.energy;
 
-public enum MeasurementType {
+public enum MeasurementLevel {
     RUNTIME, TOTAL;
 
     @Override

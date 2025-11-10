@@ -13,7 +13,7 @@ public class JoularJXMapper {
         };
     }
 
-    public static MeasurementLevel mapMeasurementType(String folderName) {
+    public static MeasurementLevel mapMeasurementLevel(String folderName) {
         return switch (folderName.toLowerCase()) {
             case "runtime" -> MeasurementLevel.RUNTIME;
             case "total" -> MeasurementLevel.TOTAL;

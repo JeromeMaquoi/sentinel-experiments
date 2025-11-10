@@ -35,7 +35,7 @@ public class JoularJXFileProcessor {
             if (pathInfo == null) return;
 
             Scope scope = JoularJXMapper.mapScope(pathInfo.scope());
-            MeasurementLevel measurementLevel = JoularJXMapper.mapMeasurementType(pathInfo.measurementType());
+            MeasurementLevel measurementLevel = JoularJXMapper.mapMeasurementLevel(pathInfo.measurementType());
             MonitoringType monitoringType = JoularJXMapper.mapMonitoringType(pathInfo.monitoringType());
 
             if (!isAllowed(scope, measurementLevel, monitoringType)) {

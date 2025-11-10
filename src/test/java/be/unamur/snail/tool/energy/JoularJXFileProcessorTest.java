@@ -201,7 +201,7 @@ class JoularJXFileProcessorTest {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementLevel.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
             mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
 
@@ -231,7 +231,7 @@ class JoularJXFileProcessorTest {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementLevel.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("methods")).thenReturn(MonitoringType.METHODS);
             mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
 
@@ -260,7 +260,7 @@ class JoularJXFileProcessorTest {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementLevel.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
 
             when(importConfig.getScopes()).thenReturn(List.of("all"));

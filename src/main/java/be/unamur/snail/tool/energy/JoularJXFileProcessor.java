@@ -35,11 +35,11 @@ public class JoularJXFileProcessor {
             if (pathInfo == null) return;
 
             Scope scope = JoularJXMapper.mapScope(pathInfo.scope());
-            MeasurementType measurementType = JoularJXMapper.mapMeasurementType(pathInfo.measurementType());
+            MeasurementLevel measurementLevel = JoularJXMapper.mapMeasurementType(pathInfo.measurementType());
             MonitoringType monitoringType = JoularJXMapper.mapMonitoringType(pathInfo.monitoringType());
 
-            if (!isAllowed(scope, measurementType, monitoringType)) {
-                log.debug("Skipping file {}: scope {}, measurement type {}, monitoring type {} not allowed by config", path, scope, measurementType, monitoringType);
+            if (!isAllowed(scope, measurementLevel, monitoringType)) {
+                log.debug("Skipping file {}: scope {}, measurement type {}, monitoring type {} not allowed by config", path, scope, measurementLevel, monitoringType);
                 return;
             }
 
@@ -47,9 +47,9 @@ public class JoularJXFileProcessor {
             CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
             if (monitoringType == MonitoringType.CALLTREES) {
-                processCallTrees(path, scope, measurementType, monitoringType, iteration, commit, context);
+                processCallTrees(path, scope, measurementLevel, monitoringType, iteration, commit, context);
             } else if (monitoringType == MonitoringType.METHODS) {
-                processMethods(path, scope, measurementType, monitoringType, iteration, commit, context);
+                processMethods(path, scope, measurementLevel, monitoringType, iteration, commit, context);
             } else {
                 log.debug("Skipping file {}: unsupported monitoring type {}", path, monitoringType);
             }
@@ -68,17 +68,17 @@ public class JoularJXFileProcessor {
         }
     }
 
-    public boolean isAllowed(Scope scope, MeasurementType measurementType, MonitoringType monitoringType) {
+    public boolean isAllowed(Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType) {
         return importConfig.getScopes().contains(scope.toString()) &&
-               importConfig.getMeasurementTypes().contains(measurementType.toString()) &&
+               importConfig.getMeasurementTypes().contains(measurementLevel.toString()) &&
                importConfig.getMonitoringTypes().contains(monitoringType.toString());
     }
 
-    public void processCallTrees(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
+    public void processCallTrees(Path path, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
         List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
                 path,
                 scope,
-                measurementType,
+                measurementLevel,
                 monitoringType,
                 iteration,
                 commit,
@@ -90,11 +90,11 @@ public class JoularJXFileProcessor {
         httpClient.post(url, json);
     }
 
-    public void processMethods(Path path, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
+    public void processMethods(Path path, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException, InterruptedException {
         List<MethodMeasurementDTO> dtos = CsvParser.parseMethodFile(
                 path,
                 scope,
-                measurementType,
+                measurementLevel,
                 monitoringType,
                 iteration,
                 commit,

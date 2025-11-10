@@ -13,10 +13,10 @@ public class JoularJXMapper {
         };
     }
 
-    public static MeasurementType mapMeasurementType(String folderName) {
+    public static MeasurementLevel mapMeasurementType(String folderName) {
         return switch (folderName.toLowerCase()) {
-            case "runtime" -> MeasurementType.RUNTIME;
-            case "total" -> MeasurementType.TOTAL;
+            case "runtime" -> MeasurementLevel.RUNTIME;
+            case "total" -> MeasurementLevel.TOTAL;
             default -> throw new IllegalArgumentException("Unknown measurement type: " + folderName);
         };
     }

@@ -4,7 +4,7 @@ import be.unamur.snail.tool.energy.*;
 
 public class BaseMeasurementDTO {
     private Scope scope;
-    private MeasurementType type;
+    private MeasurementLevel type;
     private MonitoringType monitoringType;
     private RunIterationDTO iteration;
     private CommitSimpleDTO commit;
@@ -23,15 +23,15 @@ public class BaseMeasurementDTO {
         return this;
     }
 
-    public MeasurementType getMeasurementType() {
+    public MeasurementLevel getMeasurementType() {
         return type;
     }
 
-    public void setMeasurementType(MeasurementType type) {
+    public void setMeasurementType(MeasurementLevel type) {
         this.type = type;
     }
 
-    public BaseMeasurementDTO withMeasurementType(MeasurementType type) {
+    public BaseMeasurementDTO withMeasurementType(MeasurementLevel type) {
         this.type = type;
         return this;
     }

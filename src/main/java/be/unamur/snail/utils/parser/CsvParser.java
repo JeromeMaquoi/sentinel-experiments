@@ -19,19 +19,19 @@ import java.util.function.Function;
 public class CsvParser {
     private CsvParser() {}
 
-    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
+    public static List<CallTreeMeasurementDTO> parseCallTreeFile(Path csvPath, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
         return parseCsvFile(
                 csvPath,
-                line -> buildCallTreeDto(line, scope, measurementType, monitoringType, iteration, commit),
+                line -> buildCallTreeDto(line, scope, measurementLevel, monitoringType, iteration, commit),
                 context,
                 "call tree"
         );
     }
 
-    public static List<MethodMeasurementDTO> parseMethodFile(Path csvPath, Scope scope, MeasurementType measurementType, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
+    public static List<MethodMeasurementDTO> parseMethodFile(Path csvPath, Scope scope, MeasurementLevel measurementLevel, MonitoringType monitoringType, RunIterationDTO iteration, CommitSimpleDTO commit, Context context) throws IOException {
         return parseCsvFile(
                 csvPath,
-                line -> buildMethodDto(line, scope, measurementType, monitoringType, iteration, commit),
+                line -> buildMethodDto(line, scope, measurementLevel, monitoringType, iteration, commit),
                 context,
                 "method"
         );
@@ -62,7 +62,7 @@ public class CsvParser {
     public static CallTreeMeasurementDTO buildCallTreeDto(
             String[] parts,
             Scope scope,
-            MeasurementType measurementType,
+            MeasurementLevel measurementLevel,
             MonitoringType monitoringType,
             RunIterationDTO iteration,
             CommitSimpleDTO commit
@@ -72,7 +72,7 @@ public class CsvParser {
 
         CallTreeMeasurementDTO dto = new CallTreeMeasurementDTO();
         dto.setScope(scope);
-        dto.setMeasurementType(measurementType);
+        dto.setMeasurementType(measurementLevel);
         dto.setMonitoringType(monitoringType);
         dto.setIteration(iteration);
         dto.setCommit(commit);
@@ -85,7 +85,7 @@ public class CsvParser {
     public static MethodMeasurementDTO buildMethodDto(
             String[] parts,
             Scope scope,
-            MeasurementType measurementType,
+            MeasurementLevel measurementLevel,
             MonitoringType monitoringType,
             RunIterationDTO iteration,
             CommitSimpleDTO commit
@@ -95,7 +95,7 @@ public class CsvParser {
 
         MethodMeasurementDTO dto = new MethodMeasurementDTO();
         dto.setScope(scope);
-        dto.setMeasurementType(measurementType);
+        dto.setMeasurementType(measurementLevel);
         dto.setMonitoringType(monitoringType);
         dto.setIteration(iteration);
         dto.setCommit(commit);

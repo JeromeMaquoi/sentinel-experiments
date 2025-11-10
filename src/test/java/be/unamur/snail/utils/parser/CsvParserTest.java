@@ -1,9 +1,8 @@
 package be.unamur.snail.utils.parser;
 
 import be.unamur.snail.core.Context;
-import be.unamur.snail.logging.ConsolePipelineLogger;
 import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.tool.energy.MeasurementType;
+import be.unamur.snail.tool.energy.MeasurementLevel;
 import be.unamur.snail.tool.energy.MonitoringType;
 import be.unamur.snail.tool.energy.Scope;
 import be.unamur.snail.tool.energy.model.CallTreeMeasurementDTO;
@@ -19,12 +18,10 @@ import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,7 +58,7 @@ class CsvParserTest {
         List<CallTreeMeasurementDTO> dtos = CsvParser.parseCallTreeFile(
                 tempFile,
                 Scope.APP,
-                MeasurementType.RUNTIME,
+                MeasurementLevel.RUNTIME,
                 MonitoringType.CALLTREES,
                 iteration,
                 commit,
@@ -73,7 +70,7 @@ class CsvParserTest {
         assertEquals(List.of("methodA", "methodB"), resultDto1.getCallstack());
         assertEquals(1.23f, resultDto1.getValue());
         assertEquals(Scope.APP, resultDto1.getScope());
-        assertEquals(MeasurementType.RUNTIME, resultDto1.getMeasurementType());
+        assertEquals(MeasurementLevel.RUNTIME, resultDto1.getMeasurementType());
         assertEquals(MonitoringType.CALLTREES, resultDto1.getMonitoringType());
         assertEquals(iteration, resultDto1.getIteration());
         assertEquals(commit, resultDto1.getCommit());
@@ -87,7 +84,7 @@ class CsvParserTest {
         List<MethodMeasurementDTO> dtos = CsvParser.parseMethodFile(
                 tempFile,
                 Scope.APP,
-                MeasurementType.RUNTIME,
+                MeasurementLevel.RUNTIME,
                 MonitoringType.METHODS,
                 iteration,
                 commit,
@@ -99,7 +96,7 @@ class CsvParserTest {
         assertEquals("methodX", resultDto1.getMethod());
         assertEquals(7.89f, resultDto1.getValue());
         assertEquals(Scope.APP, resultDto1.getScope());
-        assertEquals(MeasurementType.RUNTIME, resultDto1.getMeasurementType());
+        assertEquals(MeasurementLevel.RUNTIME, resultDto1.getMeasurementType());
         assertEquals(MonitoringType.METHODS, resultDto1.getMonitoringType());
         assertEquals(iteration, resultDto1.getIteration());
         assertEquals(commit, resultDto1.getCommit());
@@ -132,7 +129,7 @@ class CsvParserTest {
         CallTreeMeasurementDTO dto = CsvParser.buildCallTreeDto(
                 parts,
                 Scope.APP,
-                MeasurementType.RUNTIME,
+                MeasurementLevel.RUNTIME,
                 MonitoringType.CALLTREES,
                 iteration,
                 commit
@@ -140,7 +137,7 @@ class CsvParserTest {
         assertEquals(List.of("methodA", "methodB", "methodC"), dto.getCallstack());
         assertEquals(2.34f, dto.getValue());
         assertEquals(Scope.APP, dto.getScope());
-        assertEquals(MeasurementType.RUNTIME, dto.getMeasurementType());
+        assertEquals(MeasurementLevel.RUNTIME, dto.getMeasurementType());
         assertEquals(MonitoringType.CALLTREES, dto.getMonitoringType());
         assertEquals(iteration, dto.getIteration());
         assertEquals(commit, dto.getCommit());
@@ -152,7 +149,7 @@ class CsvParserTest {
         MethodMeasurementDTO dto = CsvParser.buildMethodDto(
                 parts,
                 Scope.APP,
-                MeasurementType.RUNTIME,
+                MeasurementLevel.RUNTIME,
                 MonitoringType.METHODS,
                 iteration,
                 commit
@@ -160,7 +157,7 @@ class CsvParserTest {
         assertEquals("methodX", dto.getMethod());
         assertEquals(5.67f, dto.getValue());
         assertEquals(Scope.APP, dto.getScope());
-        assertEquals(MeasurementType.RUNTIME, dto.getMeasurementType());
+        assertEquals(MeasurementLevel.RUNTIME, dto.getMeasurementType());
         assertEquals(MonitoringType.METHODS, dto.getMonitoringType());
         assertEquals(iteration, dto.getIteration());
         assertEquals(commit, dto.getCommit());

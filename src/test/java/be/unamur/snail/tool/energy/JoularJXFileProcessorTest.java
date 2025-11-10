@@ -83,7 +83,7 @@ class JoularJXFileProcessorTest {
         when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
         when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
 
-        boolean allowed = fileProcessor.isAllowed(Scope.APP, MeasurementType.RUNTIME, MonitoringType.CALLTREES);
+        boolean allowed = fileProcessor.isAllowed(Scope.APP, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES);
         assertTrue(allowed);
     }
 
@@ -93,7 +93,7 @@ class JoularJXFileProcessorTest {
         when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
         when(importConfig.getMonitoringTypes()).thenReturn(List.of("calltrees"));
 
-        boolean allowed = fileProcessor.isAllowed(Scope.ALL, MeasurementType.RUNTIME, MonitoringType.CALLTREES);
+        boolean allowed = fileProcessor.isAllowed(Scope.ALL, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES);
         assertFalse(allowed);
     }
 
@@ -111,7 +111,7 @@ class JoularJXFileProcessorTest {
             fileProcessor.processCallTrees(
                     path,
                     Scope.APP,
-                    MeasurementType.RUNTIME,
+                    MeasurementLevel.RUNTIME,
                     MonitoringType.CALLTREES,
                     iteration,
                     commit,
@@ -138,7 +138,7 @@ class JoularJXFileProcessorTest {
                     .when(httpClient).post(anyString(), anyString());
 
             assertThrows(IOException.class, () -> fileProcessor.processCallTrees(
-                    path, Scope.APP, MeasurementType.RUNTIME,
+                    path, Scope.APP, MeasurementLevel.RUNTIME,
                     MonitoringType.CALLTREES, iteration, commit, context
             ));
         }
@@ -158,7 +158,7 @@ class JoularJXFileProcessorTest {
             fileProcessor.processMethods(
                     path,
                     Scope.APP,
-                    MeasurementType.RUNTIME,
+                    MeasurementLevel.RUNTIME,
                     MonitoringType.METHODS,
                     iteration,
                     commit,
@@ -185,7 +185,7 @@ class JoularJXFileProcessorTest {
                     .when(httpClient).post(anyString(), anyString());
 
             assertThrows(IOException.class, () -> fileProcessor.processMethods(
-                    path, Scope.APP, MeasurementType.RUNTIME,
+                    path, Scope.APP, MeasurementLevel.RUNTIME,
                     MonitoringType.METHODS, iteration, commit, context
             ));
         }
@@ -201,7 +201,7 @@ class JoularJXFileProcessorTest {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
             mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
 
@@ -231,7 +231,7 @@ class JoularJXFileProcessorTest {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("methods")).thenReturn(MonitoringType.METHODS);
             mapperMock.when(JoularJXMapper::mapCommit).thenReturn(commit);
 
@@ -260,7 +260,7 @@ class JoularJXFileProcessorTest {
             parserMock.when(() -> JoularJXPathParser.parse(path)).thenReturn(info);
 
             mapperMock.when(() -> JoularJXMapper.mapScope("app")).thenReturn(Scope.APP);
-            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementType.RUNTIME);
+            mapperMock.when(() -> JoularJXMapper.mapMeasurementType("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapperMock.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
 
             when(importConfig.getScopes()).thenReturn(List.of("all"));
@@ -269,7 +269,7 @@ class JoularJXFileProcessorTest {
 
             fileProcessor.process(path, iteration, context);
 
-            verify(log).debug(contains("Skipping file"), eq(path), eq(Scope.APP), eq(MeasurementType.RUNTIME), eq(MonitoringType.CALLTREES));
+            verify(log).debug(contains("Skipping file"), eq(path), eq(Scope.APP), eq(MeasurementLevel.RUNTIME), eq(MonitoringType.CALLTREES));
         }
     }
 

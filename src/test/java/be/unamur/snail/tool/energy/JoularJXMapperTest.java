@@ -24,9 +24,9 @@ class JoularJXMapperTest {
 
     @Test
     void mapMeasurementTypeValidTest() {
-        assertEquals(MeasurementType.RUNTIME, JoularJXMapper.mapMeasurementType("runtime"));
-        assertEquals(MeasurementType.TOTAL, JoularJXMapper.mapMeasurementType("total"));
-        assertEquals(MeasurementType.TOTAL, JoularJXMapper.mapMeasurementType("TOTAL"));
+        assertEquals(MeasurementLevel.RUNTIME, JoularJXMapper.mapMeasurementType("runtime"));
+        assertEquals(MeasurementLevel.TOTAL, JoularJXMapper.mapMeasurementType("total"));
+        assertEquals(MeasurementLevel.TOTAL, JoularJXMapper.mapMeasurementType("TOTAL"));
     }
 
     @Test

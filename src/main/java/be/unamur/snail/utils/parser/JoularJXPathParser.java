@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class JoularJXPathParser {
-    public record PathInfo(String scope, String measurementType, String monitoringType) {
+    public record PathInfo(String scope, String measurementLevel, String monitoringType) {
     }
 
     public static PathInfo parse(Path path) {

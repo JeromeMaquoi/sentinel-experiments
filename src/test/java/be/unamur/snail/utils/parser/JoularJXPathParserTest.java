@@ -12,7 +12,7 @@ class JoularJXPathParserTest {
         Path path = Path.of("/root/joularjx-result/69227-1762168265789/app/total/methods/file.csv");
         JoularJXPathParser.PathInfo info = JoularJXPathParser.parse(path);
         assertEquals("app", info.scope());
-        assertEquals("total", info.measurementType());
+        assertEquals("total", info.measurementLevel());
         assertEquals("methods", info.monitoringType());
     }
 

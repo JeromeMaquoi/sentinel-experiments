@@ -49,9 +49,9 @@ public class ImportJoularJXMeasurementsStage implements Stage {
                          .filter(Files::isDirectory)
                         .toList();
         for (Path iterationFolder : iterationFolders) {
-            log.info("Importing iteration folder: {}", iterationFolder);
             RunIterationDTO iteration = parseIterationFromFolder(iterationFolder);
             processFolder(iterationFolder, iteration, log, importConfig, context);
+            log.info("Iteration folder '{}' imported", iterationFolder);
         }
         log.info("Finished importing results from results root: {}", totalPath);
     }

@@ -125,7 +125,7 @@ class JoularJXFileProcessorTest {
 
             verify(serializer).serialize(any());
             verify(httpClient).post(eq("http://localhost:8080/api/v2/measurements/runtime/calltrees/bulk"), eq("[json]"));
-            verify(log).info(contains("Importing file"), eq(filePath));
+            verify(log).debug(contains("Importing file"), eq(filePath));
         }
     }
 

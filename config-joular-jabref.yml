@@ -1,0 +1,46 @@
+command-time-out: 3600
+project:
+  name: "jabref"
+  owner: "JabRef"
+  sub-project: ""
+  show-project-logs: true
+  package-prefix: "org.jabref"
+repo:
+  url: "https://github.com/JabRef/jabref"
+  commit: "1eb3493f9dfe19c42b5879eb755a830757c81cba" # release v5.15
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/jabref"
+  jdk: "21.0.8-tem"
+  overwrite: false
+log:
+  level: INFO
+  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/jabref/"
+  also-log-to-console: true
+  clear-previous-logs: true
+execution-plan:
+  test-command: "xvfb-run --auto-servernum ./gradlew clean test"
+  ignore-failures: false
+  ignore-spoon-failures: true
+  num-test-runs: 1
+  energy-measurements:
+    tool: "joularjx"
+    tool-version: "3.0.1"
+    release-url: "https://github.com/joular/joularjx"
+    tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
+    import-config:
+      scopes: ["app"]
+      measurement-types: ["runtime", "total"]
+      monitoring-types: ["calltrees", "methods"]
+backend:
+  mode: dev
+  server-host: localhost
+  server-port: 8080
+  server-timeout-seconds: 120
+  server-log-path: "/tmp/sentinel-backend.log"
+  server-ready-path: "/tmp/backend-ready"
+  endpoint: "/api/v2/constructor-contexts"
+  # dev-specific
+  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 20
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

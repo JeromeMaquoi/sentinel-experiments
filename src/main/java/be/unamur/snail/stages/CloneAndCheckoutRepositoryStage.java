@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
@@ -42,7 +43,7 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
         context.setRepoPath(targetDirStr);
 
         try (Git git = Git.cloneRepository().setURI(repoUrl).setDirectory(targetDir).call()) {
-            git.checkout().setName(commit).call();
+            git.reset().setMode(ResetCommand.ResetType.HARD).setRef(commit).call();
             context.setCommit(commit);
             log.info("Checked out commit {}", commit);
         } catch (GitAPIException e) {

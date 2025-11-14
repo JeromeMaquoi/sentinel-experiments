@@ -1,23 +1,23 @@
 command-time-out: 3600
 project:
-  name: "spring-boot"
-  owner: "spring-projects"
-  sub-project: "spring-boot-project/spring-boot"
+  name: "spoon"
+  owner: "INRIA"
+  sub-project: ""
   show-project-logs: true
-  package-prefix: "org.springframework"
+  package-prefix: "spoon"
 repo:
-  url: "https://github.com/spring-projects/spring-boot"
-  commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
-  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot-clone"
+  url: "https://github.com/INRIA/spoon.git"
+  commit: "066f4cf207359e06d30911a553dedd054aef595c"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spoon/"
   jdk: "17.0.17-tem"
-  overwrite: false
+  overwrite: true
 log:
   level: INFO
-  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/"
+  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/spoon/"
   also-log-to-console: true
   clear-previous-logs: true
 execution-plan:
-  test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks"
+  test-command: "mvn clean test -Drat.skip=true"
   ignore-failures: false
   ignore-spoon-failures: true
   num-test-runs: 1

@@ -223,7 +223,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                        -javaagent:JOULARJX.jar
+                        -javaagent:JOULARJX
                     </argLine>
                     <classpathDependencyExcludes>
                         <classpathDependencyExclude>ch.qos.logback:logback-classic</classpathDependencyExclude>

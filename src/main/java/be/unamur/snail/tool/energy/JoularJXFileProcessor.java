@@ -39,7 +39,7 @@ public class JoularJXFileProcessor {
                 return;
             }
 
-            log.info("Importing file: {}", path);
+            log.debug("Importing file: {}", path);
             CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
             List<? extends BaseMeasurementDTO> dtos = CsvParser.parseCsvFile(path, scope, measurementLevel, monitoringType, iteration, commit, context);

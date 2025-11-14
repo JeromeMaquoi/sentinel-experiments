@@ -1,4 +1,5 @@
 command-time-out: 3600
+code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
   name: "spoon"
   owner: "INRIA"

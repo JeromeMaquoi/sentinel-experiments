@@ -1,8 +1,9 @@
 command-time-out: 3600
+code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
   name: "spring-boot"
   owner: "spring-projects"
-  sub-project: "spring-boot-project/spring-boot"
+  sub-project: "/spring-boot-project/spring-boot"
   show-project-logs: true
   package-prefix: "org.springframework"
 repo:
@@ -10,7 +11,7 @@ repo:
   commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot-clone"
   jdk: "17.0.17-tem"
-  overwrite: false
+  overwrite: true
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/"

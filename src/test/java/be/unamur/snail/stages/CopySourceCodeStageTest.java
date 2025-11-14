@@ -3,6 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.CommitMissingException;
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.exceptions.TargetDirMissingException;
 import be.unamur.snail.logging.ConsolePipelineLogger;
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CopySourceCodeStageTest {
     @TempDir
@@ -45,6 +47,7 @@ class CopySourceCodeStageTest {
 
         context = new Context();
         context.setLogger(new ConsolePipelineLogger(CopySourceCodeStage.class));
+        context.setRepoPath("/tmp/repo");
 
         stage = new CopySourceCodeStage();
     }
@@ -63,14 +66,11 @@ class CopySourceCodeStageTest {
 
         config.setCodeConstructorsInstrumentationPathForTests(sourceDir.toString());
         config.getRepo().setTargetDirForTests(tempDir.resolve("target-project").toString());
-        config.getRepo().setCommitForTests("abc123");
         config.getProject().setSubProjectForTests("");
 
-        // Act
         stage.execute(context);
 
-        // Assert: check if file was copied
-        Path expectedTarget = Paths.get(config.getRepo().getTargetDir() + "_abc123/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/Test.java");
+        Path expectedTarget = Paths.get( "/tmp/repo/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/Test.java");
         assertThat(expectedTarget).exists();
         assertThat(Files.readString(expectedTarget)).isEqualTo("package be.unamur.snail; class Test {}");
     }
@@ -101,24 +101,11 @@ class CopySourceCodeStageTest {
     }
 
     @Test
-    void commitMissingThrowsExceptionTest() {
+    void getTargetProjectNameSuccessTest() throws TargetDirMissingException {
         config.getRepo().setTargetDirForTests("/tmp/project");
-        config.getRepo().setCommitForTests(null);
-        config.getProject().setSubProjectForTests("");
-
-        // Act + Assert
-        assertThatThrownBy(() -> stage.getTargetProjectName(config, config.getRepo().getTargetDir()))
-                .isInstanceOf(CommitMissingException.class)
-                .hasMessageContaining("null");
-    }
-
-    @Test
-    void getTargetProjectNameSuccessTest() throws CommitMissingException, TargetDirMissingException {
-        config.getRepo().setTargetDirForTests("/tmp/project");
-        config.getRepo().setCommitForTests("abc123");
         config.getProject().setSubProjectForTests("");
 
         String result = stage.getTargetProjectName(config, config.getRepo().getTargetDir());
-        assertThat(result).isEqualTo("/tmp/project_abc123/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/");
+        assertThat(result).isEqualTo("/tmp/project/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/");
     }
 }

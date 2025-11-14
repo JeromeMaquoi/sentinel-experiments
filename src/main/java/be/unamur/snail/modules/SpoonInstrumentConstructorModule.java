@@ -1,6 +1,7 @@
 package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Context;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.database.MongoServiceManager;
@@ -10,13 +11,10 @@ import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.stages.*;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class SpoonInstrumentConstructorModule implements Module {
-    private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages;
 
     public SpoonInstrumentConstructorModule() {
@@ -26,8 +24,8 @@ public class SpoonInstrumentConstructorModule implements Module {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
         this.stages = List.of(
                 new PrepareBackendStage(runner, backendFactory, databaseFactory),
-                //new CloneAndCheckoutRepositoryStage()//,
-                new CopyDirectoryStage(),
+                new CloneAndCheckoutRepositoryStage(),
+                //new CopyDirectoryStage(),
                 new BuildClassPathStage(),
                 new InstrumentConstructorsStage(),
                 new CopySourceCodeStage(),
@@ -37,9 +35,11 @@ public class SpoonInstrumentConstructorModule implements Module {
 
     @Override
     public void run(Context context) throws Exception {
-        log.info("Running SpoonInstrumentConstructorModule");
+        PipelineLogger log = context.getLogger();
         for (Stage stage : stages) {
+            log.stageStart(stage.getName());
             stage.execute(context);
+            log.stageEnd(stage.getName());
         }
     }
 }

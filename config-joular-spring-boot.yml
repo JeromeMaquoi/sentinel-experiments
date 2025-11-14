@@ -28,8 +28,8 @@ execution-plan:
     tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
     import-config:
       scopes: ["app"]
-      measurement-types: ["runtime"]
-      monitoring-types: ["calltrees"]
+      measurement-types: ["runtime", "total"]
+      monitoring-types: ["calltrees", "methods"]
 backend:
   mode: dev
   server-host: localhost

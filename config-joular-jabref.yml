@@ -10,7 +10,7 @@ repo:
   commit: "1eb3493f9dfe19c42b5879eb755a830757c81cba" # release v5.15
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/jabref"
   jdk: "21.0.8-tem"
-  overwrite: false
+  overwrite: true
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/jabref/"

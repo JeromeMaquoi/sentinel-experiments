@@ -28,8 +28,11 @@ public class CopySourceCodeStage implements Stage {
             throw new SourceDirectoryNotFoundException(from);
         }
 
-        String targetDir = config.getRepo().getTargetDir();
-        String targetProjectName = getTargetProjectName(config, targetDir);
+        String repoPath = context.getRepoPath();
+        if (repoPath == null || repoPath.isBlank()) {
+            throw new MissingContextKeyException(repoPath);
+        }
+        String targetProjectName = getTargetProjectName(config, repoPath);
         Path target = Paths.get(targetProjectName).toAbsolutePath();
         log.debug("Copying source code from {} to {}", from, target);
 
@@ -38,18 +41,14 @@ public class CopySourceCodeStage implements Stage {
         log.info("Copy completed from {} to {}", from, target);
     }
 
-    public String getTargetProjectName(Config config, String targetDir) throws TargetDirMissingException, CommitMissingException {
-        String commit = config.getRepo().getCommit();
+    public String getTargetProjectName(Config config, String repoPath) throws TargetDirMissingException {
         String subProject = config.getProject().getSubProject();
 
-        if (targetDir == null || targetDir.isBlank()) {
-            throw new TargetDirMissingException(targetDir);
-        }
-        if (commit == null || commit.isBlank()) {
-            throw new CommitMissingException(commit);
+        if (repoPath == null || repoPath.isBlank()) {
+            throw new TargetDirMissingException(repoPath);
         }
 
-        return targetDir + "_" + commit + subProject + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/";
+        return repoPath + subProject + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/";
     }
 
     public void copyJavaFiles(Path source, Path target) throws IOException {

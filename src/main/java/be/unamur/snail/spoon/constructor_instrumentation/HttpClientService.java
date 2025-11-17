@@ -33,7 +33,7 @@ public class HttpClientService {
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
             } else {
-                System.out.println("Error: " + response.statusCode() + " " + response.body());
+//                System.out.println("Error: " + response.statusCode() + " " + response.body());
                 throw new HttpErrorException(response.statusCode(), response.body());
             }
         }

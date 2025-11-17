@@ -1,4 +1,5 @@
 command-time-out: 3600
+code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
   name: "spoon"
   owner: "INRIA"
@@ -8,11 +9,11 @@ project:
 repo:
   url: "https://github.com/INRIA/spoon.git"
   commit: "066f4cf207359e06d30911a553dedd054aef595c"
-  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spoon/"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spoon-clone"
   jdk: "17.0.17-tem"
-  overwrite: true
+  overwrite: false
 log:
-  level: INFO
+  level: DEBUG
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/spoon/"
   also-log-to-console: true
   clear-previous-logs: true

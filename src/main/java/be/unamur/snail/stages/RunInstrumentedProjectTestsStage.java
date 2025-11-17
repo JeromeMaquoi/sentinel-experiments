@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.TestSuiteExecutionFailedException;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.utils.ProjectTypeDetector;
 import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
 
@@ -23,9 +24,11 @@ import java.nio.file.Files;
  */
 public class RunInstrumentedProjectTestsStage implements Stage {
     private final InitScriptGenerator initScriptGenerator;
+    private final ProjectTypeDetector projectTypeDetector;
 
     public RunInstrumentedProjectTestsStage() {
         this.initScriptGenerator = new InitScriptGenerator();
+        this.projectTypeDetector = new ProjectTypeDetector();
     }
 
     @Override
@@ -40,10 +43,17 @@ public class RunInstrumentedProjectTestsStage implements Stage {
         String testCommand = config.getExecutionPlan().getTestCommand();
         String cwd = context.getRepoPath();
 
-        // Add init script to see the logs in the terminal during the execution and for passing properties packagePrefix and apiUrl to the tests
+        File repoPath = new File(context.getRepoPath());
+        String commandWithInit = testCommand;
         File initScript = initScriptGenerator.generateShowLogsInitScriptForGradle();
-        // TODO handle Maven and not only Gradle
-        String commandWithInit = testCommand + " --init-script " + initScript.getAbsolutePath();
+
+        if (projectTypeDetector.isMavenProject(repoPath)) {
+            // TODO
+        } else if (projectTypeDetector.isGradleProject(repoPath)) {
+            // Add init script to see the logs in the terminal during the execution and for passing properties packagePrefix and apiUrl to the tests
+            commandWithInit += " --init-script " + initScript.getAbsolutePath();
+            log.info("Using Gradle init script at {}", initScript.getAbsolutePath());
+        }
 
         // Add package prefix as system property for stacktrace filtering
         String packagePrefix = config.getProject().getPackagePrefix();

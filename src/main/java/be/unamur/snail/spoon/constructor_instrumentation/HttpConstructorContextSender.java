@@ -21,7 +21,7 @@ public class HttpConstructorContextSender implements ConstructorContextSender {
         String json = serializer.serialize(context);
         try {
             client.post(apiURL, json);
-            System.out.println("Context " + context + " sent.");
+            System.out.println("Context " + context.getMethodName() + " sent successfully");
         } catch (Exception e) {
             throw new ConstructorContextSendFailedException(e);
         }

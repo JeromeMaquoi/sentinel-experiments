@@ -34,6 +34,7 @@ class BuildClassPathStageTest {
         initScriptGenerator = mock(InitScriptGenerator.class);
         context = new Context();
         context.setLogger(new ConsolePipelineLogger(BuildClassPathStage.class));
+        context.setRepoPath(tempDir.resolve("repo_123").toString());
     }
 
     @AfterEach

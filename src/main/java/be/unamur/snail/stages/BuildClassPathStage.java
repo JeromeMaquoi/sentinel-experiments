@@ -2,6 +2,7 @@ package be.unamur.snail.stages;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
+import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.exceptions.TargetDirectoryNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,12 +41,14 @@ public class BuildClassPathStage implements Stage {
     public void execute(Context context) throws Exception {
         log = context.getLogger();
 
-        Config config = Config.getInstance();
+        String repoPath = context.getRepoPath();
+        if (repoPath == null || repoPath.isBlank()) {
+            throw new MissingContextKeyException("repoPath");
+        }
 
-        String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
-        File projectDir = new File(projectPath);
+        File projectDir = new File(repoPath);
         if (!projectDir.exists()) throw new TargetDirectoryNotFoundException();
-        log.info("Starting build classpath stage for {}", projectPath);
+        log.info("Starting build classpath stage for {}", repoPath);
 
         List<String> classPath;
         if (new File(projectDir, "pom.xml").exists()) {
@@ -52,9 +57,21 @@ public class BuildClassPathStage implements Stage {
             classPath = buildGradleClasspath(projectDir);
         } else throw new IllegalArgumentException("project directory does not exist");
 
+        classPath = splitColonSeparatedClassPath(classPath);
+
         log.info("Classpath built with {} entries", classPath.size());
         log.debug("Classpath : {}", classPath);
         context.setClassPath(classPath);
+    }
+
+    protected List<String> splitColonSeparatedClassPath(List<String> classPathLines) {
+        List<String> classPath = new ArrayList<>();
+        for (String line : classPathLines) {
+            if (line != null && !line.isBlank()) {
+                classPath.addAll(Arrays.asList(line.split(File.pathSeparator)));
+            }
+        }
+        return classPath;
     }
 
     private List<String> buildMavenClasspath(File projectDir) throws Exception {
@@ -68,7 +85,7 @@ public class BuildClassPathStage implements Stage {
         int exit = process.waitFor();
         if (exit != 0) throw new RuntimeException("Maven classpath build failed");
 
-        File cpFile = new File(projectDir, "cp.txt");
+        File cpFile = new File(projectDir, "classpath.txt");
         if (!cpFile.exists()) throw new RuntimeException("Classpath file not found: " + cpFile.getAbsolutePath());
 
         log.info("Maven classpath built");

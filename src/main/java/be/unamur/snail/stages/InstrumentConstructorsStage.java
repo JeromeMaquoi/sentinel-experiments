@@ -27,9 +27,9 @@ public class InstrumentConstructorsStage implements Stage {
         }
 
         Config config = Config.getInstance();
-        String projectPath = config.getRepo().getTargetDir() + "_" + config.getRepo().getCommit();
+        String repoPath = context.getRepoPath();
         String subProject = config.getProject().getSubProject();
-        String sourceCodePath = projectPath + subProject + "/src/main/java/";
+        String sourceCodePath = repoPath + subProject + "/src/main/java/";
         log.info("Starting instrumentation process for {}", sourceCodePath);
 
         try {
@@ -42,9 +42,10 @@ public class InstrumentConstructorsStage implements Stage {
             launcher.run();
             log.info("Instrumentation completed.");
         } catch (SpoonException e) {
-            log.error("Failed to instrument constructors for project {}", projectPath, e);
+            System.out.println(e);
+            log.error("Failed to instrument constructors for project {}", repoPath, e);
             if (!config.getExecutionPlan().getIgnoreSpoonFailures()) {
-                throw new ModuleException("Failed to instrument constructors for project " + projectPath, e);
+                throw new ModuleException("Failed to instrument constructors for project " + repoPath, e);
             }
             log.warn("Ignoring failures, continuing anyway.");
         }

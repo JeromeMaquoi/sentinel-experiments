@@ -34,9 +34,7 @@ public class RunProjectTestsStage implements Stage {
         if (testCommand == null || testCommand.isBlank()) {
             throw new MissingConfigKeyException("executionPlan.testCommand");
         }
-
-        //testCommand = withJavaHome(context, testCommand);
-
+        
         log.info("Executing test suite with command: {}", testCommand);
         String cwd = context.getRepoPath();
         Utils.CompletedProcess result = Utils.runCommand(testCommand, cwd);
@@ -45,18 +43,5 @@ public class RunProjectTestsStage implements Stage {
             throw new TestSuiteExecutionFailedException();
         }
         log.info("Test suite execution completed");
-    }
-
-    protected String withJavaHome(Context context, String command) {
-        String javaHome = context.getJavaHome();
-        if (javaHome == null || javaHome.isBlank()) {
-            return command;
-        }
-        if (command.contains("gradlew")) {
-            return command.replaceFirst("(gradlew)", "$1 --java-home " + javaHome);
-        } else if (command.contains("gradle")) {
-            return command.replaceFirst("(gradle)", "$1 --java-home " + javaHome);
-        }
-        return "JAVA_HOME=" + javaHome + " " + command;
     }
 }

@@ -85,9 +85,11 @@ public class JoularJXTool implements EnergyMeasurementTool {
         String subProject = config.getProject().getSubProject();
 
         String totalProjectPath = createTotalProjectPath(projectName, subProject);
+        log.debug("Total project path for build file detection: {}", totalProjectPath);
         String buildFileName = detectBuildFileName(totalProjectPath);
 
         Path sourceFile = buildResourcePath(totalProjectPath, buildFileName);
+        log.debug("Source file : {}", sourceFile);
         Path relativeTargetPath = Path.of(subProject).resolve(buildFileName);
 
         log.info("Configured CopyFileStage for {}: {} -> {}", projectName, sourceFile, relativeTargetPath);
@@ -105,6 +107,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
         String totalProjectPath = createTotalProjectPath(projectName, subProject);
 
         Path sourceFile = buildResourcePath(totalProjectPath, "config.properties");
+        log.debug("Source file : {}", sourceFile);
         Path relativeTargePath = Path.of(subProject != null && !subProject.isBlank() ? subProject : "")
                 .resolve("config.properties");
 

@@ -105,6 +105,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
         String totalProjectPath = createTotalProjectPath(projectName, subProject);
 
         Path sourceFile = buildResourcePath(totalProjectPath, "config.properties");
+        log.debug("Source file : {}", sourceFile);
         Path relativeTargePath = Path.of(subProject != null && !subProject.isBlank() ? subProject : "")
                 .resolve("config.properties");
 

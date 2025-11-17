@@ -45,15 +45,14 @@ public class RunInstrumentedProjectTestsStage implements Stage {
 
         File repoPath = new File(context.getRepoPath());
         String commandWithInit = testCommand;
+        File initScript = initScriptGenerator.generateShowLogsInitScriptForGradle();
+
         if (projectTypeDetector.isMavenProject(repoPath)) {
             // TODO
         } else if (projectTypeDetector.isGradleProject(repoPath)) {
             // Add init script to see the logs in the terminal during the execution and for passing properties packagePrefix and apiUrl to the tests
-            File initScript = initScriptGenerator.generateShowLogsInitScriptForGradle();
             commandWithInit += " --init-script " + initScript.getAbsolutePath();
-
-            // Delete init script
-            Files.deleteIfExists(initScript.toPath());
+            log.info("Using Gradle init script at {}", initScript.getAbsolutePath());
         }
 
         // Add package prefix as system property for stacktrace filtering
@@ -79,5 +78,8 @@ public class RunInstrumentedProjectTestsStage implements Stage {
             log.warn("Ignoring failures, continuing anyway.");
         }
         log.info("Project tests execution completed");
+
+        // Delete init script
+        Files.deleteIfExists(initScript.toPath());
     }
 }

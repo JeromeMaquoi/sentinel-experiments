@@ -34,6 +34,8 @@ public class CopyFileStage implements Stage {
         PipelineLogger log = context.getLogger();
 
         String classPathResource = sourceFile.toString().replace("\\", "/").replaceFirst("^resources/", "");
+        log.debug("Copying {} to {}", classPathResource, relativeTargetFilePath);
+        
         InputStream in = getClass().getClassLoader().getResourceAsStream(classPathResource);
         if (in == null) {
             throw new SourceFileNotFoundException(sourceFile.toString());

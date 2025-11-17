@@ -123,6 +123,7 @@ public class SpoonInstrumentConstructorModule implements Module {
     public Path buildResourcePath(String totalProjectPath, String fileName) {
         return Path.of("resources", "build-files")
                 .resolve(totalProjectPath)
+                .resolve("instrumentation")
                 .resolve(fileName);
     }
 }

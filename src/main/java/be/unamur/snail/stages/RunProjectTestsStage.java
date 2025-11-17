@@ -39,7 +39,7 @@ public class RunProjectTestsStage implements Stage {
         String cwd = context.getRepoPath();
         Utils.CompletedProcess result = Utils.runCommand(testCommand, cwd);
 
-        if (result.returnCode() != 0) {
+        if (result.returnCode() != 0 && !config.getExecutionPlan().getIgnoreFailures()) {
             throw new TestSuiteExecutionFailedException();
         }
         log.info("Test suite execution completed");

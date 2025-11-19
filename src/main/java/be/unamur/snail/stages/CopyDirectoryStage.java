@@ -7,6 +7,7 @@ import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.utils.Utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,8 +52,9 @@ public class CopyDirectoryStage implements Stage {
             return;
         }
 
-        log.debug("Copying directory from {} to {}", source, target);
         try {
+            log.info("Delete target directory if it exists");
+            Utils.deleteDirectory(target.toFile());
             copyDirectory(source, target);
             log.info("Copy of directory from {} to {} completed", source, target);
         } catch (IOException e) {

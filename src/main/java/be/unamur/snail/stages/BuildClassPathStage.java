@@ -74,7 +74,7 @@ public class BuildClassPathStage implements Stage {
     private List<String> buildMavenClasspath(File projectDir) throws Exception {
         // Runs: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt
         ProcessBuilder pb = new ProcessBuilder(
-                "mvn", "dependency:build-classpath", "-Dmdep.outputFile=classpath.txt"
+                "mvn", "dependency:build-classpath", "-DincludeScope=runtime", "-Dmdep.outputFile=classpath.txt"
         );
         pb.directory(projectDir);
         pb.inheritIO();

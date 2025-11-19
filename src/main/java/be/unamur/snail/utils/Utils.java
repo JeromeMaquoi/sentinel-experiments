@@ -75,4 +75,21 @@ public class Utils {
                 String.format("http://%s:%d%s", host, port, endpoint) :
                 String.format("http://%s:%d/%s", host, port, endpoint);
     }
+
+    public static void deleteDirectory(File dir) {
+        if (dir == null || !dir.exists()) {
+            return;
+        }
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        dir.delete();
+    }
 }

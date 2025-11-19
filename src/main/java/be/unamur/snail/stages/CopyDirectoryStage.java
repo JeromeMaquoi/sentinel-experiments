@@ -7,6 +7,7 @@ import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.utils.Utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,15 +44,16 @@ public class CopyDirectoryStage implements Stage {
         Path target = Paths.get(targetDir + "_" + commit).toAbsolutePath();
 
         // If directory already exists and overwritten is not asked, return
-        if (Files.exists(target) && !config.getRepo().isOverwrite()) {
+        if (Files.exists(target) && !config.getRepo().isOverwriteCopy()) {
             log.info("Target already exists, skipping copy");
             context.setRepoPath(target.toAbsolutePath().toString());
             log.debug("Context repository path: {}", context.getRepoPath());
             return;
         }
 
-        log.debug("Copying directory from {} to {}", source, target);
         try {
+            log.info("Delete target directory if it exists");
+            Utils.deleteDirectory(target.toFile());
             copyDirectory(source, target);
             log.info("Copy of directory from {} to {} completed", source, target);
         } catch (IOException e) {

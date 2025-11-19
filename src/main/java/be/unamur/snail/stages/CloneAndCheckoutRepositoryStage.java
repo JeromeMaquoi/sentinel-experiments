@@ -3,6 +3,7 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.utils.Utils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -29,14 +30,14 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
 
         File targetDir = new File(targetDirStr);
         log.debug("targetDir is {}", targetDir.getAbsolutePath());
-        if (targetDir.exists() && !config.getRepo().isOverwrite()) {
+        if (targetDir.exists() && !config.getRepo().isOverwriteClone()) {
             // TODO: better handle the overwrite management
             log.info("Project already cloned. Skipping this step");
             context.setCommit(commit);
             context.setRepoPath(targetDirStr);
             return;
-        } else if (targetDir.exists() && config.getRepo().isOverwrite()) {
-            deleteDirectory(targetDir);
+        } else if (targetDir.exists() && config.getRepo().isOverwriteClone()) {
+            Utils.deleteDirectory(targetDir);
         }
 
         log.info("Cloning {} to {}", repoUrl, targetDirStr);
@@ -49,19 +50,5 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
         } catch (GitAPIException e) {
             throw new RuntimeException("Failed to clone or checkout " + commit, e);
         }
-    }
-
-    private void deleteDirectory(File dir) {
-        File[] files = dir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else {
-                    file.delete();
-                }
-            }
-        }
-        dir.delete();
     }
 }

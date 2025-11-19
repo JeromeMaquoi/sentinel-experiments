@@ -30,12 +30,13 @@ public class SpoonInstrumentConstructorModule implements Module {
         BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
         this.stages = List.of(
-                new StopBackendStage(runner, backendFactory, databaseFactory),
-                new PrepareBackendStage(runner, backendFactory, databaseFactory),
+                //new StopBackendStage(runner, backendFactory, databaseFactory),
+                //new PrepareBackendStage(runner, backendFactory, databaseFactory),
                 new CloneAndCheckoutRepositoryStage(),
                 new CopyDirectoryStage(),
                 createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),
+                //createCopyBuildFileStage(),
                 new InstrumentConstructorsStage(),
                 new CopySourceCodeStage(),
                 new RunInstrumentedProjectTestsStage()
@@ -94,5 +95,46 @@ public class SpoonInstrumentConstructorModule implements Module {
         } else {
             throw new BuildFileNotFoundException(totalProjectPath);
         }
+    }
+
+    protected CopyFileStage createCopyBuildFileStage() {
+        Config config = Config.getInstance();
+        String projectName = config.getProject().getName();
+        String subProject = config.getProject().getSubProject();
+
+        String totalProjectNamePath = createTotalProjectPath(projectName, subProject);
+        String buildFileName = detectBuildFileName(totalProjectNamePath);
+
+        Path sourceFile = buildResourcePath(totalProjectNamePath, buildFileName);
+        Path relativeTargetPath = Path.of(subProject).resolve(buildFileName);
+
+        log.info("Configured CopyFileStage for {}: {} -> {}", buildFileName, sourceFile, relativeTargetPath);
+        return new CopyFileStage(sourceFile, relativeTargetPath);
+    }
+
+    public String createTotalProjectPath(String projectName, String subProject) {
+        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
+    }
+
+    public String detectBuildFileName(String totalProjectPath) {
+        String basePath = String.format("build-files/%s/instrumentation/", totalProjectPath);
+
+        URL gradleURL = getClass().getClassLoader().getResource(basePath + "build.gradle");
+        URL mavenURL = getClass().getClassLoader().getResource(basePath + "pom.xml");
+
+        if (gradleURL != null) {
+            return "build.gradle";
+        } else if (mavenURL != null) {
+            return "pom.xml";
+        } else {
+            throw new BuildFileNotFoundException(totalProjectPath);
+        }
+    }
+
+    public Path buildResourcePath(String totalProjectPath, String fileName) {
+        return Path.of("resources", "build-files")
+                .resolve(totalProjectPath)
+                .resolve("instrumentation")
+                .resolve(fileName);
     }
 }

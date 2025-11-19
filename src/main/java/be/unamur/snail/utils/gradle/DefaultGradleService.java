@@ -12,6 +12,7 @@ public class DefaultGradleService implements GradleService {
     @Override
     public void runTask(File projectRootDir, String gradleTaskPath, File initScript) throws Exception {
         ProcessBuilder pb = new ProcessBuilder("./gradlew", gradleTaskPath, "-I", initScript.getAbsolutePath());
+        log.info("Running gradle task: {} in {}", pb.command(), projectRootDir.getAbsolutePath());
         pb.directory(projectRootDir);
         pb.redirectErrorStream(true);
         Process process = pb.start();

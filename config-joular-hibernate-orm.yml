@@ -1,0 +1,47 @@
+command-time-out: 3600
+code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
+project:
+  name: "hibernate-orm"
+  owner: "hibernate"
+  sub-project: "/hibernate-core"
+  show-project-logs: true
+  package-prefix: "org.hibernate"
+repo:
+  url: "https://github.com/hibernate/hibernate-orm"
+  commit: "12442bd8c7cde6e7c006a6277eeb8e81ad0c2219" # release 6.2.13.FINAL
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/hibernate-orm"
+  jdk: "17.0.17-tem"
+  overwrite: false
+log:
+  level: DEBUG
+  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/hibernate-orm/"
+  also-log-to-console: true
+  clear-previous-logs: true
+execution-plan:
+  test-command: "mvn clean test -Drat.skip=true"
+  ignore-failures: true
+  ignore-spoon-failures: true
+  num-test-runs: 1
+  energy-measurements:
+    tool: "joularjx"
+    tool-version: "3.0.1"
+    release-url: "https://github.com/joular/joularjx"
+    tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
+    import-config:
+      scopes: ["app"]
+      measurement-types: ["runtime", "total"]
+      monitoring-types: ["calltrees", "methods"]
+backend:
+  mode: dev
+  server-host: localhost
+  server-port: 8080
+  server-timeout-seconds: 120
+  server-log-path: "/tmp/sentinel-backend.log"
+  server-ready-path: "/tmp/backend-ready"
+  endpoint: "/api/v2/constructor-contexts"
+  # dev-specific
+  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 20
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

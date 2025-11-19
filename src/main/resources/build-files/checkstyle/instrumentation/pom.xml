@@ -1757,7 +1757,6 @@
             --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
             -XX:+EnableDynamicAgentLoading
             -Xshare:off
-            -javaagent:JOULARJX
           </argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>

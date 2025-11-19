@@ -28,26 +28,29 @@ public class InstrumentConstructorsStage implements Stage {
 
         Config config = Config.getInstance();
         String repoPath = context.getRepoPath();
+        String baseRepoPath = context.getBaseRepoPath();
         String subProject = config.getProject().getSubProject();
-        String sourceCodePath = repoPath + subProject + "/src/main/java/";
-        log.info("Starting instrumentation process for {}", sourceCodePath);
+        String inputSourceCodePath = baseRepoPath + subProject + "/src/main/java/";
+        String outputSourceCodePath = repoPath + subProject + "/src/main/java/";
+        log.info("Starting instrumentation process for {}", outputSourceCodePath);
 
         try {
             Launcher launcher = new Launcher();
-            launcher.addInputResource(sourceCodePath);
-            launcher.setSourceOutputDirectory(sourceCodePath);
+            launcher.addInputResource(inputSourceCodePath);
+            launcher.setSourceOutputDirectory(outputSourceCodePath);
 
-            launcher.getEnvironment().setAutoImports(true);
-            launcher.getEnvironment().setNoClasspath(false);
-            launcher.getEnvironment().setIgnoreDuplicateDeclarations(true);
-            launcher.getEnvironment().setCommentEnabled(true);
+            launcher.getEnvironment().setNoClasspath(true);
 
-            List<String> classPaths = context.getClassPath();
-            launcher.getEnvironment().setSourceClasspath(classPaths.toArray(new String[0]));
+            launcher.getEnvironment().setCommentEnabled(false);
+            launcher.getEnvironment().setAutoImports(false);
+
+//            List<String> classPaths = context.getClassPath();
+//            launcher.getEnvironment().setSourceClasspath(classPaths.toArray(new String[0]));
+
             launcher.addProcessor(new ConstructorInstrumentationProcessor());
             launcher.run();
             log.info("Instrumentation completed.");
-        } catch (SpoonException e) {
+        } catch (Exception e) {
             System.out.println(e);
             log.error("Failed to instrument constructors for project {}", repoPath, e);
             if (!config.getExecutionPlan().getIgnoreSpoonFailures()) {

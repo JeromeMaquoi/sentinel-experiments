@@ -60,6 +60,7 @@ public class CopyDirectoryStage implements Stage {
             throw new ModuleException("Error while copying directory from " + source + " to " + target, e);
         }
 
+        context.setBaseRepoPath(source.toAbsolutePath().toString());
         context.setRepoPath(target.toAbsolutePath().toString());
         log.debug("Context repository path: {}", context.getRepoPath());
     }

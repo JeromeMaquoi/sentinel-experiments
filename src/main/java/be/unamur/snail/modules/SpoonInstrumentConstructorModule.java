@@ -31,13 +31,13 @@ public class SpoonInstrumentConstructorModule implements Module {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
         this.stages = List.of(
                 //new StopBackendStage(runner, backendFactory, databaseFactory),
-                new PrepareBackendStage(runner, backendFactory, databaseFactory),
+                //new PrepareBackendStage(runner, backendFactory, databaseFactory),
                 new CloneAndCheckoutRepositoryStage(),
                 new CopyDirectoryStage(),
                 createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),
-                new InstrumentConstructorsStage(),
                 createCopyBuildFileStage(),
+                new InstrumentConstructorsStage(),
                 new CopySourceCodeStage(),
                 new RunInstrumentedProjectTestsStage()
         );

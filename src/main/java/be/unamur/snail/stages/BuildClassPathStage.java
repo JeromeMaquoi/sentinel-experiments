@@ -53,7 +53,7 @@ public class BuildClassPathStage implements Stage {
         List<String> classPath;
         if (new File(projectDir, "pom.xml").exists()) {
             classPath = buildMavenClasspath(projectDir);
-        } else if (new File(projectDir, "build.gradle").exists()) {
+        } else if (new File(projectDir, "build.gradle").exists() || new File(projectDir, "build.gradle.kts").exists()) {
             classPath = buildGradleClasspath(projectDir);
         } else throw new IllegalArgumentException("project directory does not exist");
 

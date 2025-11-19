@@ -17,11 +17,12 @@ public class InitScriptGenerator {
         allprojects {
             tasks.register("exportRuntimeClasspath") {
                 doLast {
-                    def f = new File(project.projectDir, "classpath.txt")
-                    if (configurations.findByName("runtimeClasspath") != null) {
-                        f.text = configurations.runtimeClasspath.files.collect { it.absolutePath }.join('\\n')
+                    val f = file("classpath.txt")
+                    val config = configurations.findByName("runtimeClasspath")
+                    if (config != null) {
+                        f.writeText(config.files.joinToString("\\n") { it.absolutePath })
                     } else {
-                        f.text = ""
+                        f.writeText("")
                     }
                 }
             }

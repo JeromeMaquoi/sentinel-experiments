@@ -2,7 +2,7 @@ command-time-out: 3600
 project:
   name: "jabref"
   owner: "JabRef"
-  sub-project: ""
+  sub-project: "jabgui"
   show-project-logs: true
   package-prefix: "org.jabref"
 repo:

@@ -12,15 +12,25 @@ public class DefaultGradleService implements GradleService {
     @Override
     public void runTask(File projectRootDir, String gradleTaskPath, File initScript) throws Exception {
         ProcessBuilder pb = new ProcessBuilder("./gradlew", gradleTaskPath, "-I", initScript.getAbsolutePath());
-        log.info("Running gradle task: {} in {}", pb.command(), projectRootDir.getAbsolutePath());
-        pb.directory(projectRootDir);
+        executeProcess(pb, projectRootDir);
+    }
+
+    @Override
+    public void runTask(File projectRoot, String gradleTaskPath) throws Exception {
+        ProcessBuilder pb = new ProcessBuilder("./gradlew", gradleTaskPath);
+        executeProcess(pb, projectRoot);
+    }
+
+    protected void executeProcess(ProcessBuilder pb, File projectRoot) throws Exception {
+        log.info("Running gradle task: {} in {}", pb.command(), projectRoot.getAbsolutePath());
+        pb.directory(projectRoot);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
         int exit = process.waitFor();
         if (exit != 0) {
-            log.error("Init script generation failed");
-            throw new ModuleException("Init script generation failed");
+            log.error("Gradle task {} failed in {}", pb.command(), projectRoot.getAbsolutePath());
+            throw new ModuleException("Gradle task failed: " + pb.command());
         }
     }
 }

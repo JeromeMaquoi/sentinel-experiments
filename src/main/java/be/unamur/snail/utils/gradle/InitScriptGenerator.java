@@ -10,7 +10,7 @@ public class InitScriptGenerator {
      * @return
      * @throws IOException
      */
-    public File generateClasspathInitScript() throws IOException {
+    public File generateGroovyClasspathInitScript() throws IOException {
         // Create a temporary init script with the task definition
         File initScript = File.createTempFile("sentinel-export-classpath", ".gradle");
         String gradleTaskContent = """
@@ -24,6 +24,47 @@ public class InitScriptGenerator {
                     } else {
                         f.writeText("")
                     }
+                }
+            }
+        }
+        """;
+        Files.writeString(initScript.toPath(), gradleTaskContent);
+        return initScript;
+    }
+
+    public File generateKotlinClasspathInitScript() throws IOException {
+        // Create a temporary init script with the task definition
+        File initScript = File.createTempFile("sentinel-export-classpath", ".gradle.kts");
+        String gradleTaskContent = """
+        allprojects { project ->
+        
+            project.tasks.register("exportRuntimeClasspath") {
+        
+                doLast {
+        
+                    def outFile = project.file("classpath.txt")
+                    def config = project.configurations.findByName("runtimeClasspath")
+        
+                    if (config == null) {
+                        outFile.text = ""
+                        println "No runtimeClasspath for project ${project.path}"
+                        return
+                    }
+        
+                    // Attempt to resolve the config without failing the build
+                    Set<File> files
+                    try {
+                        files = config.resolve()
+                    } catch (Exception e) {
+                        println "⚠️ Failed to resolve runtimeClasspath for project ${project.path}: ${e.message}"
+                        outFile.text = ""
+                        return
+                    }
+        
+                    // Write ":"-separated classpath
+                    outFile.text = files.collect { it.absolutePath }.join(":")
+        
+                    println "✔ Wrote runtime classpath for ${project.path} → ${outFile}"
                 }
             }
         }

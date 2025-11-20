@@ -4,4 +4,5 @@ import java.io.File;
 
 public interface GradleService {
     void runTask(File projectRoot, String gradleTaskPath, File initScript) throws Exception;
+    void runTask(File projectRoot, String gradleTaskPath) throws Exception;
 }

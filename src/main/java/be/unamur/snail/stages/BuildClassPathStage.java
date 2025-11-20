@@ -9,8 +9,6 @@ import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.utils.gradle.DefaultGradleService;
 import be.unamur.snail.utils.gradle.GradleService;
 import be.unamur.snail.utils.gradle.InitScriptGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -103,10 +101,18 @@ public class BuildClassPathStage implements Stage {
             gradleTaskPath = subProject.replaceAll("^/|/$", "").replace("/", ":") + ":exportRuntimeClasspath";
         }
 
-        File initScript = initScriptGenerator.generateClasspathInitScript();
-        log.debug("Temporary Gradle init script created at {}", initScript.getAbsolutePath());
+//        File initScript;
+//        if (new File(projectRootDir, "build.gradle").exists()) {
+//            initScript = initScriptGenerator.generateGroovyClasspathInitScript();
+//            log.debug("Temporary Groovy Gradle init script created at {}", initScript.getAbsolutePath());
+//        } else {
+//            initScript = initScriptGenerator.generateKotlinClasspathInitScript();
+//            log.debug("Temporary Kotlin init script created at {}", initScript.getAbsolutePath());
+//        }
+//
+//        gradleService.runTask(projectRootDir, gradleTaskPath, initScript);
 
-        gradleService.runTask(projectRootDir, gradleTaskPath, initScript);
+        gradleService.runTask(projectRootDir, gradleTaskPath);
 
         // classpath.txt is written inside the subproject (if given), else root project
         File cpFile;

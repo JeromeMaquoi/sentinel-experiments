@@ -1,5 +1,3 @@
-package `build-files`.jabref.jabgui.classpath
-
 plugins {
     id("org.jabref.gradle.module")
     id("application")

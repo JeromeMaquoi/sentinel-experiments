@@ -58,7 +58,6 @@ public class BuildClassPathStage implements Stage {
         classPath = splitColonSeparatedClassPath(classPath);
 
         log.info("Classpath built with {} entries", classPath.size());
-        log.debug("Classpath : {}", classPath);
         context.setClassPath(classPath);
     }
 
@@ -127,7 +126,6 @@ public class BuildClassPathStage implements Stage {
         }
 
         log.debug("Gradle classpath built in {}", cpFile.getAbsolutePath());
-        log.debug("Classpath: {}", Files.readAllLines(cpFile.toPath()));
 
         return Files.readAllLines(cpFile.toPath());
     }

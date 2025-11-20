@@ -29,7 +29,7 @@ public class InstrumentConstructorsStage implements Stage {
         Config config = Config.getInstance();
         String repoPath = context.getRepoPath();
         String subProject = config.getProject().getSubProject();
-        String sourceCodePath = repoPath + subProject + "/src/main/java/";
+        String sourceCodePath = repoPath + "/" + (subProject.isEmpty() ? "" : subProject + "/") + "src/main/java/";
         log.info("Starting instrumentation process for {}", sourceCodePath);
 
         try {

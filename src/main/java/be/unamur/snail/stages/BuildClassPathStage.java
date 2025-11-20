@@ -126,7 +126,7 @@ public class BuildClassPathStage implements Stage {
             throw new ModuleException("Classpath file not found: " + cpFile.getAbsolutePath());
         }
 
-        log.debug("Gradle classpath built");
+        log.debug("Gradle classpath built in {}", cpFile.getAbsolutePath());
         log.debug("Classpath: {}", Files.readAllLines(cpFile.toPath()));
 
         return Files.readAllLines(cpFile.toPath());

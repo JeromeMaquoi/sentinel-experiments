@@ -240,14 +240,24 @@ tasks.test {
     )
 }
 
-tasks.register("exportRuntimeClasspath") {
-    doLast {
-        val cp = configurations.runtimeClasspath.get()
-            .resolve()
-            .joinToString(":") { it.absolutePath }
+tasks.register<Exec>("buildSubModules") {
+    workingDir = rootProject.projectDir
+    commandLine("./gradlew", "jar")
+}
 
-        val out = rootProject.file("classpath.txt")
-        out.writeText(cp)
-        println("Wrote runtime classpath to: ${out.absolutePath}")
+tasks.register("exportRuntimeClasspath") {
+    dependsOn("buildSubModules")
+
+    doLast {
+        val out = project.file("classpath.txt")
+        val rc = configurations.findByName("runtimeClasspath")
+
+        if (rc != null) {
+            val cp = rc.files.joinToString(":") { it.absolutePath }
+            out.writeText(cp)
+        } else {
+            out.writeText("")
+        }
     }
 }
+

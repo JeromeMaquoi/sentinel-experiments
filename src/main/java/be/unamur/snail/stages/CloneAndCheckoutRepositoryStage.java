@@ -29,13 +29,13 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
 
         File targetDir = new File(targetDirStr);
         log.debug("targetDir is {}", targetDir.getAbsolutePath());
-        if (targetDir.exists() && !config.getRepo().isOverwrite()) {
+        if (targetDir.exists() && !config.getRepo().isOverwriteClone()) {
             // TODO: better handle the overwrite management
             log.info("Project already cloned. Skipping this step");
             context.setCommit(commit);
             context.setRepoPath(targetDirStr);
             return;
-        } else if (targetDir.exists() && config.getRepo().isOverwrite()) {
+        } else if (targetDir.exists() && config.getRepo().isOverwriteClone()) {
             deleteDirectory(targetDir);
         }
 

@@ -9,6 +9,7 @@ public class Context {
     private PipelineLogger logger;
     private List<String> classPath;
     private String repoPath;
+    private String baseRepoPath;
     private String commit;
     private String energyToolPath;
     private String energyToolVersion;
@@ -39,6 +40,14 @@ public class Context {
 
     public void setRepoPath(String repoPath) {
         this.repoPath = repoPath;
+    }
+
+    public String getBaseRepoPath() {
+        return baseRepoPath;
+    }
+
+    public void setBaseRepoPath(String baseRepoPath) {
+        this.baseRepoPath = baseRepoPath;
     }
 
     public String getCommit() {

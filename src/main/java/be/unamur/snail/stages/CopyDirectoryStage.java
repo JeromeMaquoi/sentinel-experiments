@@ -43,8 +43,9 @@ public class CopyDirectoryStage implements Stage {
         Path target = Paths.get(targetDir + "_" + commit).toAbsolutePath();
 
         // If directory already exists and overwritten is not asked, return
-        if (Files.exists(target) && !config.getRepo().isOverwrite()) {
+        if (Files.exists(target) && !config.getRepo().isOverwriteCopy()) {
             log.info("Target already exists, skipping copy");
+            context.setBaseRepoPath(source.toAbsolutePath().toString());
             context.setRepoPath(target.toAbsolutePath().toString());
             log.debug("Context repository path: {}", context.getRepoPath());
             return;
@@ -58,6 +59,7 @@ public class CopyDirectoryStage implements Stage {
             throw new ModuleException("Error while copying directory from " + source + " to " + target, e);
         }
 
+        context.setBaseRepoPath(source.toAbsolutePath().toString());
         context.setRepoPath(target.toAbsolutePath().toString());
         log.debug("Context repository path: {}", context.getRepoPath());
     }

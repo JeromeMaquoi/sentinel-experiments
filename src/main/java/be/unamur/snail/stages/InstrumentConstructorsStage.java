@@ -28,16 +28,20 @@ public class InstrumentConstructorsStage implements Stage {
 
         Config config = Config.getInstance();
         String repoPath = context.getRepoPath();
+        String baseRepoPath = context.getBaseRepoPath();
         String subProject = config.getProject().getSubProject();
-        String sourceCodePath = repoPath + "/" + (subProject.isEmpty() ? "" : subProject + "/") + "src/main/java/";
-        log.info("Starting instrumentation process for {}", sourceCodePath);
+        String inputSourceCodePath = baseRepoPath + "/" + (subProject.isEmpty() ? "" : subProject + "/") + "src/main/java/";
+        String outputSourceCodePath = repoPath + "/" + (subProject.isEmpty() ? "" : subProject + "/") + "src/main/java/";
+        log.info("Starting instrumentation process for {} from {}", outputSourceCodePath, inputSourceCodePath);
 
         try {
             Launcher launcher = new Launcher();
-            launcher.addInputResource(sourceCodePath);
-            launcher.setSourceOutputDirectory(sourceCodePath);
-            List<String> classPaths = context.getClassPath();
-            launcher.getEnvironment().setSourceClasspath(classPaths.toArray(new String[0]));
+            launcher.addInputResource(inputSourceCodePath);
+            launcher.setSourceOutputDirectory(outputSourceCodePath);
+            launcher.getEnvironment().setNoClasspath(true);
+            launcher.getEnvironment().setShouldCompile(true);
+//            List<String> classPaths = context.getClassPath();
+//            launcher.getEnvironment().setSourceClasspath(classPaths.toArray(new String[0]));
             launcher.addProcessor(new ConstructorInstrumentationProcessor());
             launcher.run();
             log.info("Instrumentation completed.");

@@ -11,7 +11,8 @@ repo:
   commit: "12442bd8c7cde6e7c006a6277eeb8e81ad0c2219" # release 6.2.13.FINAL
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/hibernate-orm"
   jdk: "17.0.17-tem"
-  overwrite: false
+  overwrite-clone: false
+  overwrite-copy: true
 log:
   level: DEBUG
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/hibernate-orm/"
@@ -20,7 +21,7 @@ log:
 execution-plan:
   test-command: "mvn clean test -Drat.skip=true"
   ignore-failures: true
-  ignore-spoon-failures: true
+  ignore-spoon-failures: false
   num-test-runs: 1
   energy-measurements:
     tool: "joularjx"

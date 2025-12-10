@@ -68,17 +68,6 @@ public class SpoonInstrumentConstructorModule implements Module {
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
-    public Path buildResourcePath(String totalProjectPath, String fileName) {
-        return Path.of("resources", "build-files")
-                .resolve(totalProjectPath)
-                .resolve("classpath")
-                .resolve(fileName);
-    }
-
-    public String createTotalProjectPath(String projectName, String subProject) {
-        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
-    }
-
     public String detectBuildFileNameForClasspath(String totalProjectPath) {
         String basePath = String.format("build-files/%s/classpath/", totalProjectPath);
         log.debug("Base path for build file detection: {}", basePath);

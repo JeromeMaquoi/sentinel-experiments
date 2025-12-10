@@ -1,6 +1,8 @@
 package be.unamur.snail.utils.gradle;
 
 import be.unamur.snail.exceptions.ModuleException;
+import be.unamur.snail.utils.CommandRunner;
+import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,18 +10,34 @@ import java.io.File;
 
 public class DefaultGradleService implements GradleService {
     private static final Logger log = LoggerFactory.getLogger(DefaultGradleService.class);
+    private final CommandRunner runner;
+
+    public DefaultGradleService() {
+        this.runner = new SimpleCommandRunner();
+    }
 
     @Override
     public void runTask(File projectRootDir, String gradleTaskPath, File initScript) throws Exception {
         ProcessBuilder pb = new ProcessBuilder("./gradlew", gradleTaskPath, "-I", initScript.getAbsolutePath());
-        pb.directory(projectRootDir);
+        executeProcess(pb, projectRootDir);
+    }
+
+    @Override
+    public void runTask(File projectRoot, String gradleTaskPath) throws Exception {
+        String command = "./gradlew " + gradleTaskPath;
+        runner.run(command, projectRoot);
+    }
+
+    protected void executeProcess(ProcessBuilder pb, File projectRoot) throws Exception {
+        log.info("Running gradle task: {} in {}", pb.command(), projectRoot.getAbsolutePath());
+        pb.directory(projectRoot);
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
         int exit = process.waitFor();
         if (exit != 0) {
-            log.error("Init script generation failed");
-            throw new ModuleException("Init script generation failed");
+            log.error("Gradle task {} failed in {}", pb.command(), projectRoot.getAbsolutePath());
+            throw new ModuleException("Gradle task failed: " + pb.command());
         }
     }
 }

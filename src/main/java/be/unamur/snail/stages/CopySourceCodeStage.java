@@ -48,7 +48,8 @@ public class CopySourceCodeStage implements Stage {
             throw new TargetDirMissingException(repoPath);
         }
 
-        return repoPath + subProject + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/";
+        return subProject.isBlank() ? repoPath + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/"
+                : repoPath + "/" + subProject + "/src/main/java/be/unamur/snail/spoon/constructor_instrumentation/";
     }
 
     public void copyJavaFiles(Path source, Path target) throws IOException {

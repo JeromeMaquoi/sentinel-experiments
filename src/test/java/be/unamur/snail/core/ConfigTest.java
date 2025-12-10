@@ -33,7 +33,8 @@ class ConfigTest {
               commit: "123abc"
               target-dir: "/tmp/repo"
               jdk: "17-tem"
-              overwrite: true
+              overwrite-clone: true
+              overwrite-copy: false
             log:
               level: "DEBUG"
             command-time-out: 150
@@ -78,7 +79,8 @@ class ConfigTest {
         assertEquals("123abc", config.getRepo().getCommit());
         assertEquals("/tmp/repo", config.getRepo().getTargetDir());
         assertEquals("17-tem", config.getRepo().getJdk());
-        assertTrue(config.getRepo().isOverwrite());
+        assertTrue(config.getRepo().isOverwriteClone());
+        assertFalse(config.getRepo().isOverwriteCopy());
 
         // Log config
         assertEquals("DEBUG", config.getLog().getLevel());
@@ -159,7 +161,7 @@ class ConfigTest {
         assertEquals("123abc", config.getRepo().getCommit());
         assertEquals("/tmp/repo", config.getRepo().getTargetDir());
         assertEquals("17-tem", config.getRepo().getJdk());
-        assertTrue(config.getRepo().isOverwrite());
+        assertTrue(config.getRepo().isOverwriteClone());
         assertEquals("dev", config.getBackend().getMode());
         assertEquals("/usr/local/server", config.getBackend().getServerPath());
         assertEquals("/var/log/server.log", config.getBackend().getServerLogPath());

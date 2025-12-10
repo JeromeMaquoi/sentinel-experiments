@@ -126,11 +126,14 @@ public class JoularJXTool implements EnergyMeasurementTool {
     public String detectBuildFileName(String totalProjectPath) {
         String basePath = String.format("build-files/%s/", totalProjectPath);
         log.debug("Base path for build file detection: {}", basePath);
-        URL gradleURL = getClass().getClassLoader().getResource(basePath + "build.gradle");
+        URL gradleGroovyURL = getClass().getClassLoader().getResource(basePath + "build.gradle");
+        URL gradleKotlinURL = getClass().getClassLoader().getResource(basePath + "build.gradle.kts");
         URL mavenURL = getClass().getClassLoader().getResource(basePath + "pom.xml");
 
-        if (gradleURL != null) {
+        if (gradleGroovyURL != null) {
             return "build.gradle";
+        } else if (gradleKotlinURL != null) {
+            return "build.gradle.kts";
         } else if (mavenURL != null) {
             return "pom.xml";
         } else {

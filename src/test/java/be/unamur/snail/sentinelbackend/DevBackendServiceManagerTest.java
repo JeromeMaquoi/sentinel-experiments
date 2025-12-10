@@ -76,7 +76,7 @@ class DevBackendServiceManagerTest {
 
     @Test
     void isServerRunningFileReadyTest() throws IOException, InterruptedException {
-        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        DevBackendServiceManager manager = new DevBackendServiceManager(runner, backendPath, 5, 100);
 
         try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
             filesMock.when(() -> Files.exists(readyFile)).thenReturn(true);
@@ -94,7 +94,7 @@ class DevBackendServiceManagerTest {
 
     @Test
     void isServerRunningFileNotExistingTest() throws IOException, InterruptedException {
-        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, "/tmp/backend", 5, 100);
+        DevBackendServiceManager manager = new DevBackendServiceManager(runner, "/tmp/backend", 5, 100);
 
         try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
             filesMock.when(() -> Files.exists(readyFile)).thenReturn(false);
@@ -109,7 +109,7 @@ class DevBackendServiceManagerTest {
 
     @Test
     void isServerRunningFileExistsButServerStartFailedTest() throws IOException, InterruptedException {
-        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        DevBackendServiceManager manager = new DevBackendServiceManager(runner, backendPath, 5, 100);
 
         try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
             filesMock.when(() -> Files.exists(readyFile)).thenReturn(true);
@@ -127,7 +127,7 @@ class DevBackendServiceManagerTest {
 
     @Test
     void createCompleteCommandShouldSucceed() {
-        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        DevBackendServiceManager manager = new DevBackendServiceManager(runner, backendPath, 5, 100);
 
         String completeCommand = manager.createCompleteCommand(backendPath);
         String expectedCommand = "screen -dmS sentinel-backend bash -c \"cd /tmp/backend/ && chmod +X start-server.sh && PLUGINS_DIRECTORY=/tmp/backend/plugins ./start-server.sh 120 > /tmp/sentinel-backend.log 2>&1\"";
@@ -136,7 +136,7 @@ class DevBackendServiceManagerTest {
 
     @Test
     void createCompleteCommandShouldThrowExceptionIfMissingBackendLogPathTest() {
-        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        DevBackendServiceManager manager = new DevBackendServiceManager(runner, backendPath, 5, 100);
         Config config = Config.getInstance();
         config.getBackend().setBackendLogPathForTests(null);
 
@@ -182,7 +182,7 @@ class DevBackendServiceManagerTest {
 
     @Test
     void startBackendShouldThrowMissingConfigKeyExceptionIfBackendPortIsZeroTest() {
-        DevBackendServiceManager manager = new DevBackendServiceManager(cmd -> null, backendPath, 5, 100);
+        DevBackendServiceManager manager = new DevBackendServiceManager(runner, backendPath, 5, 100);
         Config config = Config.getInstance();
         config.getBackend().setServerPortForTests(0);
         assertThrows(MissingConfigKeyException.class, manager::startBackend);
@@ -190,8 +190,8 @@ class DevBackendServiceManagerTest {
 
     @Test
     void startBackendShouldReturnTrueIfBackendAlreadyRunningTest() throws IOException, InterruptedException {
-        CommandRunner simpleRunner = command -> new Utils.CompletedProcess("", 0, "", "");
-        DevBackendServiceManager spyManager = spy(new DevBackendServiceManager(simpleRunner, backendPath, 5, 100));
+//        CommandRunner simpleRunner = command -> new Utils.CompletedProcess("", 0, "", "");
+        DevBackendServiceManager spyManager = spy(new DevBackendServiceManager(runner, backendPath, 5, 100));
         doReturn(true).when(spyManager).isBackendAlreadyRunning(anyString(), anyInt());
 
         assertTrue(spyManager.startBackend());
@@ -199,9 +199,9 @@ class DevBackendServiceManagerTest {
 
     @Test
     void startBackendShouldThrowPortAlreadyInUseExceptionIfPortUsedAndServerNotUpTest() {
-        CommandRunner simpleRunner = command -> new Utils.CompletedProcess("", 0, "", "");
+//        CommandRunner simpleRunner = command -> new Utils.CompletedProcess("", 0, "", "");
 
-        DevBackendServiceManager manager = spy(new DevBackendServiceManager(simpleRunner, backendPath, 5, 100));
+        DevBackendServiceManager manager = spy(new DevBackendServiceManager(runner, backendPath, 5, 100));
         doReturn(true).when(manager).isPortInUse(anyInt());
         doReturn(false).when(manager).isBackendAlreadyRunning(anyString(), anyInt());
 

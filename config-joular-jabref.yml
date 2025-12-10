@@ -1,27 +1,27 @@
 command-time-out: 3600
 code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
-  name: "spring-boot"
-  owner: "spring-projects"
-  sub-project: "spring-boot-project/spring-boot"
+  name: "jabref"
+  owner: "JabRef"
+  sub-project: "jabgui"
   show-project-logs: true
-  package-prefix: "org.springframework"
+  package-prefix: "org.jabref"
 repo:
-  url: "https://github.com/spring-projects/spring-boot"
-  commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
-  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot"
-  jdk: "17.0.17-tem"
+  url: "https://github.com/JabRef/jabref"
+  commit: "5be2cfdcc37d6afdc5cc3e8db381e9a76b7c87e4" # Add final modifier and private constructor
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/jabref"
+  jdk: "24.0.2-amzn"
   overwrite-clone: false
   overwrite-copy: true
 log:
   level: INFO
-  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/spring-boot/"
+  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/jabref/"
   also-log-to-console: true
   clear-previous-logs: true
 execution-plan:
-  test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks"
+  test-command: "xvfb-run --auto-servernum ./gradlew clean test"
   ignore-failures: false
-  ignore-spoon-failures: true
+  ignore-spoon-failures: false
   num-test-runs: 1
   energy-measurements:
     tool: "joularjx"

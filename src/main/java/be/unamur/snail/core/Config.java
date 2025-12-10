@@ -147,7 +147,10 @@ public class Config {
         @JsonProperty("target-dir")
         private String targetDir;
         private String jdk;
-        private boolean overwrite;
+        @JsonProperty("overwrite-clone")
+        private boolean overwriteClone;
+        @JsonProperty("overwrite-copy")
+        private boolean overwriteCopy;
 
         public String getUrl() {
             return url;
@@ -177,12 +180,20 @@ public class Config {
             this.jdk = jdk;
         }
 
-        public boolean isOverwrite() {
-            return overwrite;
+        public boolean isOverwriteClone() {
+            return overwriteClone;
         }
 
         public void setOverwriteForTests(boolean overwrite) {
-            this.overwrite = overwrite;
+            this.overwriteClone = overwrite;
+        }
+
+        public boolean isOverwriteCopy() {
+            return overwriteCopy;
+        }
+
+        public void setOverwriteCopyForTests(boolean overwriteCopy) {
+            this.overwriteCopy = overwriteCopy;
         }
     }
 

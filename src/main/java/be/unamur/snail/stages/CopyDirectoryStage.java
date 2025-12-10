@@ -75,7 +75,7 @@ public class CopyDirectoryStage implements Stage {
             stream.forEach(path -> {
                 Path dest = target.resolve(source.relativize(path));
                 try {
-                    if (path.getFileName().toString().equals(".gradle") || path.getFileName().toString().equals("build")) {
+                    if (path.getFileName().toString().equals(".gradle")) {
                         return;
                     }
                     if (Files.isDirectory(path)) {

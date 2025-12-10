@@ -63,7 +63,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         Path sourceFile = buildResourcePath(totalProjectPath, buildFileName);
         Path relativeTargetPath = Path.of(subProject).resolve(buildFileName);
 
-        log.info("Configured CopyFileStage for {}: {} -> {}", projectName, sourceFile, relativeTargetPath);
+        log.debug("Configured CopyFileStage for {}: {} -> {}", projectName, sourceFile, relativeTargetPath);
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 

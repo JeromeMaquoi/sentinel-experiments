@@ -1,4 +1,5 @@
 command-time-out: 3600
+code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
   name: "jabref"
   owner: "JabRef"
@@ -10,16 +11,17 @@ repo:
   commit: "5be2cfdcc37d6afdc5cc3e8db381e9a76b7c87e4" # Add final modifier and private constructor
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/jabref"
   jdk: "24.0.2-amzn"
-  overwrite: false
+  overwrite-clone: false
+  overwrite-copy: true
 log:
-  level: DEBUG
+  level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/jabref/"
   also-log-to-console: true
   clear-previous-logs: true
 execution-plan:
   test-command: "xvfb-run --auto-servernum ./gradlew clean test"
   ignore-failures: false
-  ignore-spoon-failures: true
+  ignore-spoon-failures: false
   num-test-runs: 1
   energy-measurements:
     tool: "joularjx"

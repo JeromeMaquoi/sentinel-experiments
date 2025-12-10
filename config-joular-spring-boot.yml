@@ -11,7 +11,8 @@ repo:
   commit: "3ed1f1a064a10e53adc2ad8c0b46a4b2c148ee21"
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot"
   jdk: "17.0.17-tem"
-  overwrite: false
+  overwrite-clone: false
+  overwrite-copy: true
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/spring-boot/"

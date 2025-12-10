@@ -51,4 +51,18 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
             throw new RuntimeException("Failed to clone or checkout " + commit, e);
         }
     }
+
+    private void deleteDirectory(File dir) {
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        dir.delete();
+    }
 }

@@ -34,7 +34,7 @@ public class SpoonInstrumentConstructorModule implements Module {
                 //new PrepareBackendStage(runner, backendFactory, databaseFactory),
                 new CloneAndCheckoutRepositoryStage(),
                 new CopyDirectoryStage(),
-                createCopyBuildFileStageForClasspath(),
+//                createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),
                 createCopyBuildFileStage(),
                 new InstrumentConstructorsStage(),

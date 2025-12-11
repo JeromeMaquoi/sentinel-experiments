@@ -44,6 +44,8 @@ class ConstructorInstrumentationProcessorTest {
         launcher.setSourceOutputDirectory(outputPath.toString());
         launcher.addProcessor(processor);
 
+        launcher.getEnvironment().setNoClasspath(true);
+
         factory = launcher.getFactory();
         constructor = factory.Core().createConstructor();
         CtParameter<String> param = factory.createParameter(

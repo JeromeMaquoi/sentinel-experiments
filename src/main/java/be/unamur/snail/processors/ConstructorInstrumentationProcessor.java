@@ -18,7 +18,26 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
     @Override
     public void process(CtConstructor<?> constructor) {
         if (constructor.getBody() == null) return;
+
+        if (constructor.getDeclaringType() instanceof spoon.reflect.declaration.CtRecord) {
+            log.debug("Skipping record constructor {}", constructor.getDeclaringType().getQualifiedName());
+            return;
+        }
+
+        if (isUtilityConstructor(constructor)) {
+            log.debug("Skipping utility constructor {}", constructor.getDeclaringType().getQualifiedName());
+            return;
+        }
+
         instrument(constructor, new InstrumentationUtils(getFactory()));
+    }
+
+    private boolean isUtilityConstructor(CtConstructor<?> constructor) {
+        CtBlock<?> body = constructor.getBody();
+        if (body == null) return false;
+
+        List<CtStatement> statements = body.getStatements();
+        return statements.size() == 1 && statements.get(0) instanceof CtThrow;
     }
 
     @Override

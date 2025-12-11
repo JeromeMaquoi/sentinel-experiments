@@ -12,7 +12,7 @@ repo:
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/checkstyle"
   jdk: "17.0.17-tem"
   overwrite-clone: false
-  overwrite-copy: true
+  overwrite-copy: false
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/checkstyle/"
@@ -20,7 +20,7 @@ log:
   clear-previous-logs: true
 execution-plan:
   test-command: "mvn clean test -Drat.skip=true"
-  ignore-failures: true
+  ignore-failures: false
   ignore-spoon-failures: false
   num-test-runs: 1
   energy-measurements:

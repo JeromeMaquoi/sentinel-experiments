@@ -246,7 +246,7 @@ tasks.register<Exec>("buildSubModules") {
 }
 
 tasks.register("exportRuntimeClasspath") {
-    //dependsOn("buildSubModules")
+    dependsOn("buildSubModules")
 
     doLast {
         val out = project.file("classpath.txt")

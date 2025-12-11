@@ -45,7 +45,7 @@ public class InstrumentConstructorsStage implements Stage {
             launcher.addProcessor(new ConstructorInstrumentationProcessor());
             launcher.run();
             log.info("Instrumentation completed.");
-        } catch (Exception e) {
+        } catch (SpoonException e) {
             e.printStackTrace();
             log.error("Failed to instrument constructors for project {}", repoPath, e);
             if (!config.getExecutionPlan().getIgnoreSpoonFailures()) {

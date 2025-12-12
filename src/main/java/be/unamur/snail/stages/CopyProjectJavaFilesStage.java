@@ -32,7 +32,6 @@ public class CopyProjectJavaFilesStage implements Stage {
         log.info("Searching for Java files in resources: {}", baseResourcePath);
 
         ClassLoader cl = getClass().getClassLoader();
-        System.out.println("DEBUG: getResource for " + baseResourcePath + " = " + cl.getResource(baseResourcePath));
 
         List<String> resourceFiles = listResourceFilesRecursively(cl, baseResourcePath);
 

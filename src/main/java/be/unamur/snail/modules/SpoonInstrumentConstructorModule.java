@@ -39,6 +39,7 @@ public class SpoonInstrumentConstructorModule implements Module {
                 createCopyBuildFileStage(),
                 new InstrumentConstructorsStage(),
                 new CopySourceCodeStage(),
+                new CopyProjectJavaFilesStage(),
                 new RunInstrumentedProjectTestsStage()
         );
     }

@@ -30,12 +30,16 @@ public class HttpClientService {
 
             // Send the request and return the response
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response.body();
-            } else {
+            if (response.statusCode() == 409) {
+                return null;
+            }
+
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
 //                System.out.println("Error: " + response.statusCode() + " " + response.body());
                 throw new HttpErrorException(response.statusCode(), response.body());
             }
+
+            return response.body();
         }
         throw new InvalidPropertiesFormatException("No data to send to the server");
     }

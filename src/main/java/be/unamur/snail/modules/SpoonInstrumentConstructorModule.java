@@ -62,7 +62,11 @@ public class SpoonInstrumentConstructorModule implements Module {
         String subProject = config.getProject().getSubProject();
 
         String totalProjectPath = createTotalProjectPath(projectName, subProject);
-        String buildFileName = detectBuildFileNameForClasspath(totalProjectPath);
+        String buildFileName = detectBuildFileNameOrNullForClasspath(totalProjectPath);
+        if (buildFileName == null) {
+            log.info("No class path build file found for project {}, skipping CopyFileStage creation.", totalProjectPath);
+            return null;
+        }
 
         Path sourceFile = buildResourcePath(totalProjectPath + "/classpath", buildFileName);
         Path relativeTargetPath = Path.of(subProject).resolve(buildFileName);
@@ -71,7 +75,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
-    public String detectBuildFileNameForClasspath(String totalProjectPath) {
+    public String detectBuildFileNameOrNullForClasspath(String totalProjectPath) {
         String basePath = String.format("build-files/%s/classpath/", totalProjectPath);
         log.debug("Base path for build file detection: {}", basePath);
         URL gradleGroovyURL = getClass().getClassLoader().getResource(basePath + "build.gradle");
@@ -85,7 +89,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         } else if (mavenURL != null) {
             return "pom.xml";
         } else {
-            throw new BuildFileNotFoundException(totalProjectPath);
+            return null;
         }
     }
 
@@ -97,7 +101,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         String totalProjectNamePath = createTotalProjectPath(projectName, subProject);
         String buildFileName = detectBuildFileNameOrNull(totalProjectNamePath);
         if (buildFileName == null) {
-            log.info("No build instrumentation file found for project {}, skipping CopyFileStage creation.", totalProjectNamePath);
+            log.info("No instrumentation build file found for project {}, skipping CopyFileStage creation.", totalProjectNamePath);
             return null;
         }
 

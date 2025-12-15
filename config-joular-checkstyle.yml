@@ -8,10 +8,11 @@ project:
   package-prefix: "com.puppycrawl.tools.checkstyle"
 repo:
   url: "https://github.com/checkstyle/checkstyle"
-  commit: "5319e083c92e73578778a6788787800f834237db"
+  commit: "5319e083c92e73578778a6788787800f834237db" #v12.1.2
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/checkstyle"
   jdk: "17.0.17-tem"
-  overwrite: false
+  overwrite-clone: false
+  overwrite-copy: true
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/checkstyle/"
@@ -19,8 +20,8 @@ log:
   clear-previous-logs: true
 execution-plan:
   test-command: "mvn clean test -Drat.skip=true"
-  ignore-failures: true
-  ignore-spoon-failures: true
+  ignore-failures: false
+  ignore-spoon-failures: false
   num-test-runs: 1
   energy-measurements:
     tool: "joularjx"

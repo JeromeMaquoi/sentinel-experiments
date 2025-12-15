@@ -18,7 +18,41 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
     @Override
     public void process(CtConstructor<?> constructor) {
         if (constructor.getBody() == null) return;
+
+        if (constructor.getDeclaringType() instanceof spoon.reflect.declaration.CtRecord) {
+            log.debug("Skipping record constructor {}", constructor.getDeclaringType().getQualifiedName());
+            return;
+        }
+
+        if (isUtilityConstructor(constructor)) {
+            log.debug("Skipping utility constructor {}", constructor.getDeclaringType().getQualifiedName());
+            return;
+        }
+
         instrument(constructor, new InstrumentationUtils(getFactory()));
+    }
+
+    protected boolean isUtilityConstructor(CtConstructor<?> constructor) {
+        CtBlock<?> body = constructor.getBody();
+        if (body == null) return false;
+
+        long meaningfulStatements = body.getStatements().stream()
+                .filter(statement -> !isImplicitSuperCall(statement) && !(statement instanceof CtThrow))
+                .count();
+
+        long throwCount = body.getStatements().stream()
+                .filter(statement -> statement instanceof CtThrow)
+                .count();
+
+        // If there are no meaningful statements, and at least one throw statement, consider it a utility constructor
+        return meaningfulStatements == 0 && throwCount >= 1;
+    }
+
+    protected boolean isImplicitSuperCall(CtStatement statement) {
+        if (statement instanceof CtInvocation<?> invocation) {
+            return invocation.getExecutable().getSimpleName().equals("<init>") && invocation.getExecutable().getDeclaringType().getQualifiedName().equals("java.lang.Object");
+        }
+        return false;
     }
 
     @Override

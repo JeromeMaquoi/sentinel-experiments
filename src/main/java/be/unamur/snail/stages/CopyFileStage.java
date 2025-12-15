@@ -5,6 +5,7 @@ import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.SourceFileNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +34,8 @@ public class CopyFileStage implements Stage {
         PipelineLogger log = context.getLogger();
 
         String classPathResource = sourceFile.toString().replace("\\", "/").replaceFirst("^resources/", "");
+        log.debug("Copying {} to {}", classPathResource, relativeTargetFilePath);
+        
         InputStream in = getClass().getClassLoader().getResourceAsStream(classPathResource);
         if (in == null) {
             throw new SourceFileNotFoundException(sourceFile.toString());
@@ -46,7 +49,15 @@ public class CopyFileStage implements Stage {
         Path repoRoot = Path.of(repoPath).toAbsolutePath();
         Path targetPath = repoRoot.resolve(relativeTargetFilePath).normalize();
 
-        Files.createDirectories(targetPath.getParent());
+        Path parent = targetPath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        if (Files.exists(targetPath) && Files.isDirectory(targetPath)) {
+            throw new IOException(
+                    "Cannot write file: target path exists as a directory: " + targetPath
+            );
+        }
         Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
         log.info("Copied file from {} to {}", sourceFile.toAbsolutePath(), targetPath);

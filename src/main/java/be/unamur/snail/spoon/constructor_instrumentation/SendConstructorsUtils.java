@@ -86,7 +86,7 @@ public class SendConstructorsUtils {
         if (sender == null) {
             throw new IllegalStateException("Sender is not initialized");
         }
-        System.out.println("Sending instance to the database: " + constructorContext);
+//        System.out.println("Sending instance to the database: " + constructorContext);
         sender.send(constructorContext);
     }
 }

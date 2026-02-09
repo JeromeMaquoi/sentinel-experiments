@@ -32,8 +32,8 @@ public class SpoonInstrumentConstructorModule implements Module {
         BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
         this.stages = Stream.of(
-                new StopBackendStage(runner, backendFactory, databaseFactory),
-                new PrepareBackendStage(runner, backendFactory, databaseFactory),
+//                new StopBackendStage(runner, backendFactory, databaseFactory),
+//                new PrepareBackendStage(runner, backendFactory, databaseFactory),
                 new CloneAndCheckoutRepositoryStage(),
                 new CopyDirectoryStage(),
                 createCopyBuildFileStageForClasspath(),

@@ -14,7 +14,7 @@ repo:
   overwrite-clone: false
   overwrite-copy: true
 log:
-  level: INFO
+  level: DEBUG
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/jabref/"
   also-log-to-console: true
   clear-previous-logs: true

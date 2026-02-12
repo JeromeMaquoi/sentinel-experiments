@@ -20,7 +20,13 @@ public class Config {
      * Configuration for the project being analyzed, including its name, owner, subproject (if applicable), whether to show project logs, and package prefix for instrumentation.
      */
     private ProjectConfig project;
+    /**
+     * Configuration of the Git repository of the project being analyzed, including the URL, commit hash, target directory for cloning, JDK version, and flags for overwriting existing clones or copies.
+     */
     private RepoConfig repo;
+    /**
+     * Configuration for logging during the execution of the pipeline, including the logging level, directory for log files, whether to also log to console, and whether to clear previous logs before starting a new execution.
+     */
     private LogConfig log;
     /**
      * Path of the code to add to the project being analyzed. This code will be executed during the test suite execution of the instrumented project and is used to retrieve constructor data during this execution.
@@ -32,8 +38,14 @@ public class Config {
      */
     @JsonProperty("command-time-out")
     private int commandTimeout = 120;
+    /**
+     * Configuration of the execution plan, which includes details about the test command to execute, whether to ignore test failures or Spoon failures, the number of test runs to perform, and the energy measurement configuration.
+     */
     @JsonProperty("execution-plan")
     private ExecutionPlanConfig executionPlan;
+    /**
+     * Configuration of the backend, which includes details about the mode of operation (local or remote), server timeout, server path, SSH user and host for remote mode, number of checks for server start, server log path, server port and host, server ready path, and endpoint for communication with the backend.
+     */
     private BackendConfig backend;
 
     /**
@@ -51,15 +63,26 @@ public class Config {
         instance = config;
     }
 
+    /**
+     * Resets the singleton instance of the configuration.
+     */
     public static void reset() {
         instance = null;
     }
 
+    /**
+     * Loads the configuration from a YAML file. It uses the Jackson library to parse the YAML file and populate the Config instance.
+     * @param yamlPath the path to the YAML configuration file
+     * @throws Exception if there is an error while loading the configuration, such as file not found or parsing errors
+     */
     public static void load(String yamlPath) throws Exception {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         instance = mapper.readValue(new File(yamlPath), Config.class);
     }
 
+    /**
+     * Returns the project configuration, which includes details about the project being analyzed such as its name, owner, subproject, whether to show project logs, and package prefix for instrumentation.
+     */
     public ProjectConfig getProject() {
         return project;
     }
@@ -68,6 +91,9 @@ public class Config {
         this.project = project;
     }
 
+    /**
+     * Returns the repository configuration, which includes details about the Git repository of the project being analyzed, such as the URL, commit hash, target directory for cloning, JDK version, and flags for overwriting existing clones or copies.
+     */
     public RepoConfig getRepo() {
         return repo;
     }
@@ -76,10 +102,16 @@ public class Config {
         this.repo = repo;
     }
 
+    /**
+     * Returns the logging configuration, which includes details about the logging level, directory for log files, whether to also log to console, and whether to clear previous logs before starting a new execution.
+     */
     public LogConfig getLog() {
         return log;
     }
 
+    /**
+     * Returns the path of the code to add to the project being analyzed. This code will be executed during the test suite execution of the instrumented project and is used to retrieve constructor data during this execution.
+     */
     public String getCodeConstructorsInstrumentationPath() {
         return codeConstructorsInstrumentationPath;
     }
@@ -88,6 +120,9 @@ public class Config {
         this.codeConstructorsInstrumentationPath = codeConstructorsInstrumentationPath;
     }
 
+    /**
+     * Returns the timeout in seconds for executing commands during the pipeline execution. This is used to prevent hanging processes and ensure that the pipeline can recover from failures in a timely manner.
+     */
     public int getCommandTimeout() {
         return commandTimeout;
     }
@@ -96,6 +131,9 @@ public class Config {
         this.commandTimeout = timeout;
     }
 
+    /**
+     * Returns the execution plan configuration, which includes details about the test command to execute, whether to ignore test failures or Spoon failures, the number of test runs to perform, and the energy measurement configuration.
+     */
     public ExecutionPlanConfig getExecutionPlan() {
         return executionPlan;
     }
@@ -104,6 +142,9 @@ public class Config {
         this.executionPlan = executionPlan;
     }
 
+    /**
+     * Returns the backend configuration, which includes details about the mode of operation (local or remote), server timeout, server path, SSH user and host for remote mode, number of checks for server start, server log path, server port and host, server ready path, and endpoint for communication with the backend.
+     */
     public BackendConfig getBackend() {
         return backend;
     }
@@ -190,16 +231,35 @@ public class Config {
     }
 
 
-
-
+    /**
+     * RepoConfig class represents the configuration related to the Git repository of the project being analyzed. It is a nested static class within the Config class.
+     */
     public static class RepoConfig {
+        /**
+         * URL of the Git repository of the project being analyzed.
+         */
         private String url;
+        /**
+         * Specific commit hash that should be checked out in the repository for the analysis.
+         */
         private String commit;
+        /**
+         * Target directory where the repository should be cloned.
+         */
         @JsonProperty("target-dir")
         private String targetDir;
+        /**
+         * JDK version that is used by the analyzed project, so that this version is used during the instrumentation and the measurement process.
+         */
         private String jdk;
+        /**
+         * Boolean flag indicating whether the repository should be re-cloned even if it already exists in the target directory.
+         */
         @JsonProperty("overwrite-clone")
         private boolean overwriteClone;
+        /**
+         * Boolean flag indicating whether the copy of the analyzed project's directory should be overwritten or not.
+         */
         @JsonProperty("overwrite-copy")
         private boolean overwriteCopy;
 
@@ -255,7 +315,7 @@ public class Config {
         }
 
         /**
-         * Returns true if the copy of the cloned repository should be overwritten or not.
+         * Returns true if the copy of the analyzed project's directory should be overwritten or not.
          */
         public boolean isOverwriteCopy() {
             return overwriteCopy;
@@ -267,27 +327,53 @@ public class Config {
     }
 
 
-
+    /**
+     * LogConfig class represents the configuration related to logging during the execution of the pipeline. It is a nested class within the Config class.
+     */
     public static class LogConfig {
+        /**
+         * Logging level to be used during the execution of the pipeline. The possible levels are TRACE, DEBUG, INFO, WARN and ERROR.
+         */
         private String level;
+        /**
+         * Directory where log files should be stored during the execution of the pipeline.
+         */
         private String directory;
+        /**
+         * Boolean indicating whether to also log to console during the execution of the pipeline, in addition to logging to files. If true, logs will be printed to the console as well as written to log files. If false, logs will only be written to files.
+         */
         @JsonProperty("also-log-to-console")
         private boolean alsoLogToConsole;
+        /**
+         * Boolean indicating whether to clear previous logs before starting a new execution of the pipeline. If true, existing log files in the specified directory will be deleted before new logs are written. If false, new logs will be appended to existing log files.
+         */
         @JsonProperty("clear-previous-logs")
         private boolean clearPreviousLogs;
 
+        /**
+         * Returns the logging level to be used during the execution of the pipeline. The possible levels are TRACE, DEBUG, INFO, WARN and ERROR.
+         */
         public String getLevel() {
             return level;
         }
 
+        /**
+         * Returns the directory where log files should be stored during the execution of the pipeline.
+         */
         public String getDirectory() {
             return directory;
         }
 
+        /**
+         * Returns true if logs should also be printed to the console during the execution of the pipeline, in addition to being written to log files, false otherwise.
+         */
         public boolean getAlsoLogToConsole() {
             return alsoLogToConsole;
         }
 
+        /**
+         * Returns true if previous logs should be cleared before starting a new execution of the pipeline, false otherwise. If true, existing log files in the specified directory will be deleted before new logs are written. If false, new logs will be appended to existing log files.
+         */
         public boolean getClearPreviousLogs() {
             return clearPreviousLogs;
         }

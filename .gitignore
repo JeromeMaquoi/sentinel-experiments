@@ -42,4 +42,4 @@ build/
 
 
 logs/
-wip-project-configuration/
+wip-config-*.yml

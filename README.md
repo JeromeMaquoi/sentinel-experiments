@@ -15,6 +15,10 @@ Each module executes a series of stages sequentially to accomplish its goals.
 
 ## Module 1: EnergyMeasurementsModule
 
+**TODO:**
+- explain the "config.properties" file
+- explain how to update the build.gradle or pom.xml to add JoularJX as a Java agent
+
 ### Purpose
 Measures the energy consumption of a Java project by:
 - Cloning and setting up the target repository
@@ -101,101 +105,33 @@ Instruments Java source code to track constructor invocations by:
 
 The module executes the following stages in sequence:
 
-#### Stage Breakdown
+1. **StopBackendStage**:  Stops any running backend services and clears previous data
 
-```
-1. StopBackendStage
-   └─ Stops any running backend services and clears previous data
+2. **PrepareBackendStage**: Starts MongoDB and backend services where all the data will be stored
 
-2. PrepareBackendStage
-   └─ Starts MongoDB and backend services needed for instrumentation tracking
+3. **CloneAndCheckoutRepositoryStage**: Clones the target repository and checks out a specific commit
 
-3. CloneAndCheckoutRepositoryStage
-   └─ Clones the target repository and checks out the specified version
+4. **CopyDirectoryStage**: Creates a copy of the project directory into a new one, for safe instrumentation during the SpoonInstrumentConstructorModule execution
 
-4. CopyDirectoryStage
-   └─ Creates necessary working directories for instrumentation
+5. **CopyFileStage** (classpath): Copies a file from a source to a destination, used for copying necessary build files for the instrumentation process
 
-5. CopyFileStage (Classpath)
-   └─ Copies classpath build files (build.gradle, build.gradle.kts, or pom.xml)
-   └─ Used to resolve dependencies without instrumenting
+6. **BuildClassPathStage**: Creates the class path of the analyzed project, so that it can be used by Spoon in the instrumentation process
 
-6. BuildClassPathStage
-   └─ Builds the project to generate classpath
-   └─ Allows Spoon to understand the full dependency graph
+7. **CopyFileStage** (instrumentation): Copies instrumentation specific build files
 
-7. CopyFileStage (Instrumentation)
-   └─ Copies instrumentation-specific build files
-   └─ May contain custom gradle/maven tasks for instrumentation
+8. **InstrumentConstructorsStage**: Uses Spoon to analyze and instrument every constructor in the codebase
 
-8. InstrumentConstructorsStage
-   └─ Uses Spoon to analyze the codebase
-   └─ Instruments every constructor with tracking code
-   └─ Generates modified source code and bytecode
+9. **CopySourceCodeStage**: Copies the source code of the package "spoon.constructor_instrumentation" from the Sentinel project into the instrumented project. This code is used in the instrumentated code to send data about constructor invocations to the backend
 
-9. CopySourceCodeStage
-   └─ Copies original source code for reference and comparison
+10. **CopyProjectJavaFilesStage**: Copies some specific Java files from the "resources/java-files" directory of the sentinel-experiments project into the instrumented project. The files copied during this stage are problematic files that causes the project to fail, if they are instrumented by Spoon. By copying them after the instrumentation process, we make sure that they are not instrumented and that the project can be built and tested successfully
 
-10. CopyProjectJavaFilesStage
-    └─ Copies all Java files from the project
-
-11. RunInstrumentedProjectTestsStage
-    └─ Runs the project's test suite on the instrumented code
-    └─ Collects constructor invocation data via backend services
-    └─ Sends data to MongoDB for storage and analysis
-```
-
-### Key Concepts
-
-**Build Files Strategy**
-- The module uses two sets of build files:
-  - **Classpath build files**: For dependency resolution without instrumentation
-  - **Instrumentation build files**: Custom build configurations for the instrumented code
-
-**Spoon Instrumentation**
-- Analyzes the complete source code using the classpath context
-- Instruments constructors to track:
-  - When they are called
-  - How often they are called
-  - The call hierarchy
-- Generates both source and bytecode for the instrumented version
-
-**Backend Integration**
-- MongoDB stores all instrumentation data
-- Backend services receive constructor invocation events during test execution
-- Data is persisted for later analysis
+11. **RunInstrumentedProjectTestsStage**: Runs the project's test suite on the instrumented code, collects constructor data and sends it to the backend for storage
 
 ---
 
 ## Data Flow Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    Start Pipeline Execution                          │
-└────────────────────────────┬────────────────────────────────────────┘
-                             │
-                ┌────────────┴────────────┐
-                │                         │
-        ┌───────▼─────────┐    ┌──────────▼──────────┐
-        │ Energy          │    │ Spoon              │
-        │ Measurements    │    │ Instrumentation    │
-        │ Module          │    │ Module             │
-        └───────┬─────────┘    └──────────┬──────────┘
-                │                         │
-        ┌───────▼─────────┐    ┌──────────▼──────────┐
-        │ 1. Clone Repo   │    │ 1. Stop Backend    │
-        │ 2. Setup Tool   │    │ 2. Prepare Backend │
-        │ 3. Measure (×N) │    │ 3. Clone Repo      │
-        │ 4. Post-process │    │ 4. Build Classpath │
-        └───────┬─────────┘    │ 5. Instrument Code │
-                │              │ 6. Run Tests       │
-        ┌───────▼─────────┐    └──────────┬──────────┘
-        │ Energy Data     │              │
-        │ (Database)      │    ┌──────────▼──────────┐
-        │                 │    │ Constructor Calls   │
-        │                 │    │ (MongoDB)           │
-        └─────────────────┘    └─────────────────────┘
-```
+![img.png](docs/data-flow-diagram.png)
 
 ---
 
@@ -208,6 +144,7 @@ This section explains how to create configuration files for new projects.
 - **Work in Progress**: `wip-config-<PROJECT_NAME>.yml` (e.g., `wip-config-jabref.yml`)
   - Use this while developing and testing your configuration
   - These files are not yet ready for server execution
+  - Be careful, those files are ignored by Git, so they won't be added to the repository.
 
 - **Complete & Tested**: `config-<PROJECT_NAME>.yml` (e.g., `config-spring-boot.yml`)
   - Use this when your configuration is validated and working
@@ -215,15 +152,12 @@ This section explains how to create configuration files for new projects.
 
 ### Configuration File Structure
 
+**TODO:**
+- show which configuration properties to update for each project, and which ones that SHOULD NOT be updated
+
 Here's a complete example configuration with explanations:
 
 ```yaml
-# config-<PROJECT_NAME>.yml
-
-# ============================================================================
-# GENERAL SETTINGS
-# ============================================================================
-
 # Maximum execution time (in seconds) for the entire pipeline
 command-time-out: 3600
 
@@ -262,15 +196,12 @@ repo:
   url: "https://github.com/owner/project"
   
   # Git commit hash to analyze (not branch/tag, must be a specific commit)
-  # Use a commit hash to ensure reproducible analysis across different server runs
   commit: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
   
   # Local directory where the repository will be cloned
-  # Must be writable and have sufficient space (varies by project size)
   target-dir: "/tmp/sentinel-analysis/my-project"
   
-  # JDK version to use for building and testing
-  # Must be compatible with the project
+  # JDK version to use for building and testing the analyzed project
   # Use SDKMAN version format (e.g., "17.0.17-tem", "21.0.1-temurin")
   jdk: "17.0.17-tem"
   
@@ -285,7 +216,7 @@ repo:
 # ============================================================================
 
 log:
-  # Logging level: TRACE, DEBUG, INFO, WARN, ERROR
+  # Logging level during the pipeline execution: TRACE, DEBUG, INFO, WARN, ERROR
   level: INFO
   
   # Directory where logs will be stored
@@ -318,8 +249,6 @@ execution-plan:
   ignore-spoon-failures: true
   
   # Number of times to repeat the energy measurement
-  # Higher values provide more reliable energy data but take longer
-  # Recommended: 3-5 for reliable results
   num-test-runs: 1
   
   # Energy measurement configuration
@@ -339,7 +268,7 @@ execution-plan:
     # Configuration for which data to import from JoularJX results
     import-config:
       # Measurement scopes
-      # "app": only application code (filtered by package-prefix)
+      # "app": only application code
       # "all": all code including JDK
       scopes: ["app"]
       

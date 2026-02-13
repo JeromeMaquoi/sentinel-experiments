@@ -45,6 +45,7 @@ public class JoularJXFileProcessor {
             List<? extends BaseMeasurementDTO> dtos = CsvParser.parseCsvFile(path, scope, measurementLevel, monitoringType, iteration, commit, context);
             String json = serializer.serialize(dtos);
 
+            // TODO put the endpoint into the configuration file
             String endpoint = String.format(
                     "/api/v2/measurements/%s/%s/bulk",
                     measurementLevel.name().toLowerCase(),

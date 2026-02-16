@@ -8,7 +8,24 @@ Each module consists of a series of stages that are executed in sequence. Each s
 
 ---
 
-## Projects Status Overview
+## Table of contents
+
+* [Projects Status Overview](#projects-status-overview)
+* [Steps to analyze a new projects](#steps-to-analyze-a-new-projects)
+* [Projects selection criteria](#projects-selection-criteria)
+* [EnergyMeasurementsModule](#energymeasurementsmodule)
+  * [Purpose](#purpose)
+  * [How It Works](#how-it-works)
+  * [JoularJX](#joularjx)
+* [SpoonInstrumentConstructorModule](#spooninstrumentconstructormodule)
+  * [Purpose](#purpose-1)
+  * [How It Works](#how-it-works-1)
+* [Data Flow Diagram](#data-flow-diagram)
+* [Pipeline Configuration](#pipeline-configuration)
+  * [Configuration File Naming Convention](#configuration-file-naming-convention)
+  * [Configuration File Structure](#configuration-file-structure)
+
+# Projects Status Overview
 
 | Project Name              | JoularJX Status | Spoon Status   | Remaining Configuration TODOs |
 |---------------------------|:---------------:|----------------|-------------------------------|
@@ -21,7 +38,7 @@ Each module consists of a series of stages that are executed in sequence. Each s
 | **spring-boot**           |   🟢 Working    | 🟢 Working     | /                             |
 
 
-### Status Legend
+## Status Legend
 
 | Icon               | Meaning                                                                                          |
 |--------------------|--------------------------------------------------------------------------------------------------|
@@ -30,10 +47,25 @@ Each module consists of a series of stages that are executed in sequence. Each s
 | 🔴 **Not Working** | Fails during setup or measurement stages, too difficult to analyze. The project will not be used |
 | 🔵 **To Do**       | Project not yet configured or analyzed                                                           |
 
+# Steps to analyze a new project
+
+1. **Choose a new project to analyze**, based on the criteria from the [Projects selection criteria](#projects-selection-criteria) section.
+2. **Create a new wip configuration file** in the root of the repository, following the naming convention explained in the [Pipeline configuration](#pipeline-configuration) section. You can use an existing configuration file as a template and update it with the information of the new project you want to analyze.
+3. **Update the configuration file** with the correct information for the new project, such as the repository URL, the commit to analyze, the test command, etc. Make sure to update all the necessary properties in the configuration file, and to keep the properties that should not be updated as they are.
+4. **Create a new directory in `resources/build-files/`** with the exact name of the analyzed project. If the analysis is done on a sub-project, the name of the directory must follow this format: `<root-project-name>.<sub-project-name>`. For example, in the case of spring-boot, the sub-project analyzed is "spring-boot/spring-boot-project/spring-boot", so the name of the directory within `resources/build-files/` is `spring-boot.spring-boot-project.spring-boot`.
+5. **Copy-paste the `pom.xml` or `build.gradle`** (or `build.gradle.kts`) file from the analyzed project into the `resources/build-files/<project-name>/` directory of the sentinel-experiments project, **and update it to add JoularJX as a Java agent**, following the instructions of the [Add JoularJX as a Java agent to the analyzed project](#add-joularjx-as-a-java-agent-to-the-analyzed-project) section of the documentation.
+6. If needed, update the `pom.xml` or `build.gradle` (or `build.gradle.kts`) based on the build system of the analyzed project to add JoularJX as a Java agent, following the instructions in the 
+7. **Test the configuration file** by running the pipeline with the new configuration file with these commands (in linux): 
+   - `sudo bash ./sentinel-experiments.sh instrumentconstructor --config wip-config-<PROJECT_NAME>.yml` to test the Spoon instrumentation module
+   - `sudo bash ./sentinel-experiments.sh measure --config wip-config-<PROJECT_NAME>.yml` to test the energy measurements module
+8. 
+
+# Projects selection criteria
+TODO
+
 # EnergyMeasurementsModule
 
 **TODO:**
-- explain the "config.properties" file
 - explain how to update the build.gradle or pom.xml to add JoularJX as a Java agent
 
 ## Purpose
@@ -81,9 +113,9 @@ The post processing stages are executed after all the test runs are completed. T
 
 JoularJX is a Java agent that can be attached to any Java application to collect energy consumption data. It provides detailed measurements of energy usage at the method level, allowing for fine-grained analysis of which parts of the code are consuming the most energy.
 
-### Configuration of JoularJX
+### Configuration of JoularJX config.properties
 
-The configuration of JoularJX is done through a `config.properties` file that is in `resources/build-files/<project-name>` directory. This file must contain all the necessary configuration for running JoularJX for the analyzed project. Here is the content of this file with explanations for each property. So only property that needs to be updated is the property `filter-method-names`, with the package where all the code of the analyzed project are located. The other properties must be kept as they are.
+The configuration of JoularJX is done through a `config.properties` file that is in `resources/build-files/<project-name>` directory. This file must contain all the necessary configuration for running JoularJX for the analyzed project. Here is the content of this file with explanations for each property. **The only property that needs to be updated is the property `filter-method-names`**, with the package where all the code of the analyzed project are located. The other properties must be kept as they are.
 
 ```properties
 # Get also power and energy for methods starting with this package.class.method name
@@ -176,6 +208,58 @@ vm-power-path=/tmp/power.csv
 vm-power-format=watts
 ```
 
+### Add JoularJX as a Java agent to the analyzed project
+To use JoularJX for energy measurements, you need to add it as a Java agent to the test execution of the analyzed project. This can be done by updating the build file (pom.xml for maven or build.gradle for gradle) of the analyzed project to include the JVM argument for the Java agent. Here is how to do it for both build systems.
+
+#### Maven projects (pom.xml)
+You need to add the following configuration to the `pom.xml` file of the analyzed project, inside the `build` section. This configuration adds the JVM argument for the Java agent to the surefire plugin, which is responsible for running the tests in maven.
+
+```xml
+<build>
+    ...
+    <plugins>
+        ...
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>...</version>
+            <configuration>
+                ...
+                <argLine>
+                    ...
+                    -javaagent:JOULARJX <!-- This is the line to add to the pom.xml. Copy-paste it without touching anything (especially, do not touch the JOULARJX word) -->
+                </argLine>
+            </configuration>
+        </plugin>
+        ...
+    </plugins>
+    ...
+</build>
+```
+
+#### Gradle projects (build.gradle or build.gradle.kts)
+You need to add the following configuration to the `build.gradle` file of the analyzed project. This configuration adds the JVM argument for the Java agent to the test task, which is responsible for running the tests in gradle.
+
+If there is a `test {...}` block in the file, you can add the following line to this block:
+
+```groovy
+test {
+    ...
+    jvmArgs += "-javaagent:JOULARJX" // This is the line to add to the build.gradle. Copy-paste it without touching anything (especially, do not touch the JOULARJX word)
+}
+```
+
+If there is no `test {...}` block in the file, but there is a `tasks.withType(Test.class) {...}` block, you can add the following line to this block:
+
+```groovy
+tasks.withType(Test.class) {
+    ...
+    test.jvmArgs(["-javaagent:JOULARJX"]) // This is the line to add to the build.gradle. Copy-paste it without touching anything (especially, do not touch the JOULARJX word)
+}
+```
+
+If there is none of these blocks in the file, come and talk to me, we will find a way to add the JVM argument for the Java agent in this case ;)
+
 ---
 
 # SpoonInstrumentConstructorModule
@@ -222,7 +306,7 @@ The module executes the following stages in sequence:
 
 ---
 
-# Configuration Files
+# Pipeline Configuration
 
 This section explains how to create configuration files for new projects.
 

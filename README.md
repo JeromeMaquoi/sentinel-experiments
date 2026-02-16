@@ -11,7 +11,7 @@ Each module consists of a series of stages that are executed in sequence. Each s
 ## Table of contents
 
 * [Projects Status Overview](#projects-status-overview)
-* [Steps to analyze a new projects](#steps-to-analyze-a-new-projects)
+* [Steps to analyze a new project](#steps-to-analyze-a-new-project)
 * [Projects selection criteria](#projects-selection-criteria)
 * [EnergyMeasurementsModule](#energymeasurementsmodule)
   * [Purpose](#purpose)
@@ -23,7 +23,8 @@ Each module consists of a series of stages that are executed in sequence. Each s
 * [Data Flow Diagram](#data-flow-diagram)
 * [Pipeline Configuration](#pipeline-configuration)
   * [Configuration File Naming Convention](#configuration-file-naming-convention)
-  * [Configuration File Structure](#configuration-file-structure)
+  * [Pipeline Configuration File Structure](#pipeline-configuration-file-structure)
+  * [Classpath configuration for Spoon instrumentation](#classpath-configuration-for-spoon-instrumentation)
 
 # Projects Status Overview
 
@@ -49,24 +50,41 @@ Each module consists of a series of stages that are executed in sequence. Each s
 
 # Steps to analyze a new project
 
+There are two main modules in the pipeline: the EnergyMeasurementsModule and the SpoonInstrumentConstructorModule. There are some common steps to follow to analyze a new project with both modules, and some specific steps for each module.
+
+## Common steps for both modules
+
 1. **Choose a new project to analyze**, based on the criteria from the [Projects selection criteria](#projects-selection-criteria) section.
 2. **Create a new wip configuration file** in the root of the repository, following the naming convention explained in the [Pipeline configuration](#pipeline-configuration) section. You can use an existing configuration file as a template and update it with the information of the new project you want to analyze.
 3. **Update the configuration file** with the correct information for the new project, such as the repository URL, the commit to analyze, the test command, etc. Make sure to update all the necessary properties in the configuration file, and to keep the properties that should not be updated as they are.
-4. **Create a new directory in `resources/build-files/`** with the exact name of the analyzed project. If the analysis is done on a sub-project, the name of the directory must follow this format: `<root-project-name>.<sub-project-name>`. For example, in the case of spring-boot, the sub-project analyzed is "spring-boot/spring-boot-project/spring-boot", so the name of the directory within `resources/build-files/` is `spring-boot.spring-boot-project.spring-boot`.
-5. **Copy-paste the `pom.xml` or `build.gradle`** (or `build.gradle.kts`) file from the analyzed project into the `resources/build-files/<project-name>/` directory of the sentinel-experiments project, **and update it to add JoularJX as a Java agent**, following the instructions of the [Add JoularJX as a Java agent to the analyzed project](#add-joularjx-as-a-java-agent-to-the-analyzed-project) section of the documentation.
-6. If needed, update the `pom.xml` or `build.gradle` (or `build.gradle.kts`) based on the build system of the analyzed project to add JoularJX as a Java agent, following the instructions in the 
-7. **Test the configuration file** by running the pipeline with the new configuration file with these commands (in linux): 
-   - `sudo bash ./sentinel-experiments.sh instrumentconstructor --config wip-config-<PROJECT_NAME>.yml` to test the Spoon instrumentation module
-   - `sudo bash ./sentinel-experiments.sh measure --config wip-config-<PROJECT_NAME>.yml` to test the energy measurements module
-8. 
+4. **Create a new directory in `resources/build-files/`** with the exact name of the analyzed project. If the analysis is done on a sub project, the name of the directory must follow this format: `<root-project-name>.<sub-project-name>`. For example, in the case of spring-boot, the analyzed sub project is "spring-boot/spring-boot-project/spring-boot", so the name of the directory within `resources/build-files/` is `spring-boot.spring-boot-project.spring-boot`.
+
+## Specific steps for the EnergyMeasurementsModule
+
+1. Create the `config.properties` file for JoularJX configuration in the `resources/build-files/<project-name>/` directory, following the instructions of the [Configuration of JoularJX config.properties](#configuration-of-joularjx-configproperties) section of the documentation.
+2. **Copy-paste the `pom.xml` or `build.gradle`** (or `build.gradle.kts`) file from the analyzed project into the `resources/build-files/<project-name>/` directory of the sentinel-experiments project, **and update it to add JoularJX as a Java agent**, following the instructions of the [Add JoularJX as a Java agent to the analyzed project](#add-joularjx-as-a-java-agent-to-the-analyzed-project) section of the documentation.
+3. **Test the configuration file by running the energy measurements module** of the pipeline with this command (in linux):
+    ```bash
+    sudo bash ./sentinel-experiments.sh measure --config wip-config-<PROJECT_NAME>.yml
+    ```
+    If the pipeline does not crash in the terminal, a new directory `joularjx-results` will be created in analyzed directory of the project (either the root directory or the sub project directory, depending on the configuration). If this directory is created and contains other directories and csv files, it means that JoularJX is correctly configured and is able to run and collect energy measurements for the analyzed project.
+4. **If the pipeline is working (see point 3), you can now create a complete configuration file** for the project by copying the wip configuration file and renaming it to `config-<project-name>.yml`.
+
+## Specific steps for the SpoonInstrumentConstructorModule
+
+1. **Copy-paste the `pom.xml`or `build.gradle`** (or `build.gradle.kts`) file from the analyzed project, but this time in the `resources/build-files/<project-name>/classpath` directory of the sentinel-experiments project, **and update it to add a task that will build the classpath of the analyzed project**, as explained in the section [Classpath configuration for Spoon instrumentation](#classpath-configuration-for-spoon-instrumentation).
+2. **Test the configuration file by running the Spoon module** of the pipeline with this command (in linux):
+    ```bash
+    sudo bash ./sentinel-experiments.sh instrumentconstructor --config wip-config-<PROJECT_NAME>.yml
+    ```
+   If the pipeline arrives to the `RunInstrumentedProjectTestsStage` stage and runs the tests of the analyzed project without crashing, and if you can see logs like `Context <name of the constructor> sent successfully` during the execution, it means that the Spoon module is correctly configured and is able to instrument the constructors of the analyzed project and send the data to the backend.
+3. **If the pipeline is working (see point 2), you can now create a complete configuration file** for the project by copying the wip configuration file and renaming it to `config-<project-name>.yml`.
+
 
 # Projects selection criteria
 TODO
 
 # EnergyMeasurementsModule
-
-**TODO:**
-- explain how to update the build.gradle or pom.xml to add JoularJX as a Java agent
 
 ## Purpose
 Measures the energy consumption of a Java project by:
@@ -321,19 +339,16 @@ This section explains how to create configuration files for new projects.
   - Use this when your configuration is validated and working
   - These files are ready for execution on the analysis server
 
-## Configuration File Structure
+## Pipeline Configuration File Structure
 
-**TODO:**
-- show which configuration properties to update for each project, and which ones that SHOULD NOT be updated
-
-Here's a complete example configuration with explanations:
+Here's a complete example configuration with explanations. The properties that need to be updated for each new project are marked with a comment `TO UPDATE`. The other properties don't need to be updated and can be kept as they are.
 
 ```yaml
 # Maximum execution time (in seconds) for the entire pipeline
 command-time-out: 3600
 
 # Path to the Spoon constructor instrumentation code
-code-constructors-instrumentation-path: "/path/to/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
+code-constructors-instrumentation-path: "/path/to/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation" # <===== TO UPDATE
 
 # ============================================================================
 # PROJECT INFORMATION
@@ -341,14 +356,14 @@ code-constructors-instrumentation-path: "/path/to/sentinel-experiments/src/main/
 
 project:
   # Human-readable project name (used in logs and reporting)
-  name: "my-project"
+  name: "my-project" # <===== TO UPDATE
   
   # GitHub username/organization that owns the repository
-  owner: "github-username"
+  owner: "github-username" # <===== TO UPDATE
   
   # Sub-project path (if the repository contains multiple projects)
   # Leave empty string "" if this is a single-project repository
-  sub-project: "optional-subdirectory"
+  sub-project: "optional-subdirectory" # <===== TO UPDATE
   
   # Display detailed project logs during execution
   show-project-logs: true
@@ -356,7 +371,7 @@ project:
   # Java package prefix to filter classes for Spoon instrumentation
   # Only classes matching this prefix will be instrumented
   # Example: "org.springframework" instruments all org.springframework.* classes
-  package-prefix: "com.mycompany"
+  package-prefix: "com.mycompany" # <===== TO UPDATE
 
 # ============================================================================
 # REPOSITORY CONFIGURATION
@@ -364,20 +379,20 @@ project:
 
 repo:
   # GitHub repository URL
-  url: "https://github.com/owner/project"
+  url: "https://github.com/owner/project" # <===== TO UPDATE
   
   # Git commit hash to analyze (not branch/tag, must be a specific commit)
-  commit: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+  commit: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6" # <===== TO UPDATE
   
   # Local directory where the repository will be cloned
-  target-dir: "/tmp/sentinel-analysis/my-project"
+  target-dir: "/tmp/sentinel-analysis/my-project" # <===== TO UPDATE
   
   # JDK version to use for building and testing the analyzed project
   # Use SDKMAN version format (e.g., "17.0.17-tem", "21.0.1-temurin")
-  jdk: "17.0.17-tem"
+  jdk: "17.0.17-tem" # <===== TO UPDATE
   
   # Whether to delete and re-clone the repository if it already exists locally
-  overwrite-clone: false
+  overwrite-clone: true
   
   # Whether to overwrite the copy directory used for analysis
   overwrite-copy: true
@@ -391,7 +406,7 @@ log:
   level: INFO
   
   # Directory where logs will be stored
-  directory: "/tmp/sentinel-logs/my-project/"
+  directory: "/tmp/sentinel-logs/my-project/" # <===== TO UPDATE
   
   # Also print logs to console (useful for monitoring execution)
   also-log-to-console: true
@@ -409,7 +424,7 @@ execution-plan:
   #   - Maven: "mvn clean test"
   #   - Gradle: "./gradlew clean test"
   #   - Gradle with sub-project: "./gradlew clean my-project:test"
-  test-command: "./gradlew clean test"
+  test-command: "./gradlew clean test" # <===== TO UPDATE
   
   # Whether to continue execution if tests fail
   # Set to true if you want to complete analysis even with failing tests
@@ -434,7 +449,7 @@ execution-plan:
     release-url: "https://github.com/joular/joularjx"
     
     # Local path where JoularJX is installed
-    tool-path: "/path/to/joularjx"
+    tool-path: "/path/to/joularjx" # <===== TO UPDATE
     
     # Configuration for which data to import from JoularJX results
     import-config:
@@ -473,10 +488,10 @@ backend:
   server-timeout-seconds: 120
   
   # Path where backend logs are written
-  server-log-path: "/tmp/sentinel-backend.log"
+  server-log-path: "/tmp/sentinel-backend.log" # <===== TO UPDATE
   
   # File that signals backend is ready (created by backend when startup completes)
-  server-ready-path: "/tmp/backend-ready"
+  server-ready-path: "/tmp/backend-ready" # <===== TO UPDATE
   
   # API endpoint for sending constructor invocation data
   endpoint: "/api/v2/constructor-contexts"
@@ -485,17 +500,55 @@ backend:
   
   # Path to the backend source code (only used in dev mode)
   # The backend will be started from this location
-  server-path: "/path/to/sentinel-backend/"
+  server-path: "/path/to/sentinel-backend/" # <===== TO UPDATE
   
   # Number of checks to perform when waiting for backend startup
   # Each check waits 1 second, so this value is the total startup wait time
   nb-check-server-start: 20
-  
-  # ========== Production Mode Settings ==========
-  
-  # SSH username for connecting to remote server (only used in prod mode)
-  ssh-user: "username"
-  
-  # SSH hostname/IP of remote server (only used in prod mode)
-  ssh-host: "server.example.com"
 ```
+
+## Classpath configuration for Spoon instrumentation
+
+During its execution, Spoon needs to have access to the runtime classpath of the project that is being instrumented. So, we need to generate the classpath of the analyzed project and provide it to Spoon. To do that, we need to add a task in the build file of the analyzed project that will generate the classpath and output it in a text file. For maven projects, you can use the `maven-dependency-plugin` to generate the classpath. For gradle projects, you can create a custom task that generates the classpath. Here is how to do it for both build systems.
+
+### Maven projects (pom.xml)
+
+If it is not already present in the `pom.xml` file of the analyzed project, you can add the following plugin configuration to generate the classpath:
+
+```xml
+<build>
+    <pluginManagement>
+        ...
+        <plugins>
+            ...
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>...</version>
+            </plugin>
+            ...
+        </plugins>
+        ...
+    </pluginManagement>
+</build>
+```
+
+### Gradle projects (build.gradle or build.gradle.kts)
+
+For Gradle projects, you have to create a custom task that generates the classpath. You can add the following task to the `build.gradle` file of the analyzed project:
+
+```groovy
+tasks.register("exportRuntimeClasspath") {
+	doLast {
+		def f = new File(project.projectDir, "classpath.txt")
+		if (configurations.findByName("runtimeClasspath") != null) {
+			f.text = configurations.runtimeClasspath.files.collect { it.absolutePath }.join(':')
+		} else {
+			f.text = ""
+		}
+	}
+}
+```
+
+For the projects using the Kotlin DSL (build.gradle.kts), there is, for the moment, no ready to use solution to generate the classpath, so if you have ideas on how to do it, please tell me and I will add it to this documentation.
+

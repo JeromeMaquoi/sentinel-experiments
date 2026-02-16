@@ -1,99 +1,186 @@
 # Sentinel Experiments
 
-This project is a pipeline-based tool for analyzing energy consumption in Java projects. It combines two powerful approaches: **energy measurement** using JoularJX and **source code instrumentation** using Spoon.
+This project is a pipeline-based tool for making experiments on projects during my PhD thesis. The idea is to have a modular architecture to fit my needs, and to be able to easily add new projects and new kinds of experiments. For now, the pipeline consists of those modules:
+- **EnergyMeasurementsModule**: measures the actual energy consumption of Java applications using JoularJX
+- **SpoonInstrumentConstructorModule**: instruments Java source code to track constructor invocations using Spoon and sends the data to a backend for storage and analysis
 
-## Project Architecture Overview
-
-The project operates through a **modular pipeline architecture** consisting of two main modules:
-
-1. **EnergyMeasurementsModule** - Measures actual energy consumption of Java applications
-2. **SpoonInstrumentConstructorModule** - Instruments source code to enable detailed analysis
-
-Each module executes a series of stages sequentially to accomplish its goals.
+Each module consists of a series of stages that are executed in sequence. Each stage performs a specific task, such as cloning a repository, running the tests. The stages are designed to be reusable and configurable, so that they can be easily adapted to different projects and experiments.
 
 ---
 
-## Module 1: EnergyMeasurementsModule
+## Projects Status Overview
+
+| Project Name              | JoularJX Status | Spoon Status   | Remaining Configuration TODOs |
+|---------------------------|:---------------:|----------------|-------------------------------|
+| **checkstyle**            |   🟢 Working    | 🟢 Working     | /                             |
+| **commons-configuration** |    🔵 To Do     | 🔵 To Do       |                               |
+| **hibernate-orm**         |    🔵 To Do     | 🟡 In Progress |                               |
+| **jabref**                | 🟡 In Progress  | 🔵 To Do       |                               |
+| **OpenJDK**               |    🔵 To Do     | 🔵 To Do       |                               |
+| **spoon**                 |   🟢 Working    | 🟡 In Progress |                               |
+| **spring-boot**           |   🟢 Working    | 🟢 Working     | /                             |
+
+
+### Status Legend
+
+| Icon               | Meaning                                                                                          |
+|--------------------|--------------------------------------------------------------------------------------------------|
+| 🟢 **Working**     | Fully configured and running successfully within the pipeline                                    |
+| 🟡 **In Progress** | Configuration in progress, partial setup completed, requires further adjustments                 |
+| 🔴 **Not Working** | Fails during setup or measurement stages, too difficult to analyze. The project will not be used |
+| 🔵 **To Do**       | Project not yet configured or analyzed                                                           |
+
+# EnergyMeasurementsModule
 
 **TODO:**
 - explain the "config.properties" file
 - explain how to update the build.gradle or pom.xml to add JoularJX as a Java agent
 
-### Purpose
+## Purpose
 Measures the energy consumption of a Java project by:
 - Cloning and setting up the target repository
 - Building and preparing the project
-- Running the project multiple times with energy measurement tools
-- Collecting and processing energy measurement results
+- Running the project multiple times with JoularJX as a Java agent to collect energy consumption data
+- Sending the collected data to the database
 
-### How It Works
+## How It Works
 
 The module executes stages in three phases:
 
-#### Phase 1: Setup & Preparation
-```
-CloneAndCheckoutRepositoryStage
-    ↓
-Tool-specific Setup Stages
-```
+### Phase 1: Setup & Preparation
 
 **CloneAndCheckoutRepositoryStage**
-- Clones the target repository from Git
-- Checks out the specified branch/tag/commit
-- Prepares the project directory for measurement
+- Clones the target repository from Git from a specified URL (`repo.url`) into a local directory (`repo.target-dir`)
+- Checks out the specified commit in the configuration (`repo.commit`)
 
 **Tool-specific Setup Stages** (created by the EnergyMeasurementTool)
 - Installs and configures the energy measurement tool (e.g., JoularJX)
-- Prepares the environment for measurements
-- Validates tool installation
+- Prepares the environment for measurements, such as setting up necessary Java agents or configuration files
 
-#### Phase 2: Measurement (Repeated for each test run)
-```
-Tool Measurement Stages [Run 1]
-    ↓
-Tool Measurement Stages [Run 2]
-    ↓
-... (repeated N times based on configuration)
-```
+For now, there is only one energy measurement tool implemented: JoularJX. The stages for setting up JoularJX are the following:
+- **RetrieveToolReleaseStage**: Checks if the specified version of JoularJX is already installed locally. If not, it downloads the release from the provided URL (`execution-plan.energy-measurements.release-url`) and installs it in the specified tool path (`execution-plan.energy-measurements.tool-path`).
+- **CopyFileStage** (for build files): Copies the necessary build files (either build.gradle or pom.xml) based on the project configuration.
+- **UpdateBuildFileStage**: Updates the build file (maven or gradle) to add the actual tool path of JoularJX to the project configuration, so that JoularJX can be used during the test suite execution. This stage needs to be executed right after copying the build file, so that the build file is updated with the correct tool path.
+- **CopyFileStage** (for JoularJX configuration): Copies the config.properties (more on this file [here](#configuration-of-joularjx)) file from the resources (resources/build-files/<project-name>/config.properties) to the project directory. This file contains all the configuration for executing JoularJX.
+- **SetupJdkStage**: Detects, installs and configures the correct JDK version for the analyzed project, based on the configuration (`repo.jdk`).
 
-Each measurement stage executes:
-- Building the project
-- Running tests or application with energy monitoring enabled
-- Collecting raw energy consumption data
+### Phase 2: Measurement (Repeated for each test run)
 
-#### Phase 3: Post-Processing
-```
-JoularJX Results Processing Stage
-    ↓
-Results Analysis & Aggregation
-```
+The measurements stages are repeated according to the `num-test-runs` configuration property, allowing for multiple runs to ensure data reliability. All the stages in this phase are executed for each test run:
+- **SetDirectoryStage**: Sets the current working directory to the analyzed project directory, so that all the commands are executed in the correct context.
+- **RunProjectTestsStage**: Executes the test suite of the analyzed project using the specified test command (`execution-plan.test-command`). During this test suite execution, JoularJX is used as a Java agent to collect energy consumption data of the test suite (more on JoularJX [here](#joularjx)).
 
-**JoularJX Results Processing Stage**
-- Reads JoularJX output files from the `joularjx-results` directory
-- Parses energy consumption data organized by:
-  - **Scope**: `all` (all methods including JDK) vs `app` (application methods only)
-  - **Timing**: `runtime` (per-second measurements) vs `total` (aggregated totals)
-  - **Type**: `calltree` (call hierarchy) vs `methods` (individual methods)
-- Structures the data into domain objects
-- Stores results in the database
+### Phase 3: Post-Processing
 
-### Configuration
+The post processing stages are executed after all the test runs are completed. These stages are responsible for processing the raw data collected by JoularJX and storing it in the database:
+- **StopBackendStage**: Stops any running backend services to ensure a clean state for data import
+- **PrepareBackendStage**: Starts the backend services and MongoDB where the data will be stored, with the configuration properties specified in the configuration file (`backend` section)
+- **ImportJoularJXMeasurementsStage**: Sends the raw data collected by JoularJX to the backend.
 
-The number of test runs is configured via:
-```java
-config.getExecutionPlan().getNumTestRuns()
-```
+## JoularJX
 
-The energy measurement tool is configured via:
-```java
-config.getExecutionPlan().getEnergyMeasurements().getTool()
+JoularJX is a Java agent that can be attached to any Java application to collect energy consumption data. It provides detailed measurements of energy usage at the method level, allowing for fine-grained analysis of which parts of the code are consuming the most energy.
+
+### Configuration of JoularJX
+
+The configuration of JoularJX is done through a `config.properties` file that is in `resources/build-files/<project-name>` directory. This file must contain all the necessary configuration for running JoularJX for the analyzed project. Here is the content of this file with explanations for each property. So only property that needs to be updated is the property `filter-method-names`, with the package where all the code of the analyzed project are located. The other properties must be kept as they are.
+
+```properties
+# Get also power and energy for methods starting with this package.class.method name
+# Example: filter-method-names=Package to filter energy for all methods whose full name start with Package
+# Note that JoularJX will always generate energy for all non-filtered method in a separate file
+# So you can safely keep this empty if you don't want to filter methods
+# You can add multiple identifiers names separated by a comma, ordered by priority
+# JoularJX will monitor and filter methods for all these packages
+# Example: filter-method-names=Package,Package2,Package3
+# =========
+# TO UPDATE
+filter-method-names=org.springframework.boot
+# =========
+
+# Write runtime methods power consumption in a CSV file
+# Setting this option to false won't generate any runtime files
+# Allowed values: true, false
+save-runtime-data=true
+
+# Overwrite runtime power data file
+# Setting it to false will write files for every monitoring cycle (1 sec per cycle)
+# Allowed values: true, false
+overwrite-runtime-data=false
+
+# Logging level
+# Set to OFF to disable it
+# Allowed values: OFF, INFO, WARNING, SEVERE
+logger-level=INFO
+
+# Track power consumption evolution of methods
+# Setting this option to true will generate one CSV file per monitored method
+# Each CSV file will contain the power consumption on every monitored timestamp
+# Allowed values: true, fase
+track-consumption-evolution=false
+
+# If track-consumption-evolution is set to true, the CSV files will be stored at the given path
+# On Windows, please escape slashes twice
+evolution-data-path=evolution
+
+# If enabled (true), the consumption of the methods related to any of the agent threads will not be reported.
+# Allowed values: true , false
+hide-agent-consumption=true
+
+# If set to true, a CSV file will be generated at agent's end, containing the total energy consumption of each call tree.
+# Allowed values: true, false
+enable-call-trees-consumption=true
+
+# Write runtime call trees power consumption in a CSV file.
+# By default, a new CSV file will be generated for each monitoring cycle.
+# Setting this option to false won't generate any runtime files
+# Allowed values: true, false
+save-call-trees-runtime-data=true
+
+# Overwrite runtime call trees power data file. If set to true, only one runtime file will be generated, and it will be overwritten for each monitoring cycle.
+# Setting it to false will generate new files for every monitoring cycle (1 sec per cycle). The said files ill include timestamps in their name.
+# Allowed values: true, false
+overwrite-call-trees-runtime-data=false
+
+# The sample rate (milliseconds) for the agent to monitor the JVM call
+# stack. Lower means more accurate monitoring. Allowable values are
+# from 1 to 1000.
+stack-monitoring-sample-rate=10
+
+# If running the application on top of an application server or framework (spring, tomcat, etc.)
+# This changes how JoularJX loops when monitoring, using a while-true loop instead of a checking if the JVM is destroyed
+# On standard Java applications, the while-true loop don't quit when the application ends, hence why destroying the VM
+# Values: true, false
+application-server=false
+
+# Path for our power monitor program on Windows
+# On Windows, please escape slashes twice
+powermonitor-path=C:\\joularjx\\PowerMonitor.exe
+
+# Monitoring inside virtual machines
+# Values: true, false
+vm-monitoring=false
+
+# Path for power consumption of the virtual machine
+# Inside a virtual machine, indicate the file containing power consumption of the VM
+# File usually shared with host to propagate the power of the VM from the host
+# And use this value as the emulated CPU power inside the VM
+vm-power-path=/tmp/power.csv
+
+# Power format of the shared VM power file
+# We currently support two formats:
+# powerjoular: a csv file generated by PowerJoular in the host, containing
+#              3 columns: timestamp, CPU utilization of the VM and CPU power of the VM
+# watts: a file containing one float value which is the power consumption of the VM
+# Values: powerjoular, watts
+vm-power-format=watts
 ```
 
 ---
 
-## Module 2: SpoonInstrumentConstructorModule
+# SpoonInstrumentConstructorModule
 
-### Purpose
+## Purpose
 Instruments Java source code to track constructor invocations by:
 - Cloning and preparing the target repository
 - Building a classpath for analysis
@@ -101,7 +188,7 @@ Instruments Java source code to track constructor invocations by:
 - Running tests on the instrumented code
 - Storing instrumentation results
 
-### How It Works
+## How It Works
 
 The module executes the following stages in sequence:
 
@@ -129,17 +216,17 @@ The module executes the following stages in sequence:
 
 ---
 
-## Data Flow Diagram
+# Data Flow Diagram
 
 ![img.png](docs/data-flow-diagram.png)
 
 ---
 
-## Configuration Files
+# Configuration Files
 
 This section explains how to create configuration files for new projects.
 
-### Configuration File Naming Convention
+## Configuration File Naming Convention
 
 - **Work in Progress**: `wip-config-<PROJECT_NAME>.yml` (e.g., `wip-config-jabref.yml`)
   - Use this while developing and testing your configuration
@@ -150,7 +237,7 @@ This section explains how to create configuration files for new projects.
   - Use this when your configuration is validated and working
   - These files are ready for execution on the analysis server
 
-### Configuration File Structure
+## Configuration File Structure
 
 **TODO:**
 - show which configuration properties to update for each project, and which ones that SHOULD NOT be updated
@@ -328,28 +415,3 @@ backend:
   # SSH hostname/IP of remote server (only used in prod mode)
   ssh-host: "server.example.com"
 ```
-
----
-
-## Projects Status Overview
-
-| Project Name              | JoularJX Status | Spoon Status   | Remaining Configuration TODOs |
-|---------------------------|:---------------:|----------------|-------------------------------|
-| **checkstyle**            |   🟢 Working    | 🟢 Working     | /                             |
-| **commons-configuration** |    🔵 To Do     | 🔵 To Do       |                               |
-| **hibernate-orm**         |    🔵 To Do     | 🟡 In Progress |                               |
-| **jabref**                | 🟡 In Progress  | 🔵 To Do       |                               |
-| **OpenJDK**               |    🔵 To Do     | 🔵 To Do       |                               |
-| **spoon**                 |   🟢 Working    | 🟡 In Progress |                               |
-| **spring-boot**           |   🟢 Working    | 🟢 Working     | /                             |
-
----
-
-## Status Legend
-
-| Icon               | Meaning                                                                                          |
-|--------------------|--------------------------------------------------------------------------------------------------|
-| 🟢 **Working**     | Fully configured and running successfully within the pipeline                                    |
-| 🟡 **In Progress** | Configuration in progress, partial setup completed, requires further adjustments                 |
-| 🔴 **Not Working** | Fails during setup or measurement stages, too difficult to analyze. The project will not be used |
-| 🔵 **To Do**       | Project not yet configured or analyzed                                                           |

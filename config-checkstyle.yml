@@ -11,7 +11,7 @@ repo:
   commit: "5319e083c92e73578778a6788787800f834237db" #v12.1.2
   target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/checkstyle"
   jdk: "17.0.17-tem"
-  overwrite-clone: false
+  overwrite-clone: true
   overwrite-copy: true
 log:
   level: INFO

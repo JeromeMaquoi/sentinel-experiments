@@ -114,7 +114,11 @@ There are two main modules in the pipeline: the EnergyMeasurementsModule and the
 
 
 # Projects selection criteria
-TODO
+The analyzed projects need to satisfy the following criteria (**this list is not yet finished and will be updated**):
+- The project must be a Java project, using either Maven or Gradle as a build system
+- The project must have a test suite that can be executed with a single command (e.g., `mvn test` or `./gradlew test`)
+- The project must be active and maintained
+- The project must be open-source
 
 # EnergyMeasurementsModule
 

@@ -11,7 +11,10 @@ Each module consists of a series of stages that are executed in sequence. Each s
 ## Table of contents
 
 * [Projects Status Overview](#projects-status-overview)
-* [Steps to analyze a new project](#steps-to-analyze-a-new-project)
+* [Contributing to sentinel-experiments](#contributing-to-sentinel-experiments)
+  * [Resolving Issues](#resolving-issues)
+  * [Adding a new project to analyze](#adding-a-new-project-to-analyze)
+  * [Steps to analyze a new project](#steps-to-analyze-a-new-project)
 * [Projects selection criteria](#projects-selection-criteria)
 * [EnergyMeasurementsModule](#energymeasurementsmodule)
   * [Purpose](#purpose)
@@ -48,18 +51,47 @@ Each module consists of a series of stages that are executed in sequence. Each s
 | 🔴 **Not Working** | Fails during setup or measurement stages, too difficult to analyze. The project will not be used |
 | 🔵 **To Do**       | Project not yet configured or analyzed                                                           |
 
-# Steps to analyze a new project
+# Contributing to sentinel-experiments
+All contributions to this project are welcome! For simplicity, **all changes are made on a fork of the repository, and then a pull request is created to merge the changes into the main repository**. This way, we can easily track the changes and review them before merging.
+
+## Resolving Issues
+**If you find a bug or have a feature request, please open an issue on GitHub**. When opening an issue, please provide as much detail as possible, including steps to reproduce the issue, expected behavior, and any relevant screenshots or logs.
+
+If you know how to fix the issue, feel free to resolve it yourself by submitting a pull request. Please ensure that your code includes appropriate tests and follows the common coding standards of Java.
+
+## Adding a new project to analyze
+To add a new analyzed project, please follow these steps:
+1. **Choose a new project to analyze**, based on the criteria from the [Projects selection criteria](#projects-selection-criteria) section.
+2. Go to the [backlog of the project](https://github.com/users/JeromeMaquoi/projects/7/views/8) and **create new issues for the project you want to add**. Two issues should be created per project: one for the energy measurements and one for the instrumentation.
+    - The issue related to the energy measurements should be labeled with "project" and "energy measurements", and should be a sub-issue of the issue ["#22 I want to measure the energy consumption of at least 10 Java projects automatically"](https://github.com/users/JeromeMaquoi/projects/7/views/8?pane=issue&itemId=137163684&issue=JeromeMaquoi%7Csentinel-experiments%7C22)
+    - The issue related to the instrumentation should be labeled with `project`and `instrumentation`, and should be a sub-issue of the issue [#42 I want to instrument at least 10 projects with Spoon automatically](https://github.com/users/JeromeMaquoi/projects/7/views/8?pane=issue&itemId=139220510&issue=JeromeMaquoi%7Csentinel-experiments%7C42)
+
+   For example, here is the issue related to the instrumentation of the project Jabref:
+   ![img.png](docs/jabref-instrumentation.png)
+
+   And here is the issue related to the energy measurements of Jabref:
+   ![img.png](docs/jabref-energy-measurements.png)
+
+   You can see that both have a parent issue, either the issue [#22](https://github.com/users/JeromeMaquoi/projects/7/views/8?pane=issue&itemId=137163684&issue=JeromeMaquoi%7Csentinel-experiments%7C22) for the energy measurements, or the issue [#42](https://github.com/users/JeromeMaquoi/projects/7/views/8?pane=issue&itemId=139220510&issue=JeromeMaquoi%7Csentinel-experiments%7C42) for the instrumentation. This way, we can easily track the progress of adding new projects to the repository.
+3. **Once an issue is created, you can create a new branch on your fork**, linked to this issue.
+   ![img.png](docs/branch-creation.png)
+4. **You can follow the [steps to analyze the project](#steps-to-analyze-a-new-project)**. Please make sure to work only on either the energy measurements or the instrumentation on one branch, and not both. This way, we can easily track the progress of each task separately.
+5. **Once you are done, please create a pull request to merge your changes into the main repository (not the fork!)**. This pull request will be reviewed by me, and once it is approved, it will be merged into the main repository.
+
+## Steps to analyze a new project
 
 There are two main modules in the pipeline: the EnergyMeasurementsModule and the SpoonInstrumentConstructorModule. There are some common steps to follow to analyze a new project with both modules, and some specific steps for each module.
 
-## Common steps for both modules
+> [!NOTE]
+> Don't forget that you have to work on each module in a separate branch!
 
-1. **Choose a new project to analyze**, based on the criteria from the [Projects selection criteria](#projects-selection-criteria) section.
-2. **Create a new wip configuration file** in the root of the repository, following the naming convention explained in the [Pipeline configuration](#pipeline-configuration) section. You can use an existing configuration file as a template and update it with the information of the new project you want to analyze.
-3. **Update the configuration file** with the correct information for the new project, such as the repository URL, the commit to analyze, the test command, etc. Make sure to update all the necessary properties in the configuration file, and to keep the properties that should not be updated as they are.
-4. **Create a new directory in `resources/build-files/`** with the exact name of the analyzed project. If the analysis is done on a sub project, the name of the directory must follow this format: `<root-project-name>.<sub-project-name>`. For example, in the case of spring-boot, the analyzed sub project is "spring-boot/spring-boot-project/spring-boot", so the name of the directory within `resources/build-files/` is `spring-boot.spring-boot-project.spring-boot`.
+### Common steps for both modules
 
-## Specific steps for the EnergyMeasurementsModule
+1. **Create a new wip configuration file** in the root of the repository, following the naming convention explained in the [Pipeline configuration](#pipeline-configuration) section. You can use an existing configuration file as a template and update it with the information of the new project you want to analyze.
+2. **Update the configuration file** with the correct information for the new project, such as the repository URL, the commit to analyze, the test command, etc. Make sure to update all the necessary properties in the configuration file, and to keep the properties that should not be updated as they are.
+3. **Create a new directory in `resources/build-files/`** with the exact name of the analyzed project. If the analysis is done on a sub project, the name of the directory must follow this format: `<root-project-name>.<sub-project-name>`. For example, in the case of spring-boot, the analyzed sub project is "spring-boot/spring-boot-project/spring-boot", so the name of the directory within `resources/build-files/` is `spring-boot.spring-boot-project.spring-boot`.
+
+### Specific steps for the EnergyMeasurementsModule
 
 1. Create the `config.properties` file for JoularJX configuration in the `resources/build-files/<project-name>/` directory, following the instructions of the [Configuration of JoularJX config.properties](#configuration-of-joularjx-configproperties) section of the documentation.
 2. **Copy-paste the `pom.xml` or `build.gradle`** (or `build.gradle.kts`) file from the analyzed project into the `resources/build-files/<project-name>/` directory of the sentinel-experiments project, **and update it to add JoularJX as a Java agent**, following the instructions of the [Add JoularJX as a Java agent to the analyzed project](#add-joularjx-as-a-java-agent-to-the-analyzed-project) section of the documentation.
@@ -70,7 +102,7 @@ There are two main modules in the pipeline: the EnergyMeasurementsModule and the
     If the pipeline does not crash in the terminal, a new directory `joularjx-results` will be created in analyzed directory of the project (either the root directory or the sub project directory, depending on the configuration). If this directory is created and contains other directories and csv files, it means that JoularJX is correctly configured and is able to run and collect energy measurements for the analyzed project.
 4. **If the pipeline is working (see point 3), you can now create a complete configuration file** for the project by copying the wip configuration file and renaming it to `config-<project-name>.yml`.
 
-## Specific steps for the SpoonInstrumentConstructorModule
+### Specific steps for the SpoonInstrumentConstructorModule
 
 1. **Copy-paste the `pom.xml`or `build.gradle`** (or `build.gradle.kts`) file from the analyzed project, but this time in the `resources/build-files/<project-name>/classpath` directory of the sentinel-experiments project, **and update it to add a task that will build the classpath of the analyzed project**, as explained in the section [Classpath configuration for Spoon instrumentation](#classpath-configuration-for-spoon-instrumentation).
 2. **Test the configuration file by running the Spoon module** of the pipeline with this command (in linux):

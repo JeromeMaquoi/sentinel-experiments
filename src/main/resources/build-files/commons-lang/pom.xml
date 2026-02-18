@@ -267,7 +267,10 @@
                       </configuration> </execution> -->
                 </executions>
                 <configuration>
-                    <argLine>-javaagent:JOULARJX</argLine>
+                    <argLine>
+                        ${argLine}
+                        -javaagent:JOULARJX
+                    </argLine>
                 </configuration>
             </plugin>
             <plugin>

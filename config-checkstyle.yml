@@ -22,7 +22,7 @@ execution-plan:
   test-command: "mvn clean test -Drat.skip=true"
   ignore-failures: false
   ignore-spoon-failures: false
-  num-test-runs: 1
+  num-test-runs: 2
   energy-measurements:
     tool: "joularjx"
     tool-version: "3.0.1"

@@ -22,7 +22,7 @@ execution-plan:
   test-command: "./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks"
   ignore-failures: false
   ignore-spoon-failures: true
-  num-test-runs: 1
+  num-test-runs: 2
   energy-measurements:
     tool: "joularjx"
     tool-version: "3.0.1"

@@ -1,0 +1,48 @@
+command-time-out: 3600
+code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
+project:
+  name: "commons-lang"
+  owner: "apache"
+  sub-project: ""
+  show-project-logs: true
+  package-prefix: "org.apache.commons.lang3"
+repo:
+  url: "https://github.com/apache/commons-lang"
+  commit: "25adf415c4acb943310def123b5d6c0e61c8c0e5"
+  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/commons-lang"
+  jdk: "17.0.18-tem"
+  overwrite-clone: true
+  overwrite-copy: true
+log:
+  level: INFO
+  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/commons-lang/"
+  also-log-to-console: true
+  clear-previous-logs: true
+execution-plan:
+  test-command: "mvn --errors --show-version --batch-mode --no-transfer-progress -Ddoclint=all -Drat.skip=true"
+  ignore-failures: false
+  ignore-spoon-failures: true
+  num-test-runs: 2
+  energy-measurements:
+    tool: "joularjx"
+    tool-version: "3.0.1"
+    release-url: "https://github.com/joular/joularjx"
+    tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
+    import-config:
+      scopes: ["app"]
+      measurement-types: ["runtime", "total"]
+      monitoring-types: ["calltrees", "methods"]
+backend:
+  mode: dev
+  server-host: localhost
+  server-port: 8080
+  server-timeout-seconds: 120
+  server-log-path: "/tmp/sentinel-backend.log"
+  server-ready-path: "/tmp/backend-ready"
+  endpoint: "/api/v2/constructor-contexts"
+  # dev-specific
+  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  nb-check-server-start: 20
+  # prod-specific
+  ssh-user: "jmaquoi"
+  ssh-host: "ava.info.unamur.be"

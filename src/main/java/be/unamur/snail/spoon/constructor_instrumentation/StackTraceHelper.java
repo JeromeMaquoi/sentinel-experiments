@@ -3,6 +3,7 @@ package be.unamur.snail.spoon.constructor_instrumentation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StackTraceHelper {
     private final StackTraceProvider stackTraceProvider;
@@ -18,6 +19,7 @@ public class StackTraceHelper {
         }
         return new ArrayList<>(Arrays.stream(this.stackTraceProvider.getStackTrace())
                 .filter(element -> element.getClassName().startsWith(prefix))
-                .toList());
+                .collect(Collectors.toList())
+        );
     }
 }

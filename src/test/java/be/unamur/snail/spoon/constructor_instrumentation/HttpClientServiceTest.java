@@ -13,44 +13,40 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class HttpClientServiceTest {
-    private HttpClient httpClient;
+    private SimpleHttpClient httpClient;
     private HttpClientService service;
-    private HttpResponse<String> response;
+    private SimpleHttpResponse response;
 
     @BeforeEach
     void setUp() {
-        httpClient = mock(HttpClient.class);
-        response = mock(HttpResponse.class);
+        httpClient = mock(SimpleHttpClient.class);
         service = new HttpClientService(httpClient);
     }
 
     @Test
     void postReturnsResponseBodyWhenStatusIs200Test() throws Exception {
-        when(response.statusCode()).thenReturn(200);
-        when(response.body()).thenReturn("OK");
-        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+        response = new SimpleHttpResponse(200, "OK");
+        when(httpClient.post(anyString(), anyString())).thenReturn(response);
 
         String jsonPayload = "{\"key\":\"value\"}";
         String result = service.post("http://fake.api", jsonPayload);
 
         assertEquals("OK", result);
-        verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+        verify(httpClient, times(1)).post(anyString(), anyString());
     }
 
     @Test
     void postThrowsHttpErrorExceptionWhenStatusIsLowerThan200Test() throws Exception {
-        when(response.statusCode()).thenReturn(199);
-        when(response.body()).thenReturn("OK");
-        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+        response = new SimpleHttpResponse(199, "OK");
+        when(httpClient.post(anyString(), anyString())).thenReturn(response);
 
         assertThrows(HttpErrorException.class, () -> service.post("http://fake.api", "{\"key\":\"value\"}"));
     }
 
     @Test
     void postThrowsHttpErrorExceptionWhenStatusIsGreaterThan300Test() throws Exception {
-        when(response.statusCode()).thenReturn(300);
-        when(response.body()).thenReturn("OK");
-        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+        response = new SimpleHttpResponse(300, "OK");
+        when(httpClient.post(anyString(), anyString())).thenReturn(response);
 
         assertThrows(HttpErrorException.class, () -> service.post("http://fake.api", "{\"key\":\"value\"}"));
     }

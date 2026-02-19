@@ -120,7 +120,10 @@ public class DevBackendServiceManager implements BackendServiceManager {
 
         String scriptCommand = cdScript + " && " + makeScriptExecutable + " && " + pluginsDirectory + " ./start-server.sh " + backendTimeout + " " + logOutputScript;
 
-        return "screen -dmS " + sessionName + " bash -c \"" + scriptCommand + "\"";
+        String completeCommand = "screen -dmS " + sessionName + " bash -c \"" + scriptCommand + "\"";
+        log.info("Running: {}", completeCommand);
+
+        return completeCommand;
     }
 
     public boolean isServerRunning() throws IOException, InterruptedException {

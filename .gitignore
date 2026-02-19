@@ -43,3 +43,4 @@ build/
 
 logs/
 wip-config-*.yml
+wip-sentinel-experiments.sh

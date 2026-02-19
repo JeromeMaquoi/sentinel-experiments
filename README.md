@@ -35,7 +35,7 @@ Each module consists of a series of stages that are executed in sequence. Each s
 |---------------------------|:---------------:|----------------|-------------------------------|
 | **checkstyle**            |   🟢 Working    | 🟢 Working     | /                             |
 | **commons-configuration** |    🔵 To Do     | 🔵 To Do       |                               |
-| **commons-lang**          |   🟢 Working    | 🔵 To Do       |                               |
+| **commons-lang**          |   🟢 Working    | 🟢 Working     |                               |
 | **hibernate-orm**         |    🔵 To Do     | 🟡 In Progress |                               |
 | **jabref**                | 🟡 In Progress  | 🔵 To Do       |                               |
 | **OpenJDK**               |    🔵 To Do     | 🔵 To Do       |                               |

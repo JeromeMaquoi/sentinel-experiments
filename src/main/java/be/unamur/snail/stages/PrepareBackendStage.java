@@ -4,15 +4,11 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.database.DatabasePreparer;
 import be.unamur.snail.database.DatabasePreparerFactory;
-import be.unamur.snail.database.MongoServiceManager;
-import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
-import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.utils.CommandRunner;
-import be.unamur.snail.utils.SimpleCommandRunner;
 
 
 /**

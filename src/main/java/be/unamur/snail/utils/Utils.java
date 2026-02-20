@@ -25,7 +25,7 @@ public class Utils {
         log.debug("Executing command `{}` in {}", command, cwd);
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
-        builder.environment().put("PATH", "/usr/bin:/bin");
+//        builder.environment().put("PATH", "/usr/bin:/bin");
 
         if (cwd != null && !cwd.isEmpty()) {
             builder.directory(new File(cwd));
@@ -55,6 +55,7 @@ public class Utils {
         Config config = Config.getInstance();
         boolean finished = process.waitFor(config.getCommandTimeout(), TimeUnit.SECONDS);
         if (!finished) {
+            log.error("Command {} timed out", command);
             process.destroyForcibly();
             throw new CommandTimedOutException(command);
         }

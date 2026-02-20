@@ -1,4 +1,4 @@
-command-time-out: 3600
+command-time-out: 360000
 code-constructors-instrumentation-path: "/home/commun/infom125/sentinel-group/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
   name: "commons-lang"

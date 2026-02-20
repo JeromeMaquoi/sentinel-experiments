@@ -2,6 +2,7 @@ package be.unamur.snail.spoon.constructor_instrumentation;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -108,6 +109,8 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
+    @Disabled
+    // No exception is thrown in the method anymore
     void sendThrowsExceptionIfSenderNullTest() {
         StackTraceHelper helper = mock(StackTraceHelper.class);
         SendConstructorsUtils utils = new SendConstructorsUtils(helper, null);

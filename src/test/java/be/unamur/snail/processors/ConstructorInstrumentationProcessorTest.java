@@ -78,7 +78,7 @@ class ConstructorInstrumentationProcessorTest {
         List<CtStatement> statements = body.getStatements();
         System.out.println(statements);
 
-        assertThat(statements.get(1).toString()).contains("SendConstructorsUtils utils = new be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils()");
+        assertThat(statements.get(1).toString()).contains("SendConstructorsUtils utils = be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils.getInstance()");
         assertThat(statements.get(2).toString()).contains("utils.initConstructorContext(");
         assertThat(statements.get(3).toString()).contains("this.field1 = field1");
         assertThat(statements.get(4).toString()).contains("utils.addAttribute(\"field1\", \"java.lang.String\", this.field1, \"constructor parameter\"");

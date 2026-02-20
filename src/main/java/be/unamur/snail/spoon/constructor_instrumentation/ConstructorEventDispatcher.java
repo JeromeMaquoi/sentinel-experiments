@@ -9,7 +9,7 @@ import java.util.concurrent.*;
  */
 public class ConstructorEventDispatcher {
     private static final int BATCH_SIZE = 200;
-    private static final int FLUSH_INTERVAL_MS = 2000;
+    private static final int FLUSH_INTERVAL_MS = 1000;
     private static final int QUEUE_SIZE = 50000;
 
     private final BlockingQueue<ConstructorContext> queue = new LinkedBlockingQueue<>(QUEUE_SIZE);
@@ -40,6 +40,7 @@ public class ConstructorEventDispatcher {
         worker.submit(() -> {
             List<ConstructorContext> batch = new ArrayList<>(BATCH_SIZE);
 
+            // TODO remove the while true because it prevents the pipeline to go on after the tests
             while (true) {
                 try {
                     ConstructorContext first = queue.poll(FLUSH_INTERVAL_MS, TimeUnit.MILLISECONDS);

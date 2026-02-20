@@ -25,7 +25,7 @@ public class Utils {
         log.debug("Executing command `{}` in {}", command, cwd);
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
-        builder.environment().put("PATH", "/usr/bin:/bin");
+//        builder.environment().put("PATH", "/usr/bin:/bin");
 
         if (cwd != null && !cwd.isEmpty()) {
             builder.directory(new File(cwd));

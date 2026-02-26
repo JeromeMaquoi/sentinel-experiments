@@ -15,7 +15,7 @@ public class SdkmanJdkManager implements JdkManager {
     private final String sdkmanInit;
 
     public SdkmanJdkManager(CommandRunner runner) {
-        this(runner, System.getProperty("user.home") + "/.sdkman/bin/sdkman-init.sh");
+        this(runner, "/etc/profile.d/sdkman.sh");
     }
 
     public SdkmanJdkManager(CommandRunner runner, String sdkmanInit) {

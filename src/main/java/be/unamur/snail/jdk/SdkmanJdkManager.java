@@ -15,7 +15,7 @@ public class SdkmanJdkManager implements JdkManager {
     private final String sdkmanInit;
 
     public SdkmanJdkManager(CommandRunner runner) {
-        this(runner, System.getProperty("user.home") + "/.sdkman/bin/sdkman-init.sh");
+        this(runner, "/etc/profile.d/sdkman.sh");
     }
 
     public SdkmanJdkManager(CommandRunner runner, String sdkmanInit) {
@@ -29,7 +29,7 @@ public class SdkmanJdkManager implements JdkManager {
 
     @Override
     public boolean isInstalled(String version) throws IOException, InterruptedException {
-        Utils.CompletedProcess result = runner.run(withSdkmanInit("sdk list java"));
+        Utils.CompletedProcess result = runner.run(withSdkmanInit("-lc \"sdk list java\""));
         if (result == null) return false;
         String out = Optional.ofNullable(result.stdout()).orElse("");
         boolean found = Arrays.stream(out.split("\\R"))

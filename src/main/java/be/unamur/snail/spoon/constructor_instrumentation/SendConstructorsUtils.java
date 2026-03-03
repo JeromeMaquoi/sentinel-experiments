@@ -112,7 +112,7 @@ public class SendConstructorsUtils {
             if (dispatcher == null) {
                 initDispatcher();
             }
-//            System.out.println("Sending instance to the database: " + constructorContext.getMethodName());
+//            System.out.println("Sending instance to the database: " + constructorContext);
             dispatcher.submit(constructorContext);
         }
     }

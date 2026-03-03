@@ -3,6 +3,7 @@ package be.unamur.snail.spoon.constructor_instrumentation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class is responsible for creating a batch of ConstructorContext to send to the db
@@ -16,6 +17,7 @@ public class ConstructorEventDispatcher {
     private final ExecutorService worker;
     private final ConstructorContextSender sender;
     private static volatile ConstructorEventDispatcher instance;
+    private final AtomicBoolean running = new AtomicBoolean(true);
 
     public static synchronized ConstructorEventDispatcher getInstance(String apiUrl) {
         if (instance == null) {
@@ -40,16 +42,17 @@ public class ConstructorEventDispatcher {
         worker.submit(() -> {
             List<ConstructorContext> batch = new ArrayList<>(BATCH_SIZE);
 
-            // TODO remove the while true because it prevents the pipeline to go on after the tests
-            while (true) {
+            while (running.get() || !queue.isEmpty()) {
                 try {
                     ConstructorContext first = queue.poll(FLUSH_INTERVAL_MS, TimeUnit.MILLISECONDS);
 
                     if (first != null) {
+                        System.out.println("Dispatching constructor context for " + first.getClassName() + "." + first.getMethodName());
                         batch.add(first);
                         queue.drainTo(batch, BATCH_SIZE - 1);
                     }
                     if (!batch.isEmpty()) {
+                        System.out.println("Sending batch of " + batch.size() + " constructor contexts");
                         sender.sendBatch(batch);
                         batch.clear();
                     }
@@ -57,22 +60,28 @@ public class ConstructorEventDispatcher {
                     e.printStackTrace(); // important not to crash the worker
                 }
             }
+            flushRemaining();
         });
     }
 
     private void registerShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                flush();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            running.set(false);
+            worker.shutdown();
+            try {
+                if (!worker.awaitTermination(5, TimeUnit.SECONDS)) {
+                    worker.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                worker.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         }));
     }
 
-    public void flush() {
+    private void flushRemaining() {
         List<ConstructorContext> remaining = new ArrayList<>();
         queue.drainTo(remaining);
-
         if (!remaining.isEmpty()) {
             sender.sendBatch(remaining);
         }

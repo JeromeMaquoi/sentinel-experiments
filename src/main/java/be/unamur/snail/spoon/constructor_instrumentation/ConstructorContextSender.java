@@ -5,9 +5,5 @@ import java.util.List;
 public interface ConstructorContextSender {
     void send(ConstructorContext context);
 
-    default void sendBatch(List<ConstructorContext> contexts) {
-        for (ConstructorContext context : contexts) {
-            send(context);
-        }
-    }
+    void sendBatch(List<ConstructorContext> contexts);
 }

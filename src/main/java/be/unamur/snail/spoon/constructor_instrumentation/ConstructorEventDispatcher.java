@@ -41,25 +41,37 @@ public class ConstructorEventDispatcher {
     private void startWorker() {
         worker.submit(() -> {
             List<ConstructorContext> batch = new ArrayList<>(BATCH_SIZE);
+            long lastFlushTime = System.currentTimeMillis();
 
             while (running.get() || !queue.isEmpty()) {
                 try {
-                    ConstructorContext first = queue.poll(FLUSH_INTERVAL_MS, TimeUnit.MILLISECONDS);
+                    // Wait for at least one item, but not more than FLUSH_INTERVAL_MS
+                    ConstructorContext context = queue.poll(FLUSH_INTERVAL_MS, TimeUnit.MILLISECONDS);
 
-                    if (first != null) {
-                        System.out.println("Dispatching constructor context for " + first.getClassName() + "." + first.getMethodName());
-                        batch.add(first);
-                        queue.drainTo(batch, BATCH_SIZE - 1);
+                    if (context != null) {
+                        batch.add(context);
                     }
-                    if (!batch.isEmpty()) {
+
+                    // Drain remaining to fill the batch
+                    queue.drainTo(batch, BATCH_SIZE - batch.size());
+
+                    long now = System.currentTimeMillis();
+                    boolean timeExceeded = now - lastFlushTime >= FLUSH_INTERVAL_MS;
+
+                    // Only send if batch is not empty
+                    if (!batch.isEmpty() && (batch.size() >= BATCH_SIZE || timeExceeded)) {
                         System.out.println("Sending batch of " + batch.size() + " constructor contexts");
                         sender.sendBatch(batch);
                         batch.clear();
+                        lastFlushTime = now;
                     }
+
                 } catch (Exception e) {
-                    e.printStackTrace(); // important not to crash the worker
+                    e.printStackTrace();
                 }
             }
+
+            // flush any remaining contexts before exit
             flushRemaining();
         });
     }

@@ -1,6 +1,7 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -47,6 +48,9 @@ public class ConstructorEventDispatcher {
         if (batch.isEmpty()) {
             return;
         }
+
+        System.out.println("Batch size: " + batch.size());
+        System.out.println("Unique elements: " + new HashSet<>(batch).size());
 
         List<ConstructorContext> toSend = new ArrayList<>(batch);
         batch.clear();

@@ -113,7 +113,7 @@ public class SendConstructorsUtils {
                 initDispatcher();
             }
 //            System.out.println("Sending instance to the database: " + constructorContext);
-            dispatcher.submit(constructorContext);
+            dispatcher.submit(constructorContext.copy());
         }
     }
 }

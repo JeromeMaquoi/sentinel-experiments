@@ -1,6 +1,8 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ConstructorContext implements AstElement {
     private String fileName;
@@ -12,6 +14,17 @@ public class ConstructorContext implements AstElement {
     private String snapshot;
 
     public ConstructorContext() {}
+
+    public ConstructorContext copy() {
+        return new ConstructorContext()
+                .withFileName(this.fileName)
+                .withClassName(this.className)
+                .withMethodName(this.methodName)
+                .withParameters(this.parameters == null ? null : new ArrayList<>(this.parameters))
+                .withAttributes(this.attributes == null ? null : new ArrayList<>(this.attributes))
+                .withStackTrace(this.stacktrace == null ? null : new ArrayList<>(this.stacktrace))
+                .withSnapshot(this.snapshot);
+    }
 
     public ConstructorContext withFileName(String fileName) {
         this.fileName = fileName;
@@ -99,5 +112,17 @@ public class ConstructorContext implements AstElement {
                 ", stacktrace=" + stacktrace +
                 ", snapshot='" + snapshot + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ConstructorContext that = (ConstructorContext) o;
+        return Objects.equals(fileName, that.fileName) && Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName) && Objects.equals(parameters, that.parameters) && Objects.equals(attributes, that.attributes) && Objects.equals(stacktrace, that.stacktrace) && Objects.equals(snapshot, that.snapshot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileName, className, methodName, parameters, stacktrace);
     }
 }

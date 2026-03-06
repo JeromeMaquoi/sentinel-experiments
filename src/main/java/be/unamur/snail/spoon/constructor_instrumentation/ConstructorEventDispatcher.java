@@ -1,20 +1,16 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.*;
 
 /**
  * This class is responsible for creating a batch of ConstructorContext to send to the db
  */
 public class ConstructorEventDispatcher {
     private static final int BATCH_SIZE = 500;
-
     private final List<ConstructorContext> batch = new ArrayList<>(BATCH_SIZE);
     private final ConstructorContextSender sender;
-
     private static volatile ConstructorEventDispatcher instance;
+    private final Set<String> keysInBatch = new HashSet<>();
 
     public static synchronized ConstructorEventDispatcher getInstance(String apiUrl) {
         if (instance == null) {
@@ -29,7 +25,11 @@ public class ConstructorEventDispatcher {
     }
 
     public synchronized void submit(ConstructorContext context) {
-        batch.add(context);
+        String key = computeUniqueKey(context);
+        if (!keysInBatch.contains(key)) {
+            batch.add(context);
+            keysInBatch.add(key);
+        }
 
         if (batch.size() >= BATCH_SIZE) {
             flush();
@@ -45,15 +45,15 @@ public class ConstructorEventDispatcher {
     }
 
     private synchronized void flush() {
-        if (batch.isEmpty()) {
-            return;
-        }
+        if (batch.isEmpty()) return;
 
-        System.out.println("Batch size: " + batch.size());
-        System.out.println("Unique elements: " + new HashSet<>(batch).size());
-
-        List<ConstructorContext> toSend = new ArrayList<>(batch);
+        sender.sendBatch(new ArrayList<>(batch));
         batch.clear();
-        sender.sendBatch(toSend);
+        keysInBatch.clear();
+    }
+
+    private String computeUniqueKey(ConstructorContext context) {
+        int stacktraceHash = context.getStacktrace() != null ? context.getStacktrace().hashCode() : 0;
+        return context.getFileName() + "|" + context.getClassName() + "|" + context.getMethodName() + "|" + (context.getParameters() == null ? "" : context.getParameters().toString()) + "|" + stacktraceHash;
     }
 }

@@ -1,5 +1,7 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
+import java.util.List;
+
 public class HttpConstructorContextSender implements ConstructorContextSender {
     private final HttpClientService client;
     private final String apiURL;
@@ -21,7 +23,19 @@ public class HttpConstructorContextSender implements ConstructorContextSender {
         String json = serializer.serialize(context);
         try {
             client.post(apiURL, json);
-//            System.out.println("Context " + context.getMethodName() + " sent successfully");
+        } catch (Exception e) {
+            throw new ConstructorContextSendFailedException(e);
+        }
+    }
+
+    @Override
+    public void sendBatch(List<ConstructorContext> contexts) {
+        if (contexts == null || contexts.isEmpty()) {
+            return;
+        }
+        String json = serializer.serializeList(contexts);
+        try {
+            client.post(apiURL + "/batch", json);
         } catch (Exception e) {
             throw new ConstructorContextSendFailedException(e);
         }

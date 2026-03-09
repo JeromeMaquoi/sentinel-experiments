@@ -2,6 +2,7 @@ package be.unamur.snail.spoon.constructor_instrumentation;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -14,20 +15,33 @@ import static org.mockito.Mockito.*;
 class SendConstructorsUtilsTest {
     private SendConstructorsUtils constructorUtils;
     private ConstructorContextSender sender;
+    private ConstructorEventDispatcher dispatcher;
 
     @BeforeEach
     void setUp() {
-        StackTraceHelper mockHelper = Mockito.mock(StackTraceHelper.class);
+        StackTraceHelper mockHelper = mock(StackTraceHelper.class);
         StackTraceElement stackTraceElement = new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30);
         when(mockHelper.getFilteredStackTrace()).thenReturn(List.of(stackTraceElement));
 
         sender = mock(ConstructorContextSender.class);
+        resetDispatcher();
         constructorUtils = new SendConstructorsUtils(mockHelper, sender);
     }
 
     @AfterEach
     void tearDown() {
         constructorUtils.resetConstructorContextForTests();
+        resetDispatcher();
+    }
+
+    private void resetDispatcher() {
+        try {
+            var field = SendConstructorsUtils.class.getDeclaredField("dispatcher");
+            field.setAccessible(true);
+            field.set(null, null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -108,17 +122,6 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
-    void sendThrowsExceptionIfSenderNullTest() {
-        StackTraceHelper helper = mock(StackTraceHelper.class);
-        SendConstructorsUtils utils = new SendConstructorsUtils(helper, null);
-        utils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
-        utils.addAttribute("field", "String", "hello", "literal");
-        utils.getStackTrace();
-
-        assertThrows(IllegalStateException.class, utils::send);
-    }
-
-    @Test
     void sendThrowsExceptionIfConstructorNotCompleteTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
         constructorUtils.addAttribute("field", "String", "hello", "literal");
@@ -127,13 +130,83 @@ class SendConstructorsUtilsTest {
     }
 
     @Test
-    void sendDelegatesToSenderTest() {
+    void sendDelegatesToSenderWhenSenderIsNotNullTest() {
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
         constructorUtils.addAttribute("field", "String", "hello", "literal");
         constructorUtils.getStackTrace();
+
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
+        constructorUtils.send();
+
+        verify(sender, times(1)).send(context);
+    }
+
+    @Test
+    void sendUsesDispatcherWhenSenderIsNullTest() {
+        constructorUtils = new SendConstructorsUtils(mock(StackTraceHelper.class), null);
+
+        dispatcher = mock(ConstructorEventDispatcher.class);
+        setDispatcher(dispatcher);
+
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        constructorUtils.addAttribute("field", "String", "hello", "literal");
+        constructorUtils.getStackTrace();
+
+        ConstructorContext copy = constructorUtils.getConstructorContextForTests().copy();
 
         constructorUtils.send();
-        verify(sender, times(1)).send(context);
+
+        verify(dispatcher, times(1)).submit(any(ConstructorContext.class));
+    }
+
+    @Test
+    void initDispatcherInitializesDispatcherWhenNullTest() {
+        assertNull(getDispatcher());
+        System.setProperty("apiUrl", "http://localhost");
+        SendConstructorsUtils.initDispatcher();
+        assertNotNull(getDispatcher());
+    }
+
+    @Test
+    void initDispatcherDoesNothingIfDispatcherAlreadySetTest() {
+        System.setProperty("apiUrl", "http://localhost");
+        SendConstructorsUtils.initDispatcher();
+        ConstructorEventDispatcher firstInstance = getDispatcher();
+
+        SendConstructorsUtils.initDispatcher();
+        ConstructorEventDispatcher secondInstance = getDispatcher();
+
+        assertSame(firstInstance, secondInstance);
+    }
+
+    @Test
+    void initDispatcherThrowsExceptionIfApiUrlNotSetTest() {
+        System.clearProperty("apiUrl");
+        assertThrows(IllegalArgumentException.class, SendConstructorsUtils::initDispatcher);
+
+        System.setProperty("apiUrl", "");
+        assertThrows(IllegalArgumentException.class, SendConstructorsUtils::initDispatcher);
+    }
+
+
+
+    private void setDispatcher(ConstructorEventDispatcher dispatcher) {
+        try {
+            var field = SendConstructorsUtils.class.getDeclaredField("dispatcher");
+            field.setAccessible(true);
+            field.set(null, dispatcher);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ConstructorEventDispatcher getDispatcher() {
+        try {
+            var field = SendConstructorsUtils.class.getDeclaredField("dispatcher");
+            field.setAccessible(true);
+            return (ConstructorEventDispatcher) field.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

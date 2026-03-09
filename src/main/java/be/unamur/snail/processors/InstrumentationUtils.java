@@ -47,6 +47,29 @@ public class InstrumentationUtils {
         return factory.Code().createLocalVariable(utilsType, varName, constructorCall);
     }
 
+    public CtLocalVariable<?> createThreadLocalUtilsVariable(String fqcn, String varName) {
+        if (fqcn == null || fqcn.isEmpty()) {
+            throw new ParameterIsNullOrEmptyException("fqcn");
+        }
+        if (varName == null || varName.isEmpty()) {
+            throw new ParameterIsNullOrEmptyException("varName");
+        }
+
+        CtTypeReference<Object> utilsType = factory.Type().createReference(fqcn);
+
+        CtExecutableReference<?> getMethod = factory.Executable().createReference(
+                utilsType,
+                utilsType,
+                "getInstance"
+        );
+        CtInvocation<?> getInvocation = factory.Code().createInvocation(
+                factory.Code().createTypeAccess(utilsType),
+                getMethod
+        );
+
+        return factory.Code().createLocalVariable(utilsType, varName, (CtExpression<Object>) getInvocation);
+    }
+
     /**
      * Extracts the fully-qualified type names of a list of parameters.
      *

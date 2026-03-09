@@ -6,16 +6,24 @@ import java.util.List;
 public class SendConstructorsUtils {
     private ConstructorContext constructorContext;
     private final StackTraceHelper stackTraceHelper;
-    private final ConstructorContextSender sender;
+    private final ConstructorContextSender sender; // Only used in tests
+    private static volatile  ConstructorEventDispatcher dispatcher;
+    private static final ThreadLocal<SendConstructorsUtils> LOCAL = new ThreadLocal<SendConstructorsUtils>() {
+        @Override
+        protected SendConstructorsUtils initialValue() {
+            return new SendConstructorsUtils();
+        }
+    };
+
+    public static SendConstructorsUtils getInstance() {
+        return LOCAL.get();
+    }
 
     public SendConstructorsUtils() {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = new StackTraceHelper(new DefaultStackTraceProvider());
-        String apiURL = System.getProperty("apiUrl", System.getenv("API_URL"));
-        if (apiURL == null || apiURL.isEmpty()) {
-            throw new IllegalArgumentException("apiUrl not set");
-        }
-        this.sender = new HttpConstructorContextSender(apiURL);
+        this.sender = null;
+        initDispatcher();
     }
 
     // Constructor for tests
@@ -23,6 +31,20 @@ public class SendConstructorsUtils {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
         this.sender = sender;
+    }
+
+    protected static void initDispatcher() {
+        if (dispatcher == null) {
+            synchronized (SendConstructorsUtils.class) {
+                if (dispatcher == null) {
+                    String apiURL = System.getProperty("apiUrl", System.getenv("API_URL"));
+                    if (apiURL == null || apiURL.isEmpty()) {
+                        throw new IllegalArgumentException("apiUrl not set");
+                    }
+                    dispatcher = ConstructorEventDispatcher.getInstance(apiURL);
+                }
+            }
+        }
     }
 
     public ConstructorContext getConstructorContextForTests() {
@@ -60,7 +82,6 @@ public class SendConstructorsUtils {
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
         AttributeContext attributeContext = new AttributeContext(attributeName, attributeType, actualType, rightHandSideExpressionType);
         constructorContext.addAttribute(attributeContext);
-//        System.out.println("Added attribute " + attributeName + " to context");
     }
 
     /**
@@ -72,7 +93,6 @@ public class SendConstructorsUtils {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
-//        System.out.println("Stack trace: " + stackTrace);
         constructorContext = constructorContext.withStackTrace(stackTrace);
     }
 
@@ -83,10 +103,13 @@ public class SendConstructorsUtils {
         if (!constructorContext.isComplete()) {
             throw new ConstructorContextNotCompletedException();
         }
-        if (sender == null) {
-            throw new IllegalStateException("Sender is not initialized");
+        if (sender != null) {
+            sender.send(constructorContext);
+        } else {
+            if (dispatcher == null) {
+                initDispatcher();
+            }
+            dispatcher.submit(constructorContext.copy());
         }
-//        System.out.println("Sending instance to the database: " + constructorContext);
-        sender.send(constructorContext);
     }
 }

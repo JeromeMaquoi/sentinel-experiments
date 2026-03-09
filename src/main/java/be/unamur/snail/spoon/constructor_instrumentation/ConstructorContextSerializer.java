@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import java.util.List;
+
 public class ConstructorContextSerializer {
     private final ObjectMapper mapper;
 
@@ -20,6 +22,19 @@ public class ConstructorContextSerializer {
     public String serialize(ConstructorContext context) {
         try {
             return mapper.writeValueAsString(context);
+        } catch (JsonProcessingException e) {
+            throw new JsonException(e);
+        }
+    }
+
+    /**
+     * Serialize a list of ConstructorContext into a JSON string
+     * @param contexts the list of ConstructorContext to serialize
+     * @return A JSON string containing the serialization of the list of contexts
+     */
+    public String serializeList(List<ConstructorContext> contexts) {
+        try {
+            return mapper.writeValueAsString(contexts);
         } catch (JsonProcessingException e) {
             throw new JsonException(e);
         }

@@ -2,7 +2,6 @@ package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
-import be.unamur.snail.exceptions.BuildFileNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.database.DatabasePreparerFactory;

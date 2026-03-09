@@ -35,7 +35,7 @@ public class SimpleHttpClient {
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
             } else {
-                throw new HttpErrorException(response.statusCode(), response.body());
+                throw new HttpErrorException(response.statusCode());
             }
         } catch (IllegalArgumentException e) {
             throw new InvalidUrlException(url);

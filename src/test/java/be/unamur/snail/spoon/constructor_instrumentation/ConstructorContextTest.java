@@ -26,4 +26,41 @@ class ConstructorContextTest {
 
         assertFalse(context.isComplete());
     }
+
+    @Test
+    void copyCreatesEqualButIndependentObjectTest() {
+        List<String> params = new ArrayList<>();
+        params.add("param1");
+        List<AttributeContext> attributes = new ArrayList<>();
+        attributes.add(new AttributeContext("name", "type", "actual", "rhs"));
+        List<StackTraceElement> stacktrace = List.of(new StackTraceElement("Class", "method", "file.java", 10));
+
+        ConstructorContext original = new ConstructorContext()
+                .withFileName("file.java")
+                .withClassName("MyClass")
+                .withMethodName("myMethod")
+                .withParameters(params)
+                .withAttributes(attributes)
+                .withStackTrace(stacktrace)
+                .withSnapshot("snapshot1");
+
+        ConstructorContext copy = original.copy();
+
+        assertEquals(original, copy);
+        assertNotSame(original, copy);
+
+        assertNotSame(original.getParameters(), copy.getParameters());
+        assertNotSame(original.getAttributes(), copy.getAttributes());
+        assertNotSame(original.getStacktrace(), copy.getStacktrace());
+
+        copy.getParameters().add("param2");
+        copy.getAttributes().clear();
+        copy.getStacktrace().clear();
+        copy.withSnapshot("snapshot2");
+
+        assertEquals(1, original.getParameters().size());
+        assertEquals(1, original.getAttributes().size());
+        assertEquals(1, original.getStacktrace().size());
+        assertEquals("snapshot1", original.getSnapshot());
+    }
 }

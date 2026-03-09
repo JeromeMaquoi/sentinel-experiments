@@ -6,8 +6,8 @@ import java.util.*;
  * This class is responsible for creating a batch of ConstructorContext to send to the db
  */
 public class ConstructorEventDispatcher {
-    private static final int BATCH_SIZE = 500;
-    private final List<ConstructorContext> batch = new ArrayList<>(BATCH_SIZE);
+    private final int BATCH_SIZE;
+    private final List<ConstructorContext> batch;
     private final ConstructorContextSender sender;
     private static volatile ConstructorEventDispatcher instance;
     private final Set<String> keysInBatch = new HashSet<>();
@@ -20,7 +20,13 @@ public class ConstructorEventDispatcher {
     }
 
     private ConstructorEventDispatcher(String apiUrl) {
-        this.sender = new HttpConstructorContextSender(apiUrl);
+        this(new HttpConstructorContextSender(apiUrl), 500);
+    }
+
+    public ConstructorEventDispatcher(ConstructorContextSender sender, int batchSize) {
+        this.sender = sender;
+        this.BATCH_SIZE = batchSize;
+        batch = new ArrayList<>(BATCH_SIZE);
         registerShutdownHook();
     }
 
@@ -36,7 +42,7 @@ public class ConstructorEventDispatcher {
         }
     }
 
-    private void registerShutdownHook() {
+    protected void registerShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             synchronized (ConstructorEventDispatcher.this) {
                 flush();
@@ -44,7 +50,7 @@ public class ConstructorEventDispatcher {
         }));
     }
 
-    private synchronized void flush() {
+    protected synchronized void flush() {
         if (batch.isEmpty()) return;
 
         sender.sendBatch(new ArrayList<>(batch));
@@ -52,8 +58,12 @@ public class ConstructorEventDispatcher {
         keysInBatch.clear();
     }
 
-    private String computeUniqueKey(ConstructorContext context) {
+    protected String computeUniqueKey(ConstructorContext context) {
         int stacktraceHash = context.getStacktrace() != null ? context.getStacktrace().hashCode() : 0;
         return context.getFileName() + "|" + context.getClassName() + "|" + context.getMethodName() + "|" + (context.getParameters() == null ? "" : context.getParameters().toString()) + "|" + stacktraceHash;
+    }
+
+    protected List<ConstructorContext> getBatch() {
+        return batch;
     }
 }

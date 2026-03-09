@@ -31,10 +31,9 @@ public class SendConstructorsUtils {
         this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
         this.sender = sender;
-//        initDispatcher();
     }
 
-    private static void initDispatcher() {
+    protected static void initDispatcher() {
         if (dispatcher == null) {
             synchronized (SendConstructorsUtils.class) {
                 if (dispatcher == null) {
@@ -83,7 +82,6 @@ public class SendConstructorsUtils {
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
         AttributeContext attributeContext = new AttributeContext(attributeName, attributeType, actualType, rightHandSideExpressionType);
         constructorContext.addAttribute(attributeContext);
-//        System.out.println("Added attribute " + attributeName + " to context");
     }
 
     /**
@@ -95,7 +93,6 @@ public class SendConstructorsUtils {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
-//        System.out.println("Stack trace: " + stackTrace);
         constructorContext = constructorContext.withStackTrace(stackTrace);
     }
 
@@ -112,7 +109,6 @@ public class SendConstructorsUtils {
             if (dispatcher == null) {
                 initDispatcher();
             }
-//            System.out.println("Sending instance to the database: " + constructorContext);
             dispatcher.submit(constructorContext.copy());
         }
     }

@@ -1,4 +1,5 @@
-<?xml version="1.0"?>
+
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements. See the NOTICE file distributed with
@@ -7,7 +8,7 @@
   (the "License"); you may not use this file except in compliance with
   the License. You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+  https://www.apache.org/licenses/LICENSE-2.0
 
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,291 +17,100 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-parent</artifactId>
-        <version>53</version>
+        <version>97</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>commons-configuration2</artifactId>
-    <version>2.8.0</version>
+    <version>2.13.1-SNAPSHOT</version>
     <name>Apache Commons Configuration</name>
-
     <inceptionYear>2001</inceptionYear>
     <description>
-        Tools to assist in the reading of configuration/preferences files in
-        various formats
+        The Commons Configuration software library provides a generic configuration interface that enables an application to read configuration data from
+        various sources and requires Java 8.
     </description>
-
+    <properties>
+        <commons.componentid>configuration</commons.componentid>
+        <commons.module.name>org.apache.commons.configuration2</commons.module.name>
+        <commons.release.version>2.13.1</commons.release.version>
+        <commons.release.next>2.13.2</commons.release.next>
+        <commons.release.desc>(Java 8 or above)</commons.release.desc>
+        <commons.jira.id>CONFIGURATION</commons.jira.id>
+        <commons.jira.pid>12310467</commons.jira.pid>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <commons.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-configuration</commons.scmPubUrl>
+        <!-- Explicitly declare optional dependencies for the OSGi manifest. -->
+        <commons.osgi.import>
+            org.apache.commons.beanutils.*;resolution:=optional,
+            org.apache.commons.codec.*;resolution:=optional,
+            org.apache.commons.jxpath.*;resolution:=optional,
+            org.apache.xml.resolver.*;resolution:=optional,
+            javax.servlet.*;resolution:=optional,
+            jakarta.servlet.*;resolution:=optional,
+            org.apache.commons.jexl2.*;resolution:=optional,
+            org.apache.commons.vfs2.*;resolution:=optional,
+            org.springframework.*;resolution:=optional,
+            com.fasterxml.jackson.*;resolution:=optional,
+            org.yaml.snakeyaml.*;resolution:=optional,
+            *
+        </commons.osgi.import>
+        <log4j.version>2.25.3</log4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <!-- Spring 6 requires Java 17 -->
+        <spring.version>5.3.39</spring.version>
+        <japicmp.skip>false</japicmp.skip>
+        <!-- Commons Release Plugin -->
+        <commons.bc.version>2.13.0</commons.bc.version>
+        <commons.rc.version>RC1</commons.rc.version>
+        <commons.release.isDistModule>true</commons.release.isDistModule>
+        <commons.distSvnStagingUrl>scm:svn:https://dist.apache.org/repos/dist/dev/commons/${commons.componentid}</commons.distSvnStagingUrl>
+        <!-- project.build.outputTimestamp is managed by Maven plugins, see https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+        <project.build.outputTimestamp>2025-11-26T12:31:51Z</project.build.outputTimestamp>
+        <!-- JaCoCo: Don't make code coverage worse than: -->
+        <commons.jacoco.haltOnFailure>true</commons.jacoco.haltOnFailure>
+        <commons.jacoco.classRatio>0.96</commons.jacoco.classRatio>
+        <commons.jacoco.instructionRatio>0.86</commons.jacoco.instructionRatio>
+        <commons.jacoco.methodRatio>0.90</commons.jacoco.methodRatio>
+        <commons.jacoco.branchRatio>0.82</commons.jacoco.branchRatio>
+        <commons.jacoco.lineRatio>0.88</commons.jacoco.lineRatio>
+        <commons.jacoco.complexityRatio>0.83</commons.jacoco.complexityRatio>
+    </properties>
     <url>https://commons.apache.org/proper/commons-configuration/</url>
-
-    <issueManagement>
-        <system>jira</system>
-        <url>https://issues.apache.org/jira/browse/CONFIGURATION</url>
-    </issueManagement>
-
     <ciManagement>
-        <system>jenkins</system>
-        <url>https://builds.apache.org/job/Commons-configuration/</url>
+        <system>github</system>
+        <url>https://github.com/apache/commons-configuration/actions</url>
     </ciManagement>
-
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/commons-configuration.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/commons-configuration.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=commons-configuration.git</url>
+        <tag>rel/commons-configuration-2.13.0</tag>
     </scm>
-
     <distributionManagement>
         <site>
             <id>apache.website</id>
             <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-configuration/</url>
         </site>
     </distributionManagement>
-
-    <developers>
-        <developer>
-            <name>Daniel Rall</name>
-            <id>dlr</id>
-            <email>dlr@finemaltcoding.com</email>
-            <organization>CollabNet, Inc.</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Jason van Zyl</name>
-            <id>jvanzyl</id>
-            <email>jason@zenplex.com</email>
-            <organization>Zenplex</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Martin Poeschl</name>
-            <id>mpoeschl</id>
-            <email>mpoeschl@marmot.at</email>
-            <organization>tucana.at</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>dIon Gillard</name>
-            <id>dion</id>
-            <email>dion@multitask.com.au</email>
-            <organization>Multitask Consulting</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Henning P. Schmiedehausen</name>
-            <id>henning</id>
-            <email>hps@intermeta.de</email>
-            <organization>INTERMETA - Gesellschaft fuer Mehrwertdienste mbH</organization>
-            <timezone>2</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Eric Pugh</name>
-            <id>epugh</id>
-            <email>epugh@upstate.com</email>
-            <organization>upstate.com</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Brian E. Dunbar</name>
-            <id>bdunbar</id>
-            <email>bdunbar@dunbarconsulting.org</email>
-            <organization>dunbarconsulting.org</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Emmanuel Bourg</name>
-            <id>ebourg</id>
-            <email>ebourg@apache.org</email>
-            <organization>Ariane Software</organization>
-            <timezone>+1</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Oliver Heger</name>
-            <id>oheger</id>
-            <email>oheger@apache.org</email>
-            <organization>Bosch Software Innovations</organization>
-            <timezone>+1</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>J&#xF6;rg Schaible</name>
-            <id>joehni</id>
-            <email>joerg.schaible@gmx.de</email>
-            <timezone>+1</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Ralph Goers</name>
-            <id>rgoers</id>
-            <email>rgoers@apache.org</email>
-            <organization>Intuit</organization>
-            <timezone>-8</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <id>ggregory</id>
-            <name>Gary Gregory</name>
-            <email>ggregory at apache.org</email>
-            <url>https://www.garygregory.com</url>
-            <organization>The Apache Software Foundation</organization>
-            <organizationUrl>https://www.apache.org/</organizationUrl>
-            <roles>
-                <role>PMC Member</role>
-            </roles>
-            <timezone>America/New_York</timezone>
-            <properties>
-                <picUrl>https://people.apache.org/~ggregory/img/garydgregory80.png</picUrl>
-            </properties>
-        </developer>
-
-        <developer>
-            <name>Claude Warren</name>
-            <id>claudenw</id>
-            <email>claude@apache.org</email>
-            <timezone>0</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-
-        <developer>
-            <name>Rob Tompkins</name>
-            <id>chtompki</id>
-            <email>chtompki@apache.org</email>
-            <timezone>-4</timezone>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <contributors>
-        <contributor>
-            <name>Konstantin Shaposhnikov</name>
-            <email>ksh@scand.com</email>
-            <organization>scand.com</organization>
-        </contributor>
-
-        <contributor>
-            <name>Jamie M. Guillemette</name>
-            <email>JMGuillemette@gmail.com</email>
-            <organization>TD Bank</organization>
-        </contributor>
-
-        <contributor>
-            <name>Jorge Ferrer</name>
-            <email>jorge.ferrer@gmail.com</email>
-            <organization></organization>
-        </contributor>
-
-        <contributor>
-            <name>Gabriele Garuglieri</name>
-            <email>gabriele.garuglieri@infoblu.it</email>
-            <organization>Infoblu S.p.A</organization>
-        </contributor>
-
-        <contributor>
-            <name>Nicolas De Loof</name>
-            <email>nicolas.deloof@gmail.com</email>
-            <organization>Cap Gemini</organization>
-        </contributor>
-
-        <contributor>
-            <name>Oliver Kopp</name>
-            <email>koppdev@gmail.com</email>
-        </contributor>
-
-        <contributor>
-            <name>Dennis Kieselhorst</name>
-            <email>deki@apache.org</email>
-            <organization>IRIAN Deutschland</organization>
-        </contributor>
-
-        <contributor>
-            <name>Raviteja Lokineni</name>
-            <email>raviteja.lokineni@gmail.com</email>
-        </contributor>
-
-        <contributor>
-            <name>Vincent Maurin</name>
-            <email>vincent.maurin.fr@gmail.com</email>
-            <organization>glispa GmbH</organization>
-        </contributor>
-
-        <contributor>
-            <name>The Alchemist</name>
-            <email>kap4020@gmail.com</email>
-        </contributor>
-
-        <contributor>
-            <name>Pascal Essiembre</name>
-            <email>pascal.essiembre@norconex.com</email>
-            <organization>Norconex Inc.</organization>
-            <organizationUrl>https://www.norconex.com</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-4</timezone>
-        </contributor>
-
-        <contributor>
-            <name>Patrick Schmidt</name>
-            <email>patrick.schmidt@codecamp.de</email>
-        </contributor>
-    </contributors>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>1.15.0</version>
         </dependency>
-
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
+            <version>1.3.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>logkit</groupId>
@@ -312,39 +122,48 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
+            <version>1.11.0</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
+            <version>1.21.0</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl</artifactId>
             <version>2.1.1</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>
-            <version>2.9.0</version>
+            <version>2.10.0</version>
             <optional>true</optional>
         </dependency>
-
+        <!-- Workaround for https://github.com/moditect/moditect/issues/259 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+            <version>4.4.16</version>
+            <optional>true</optional>
+        </dependency>
+        <!-- Workaround for https://github.com/moditect/moditect/issues/259 -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.21.0</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
-            <version>1.3</version>
+            <version>1.4.0</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -357,28 +176,30 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>xml-resolver</groupId>
             <artifactId>xml-resolver</artifactId>
             <version>1.2</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jcl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <version>${spring.version}</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -386,7 +207,6 @@
             <optional>true</optional>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
@@ -394,51 +214,47 @@
             <optional>true</optional>
             <scope>test</scope>
         </dependency>
-
         <dependency>
+            <!-- For org.apache.commons.configuration2.web -->
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <!-- For org.apache.commons.configuration2.web -->
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.30</version>
+            <version>2.5</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.3</version>
+            <version>2.21.1</version>
             <optional>true</optional>
         </dependency>
-
-        <!-- Needed for testing -->
-
+        <!-- Testing -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
-            <version>2.9.0</version>
+            <version>2.14.0</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
-            <version>2.11.1</version>
+            <version>2.13.1</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
@@ -446,176 +262,69 @@
             <version>2.5.2</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.dbunit</groupId>
             <artifactId>dbunit</artifactId>
-            <version>2.7.3</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-
         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${commons.mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>junit-addons</groupId>
-            <artifactId>junit-addons</artifactId>
-            <version>1.4</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xmlParserAPIs</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>mockobjects</groupId>
-            <artifactId>mockobjects-core</artifactId>
-            <version>0.09</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>mockobjects</groupId>
-            <artifactId>mockobjects-jdk1.4-j2ee1.3</artifactId>
-            <version>0.09</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>4.3</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- javax.mail only contains the API, no impl. -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>mailapi</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${log4j.version}</version>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-ext</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
-    <properties>
-        <commons.componentid>configuration</commons.componentid>
-        <commons.module.name>org.apache.commons.configuration2</commons.module.name>
-        <commons.release.version>2.8.0</commons.release.version>
-        <commons.release.desc>(reworked 2.x version)</commons.release.desc>
-        <commons.release.2.name>commons-configuration-${commons.release.2.version}</commons.release.2.name>
-        <commons.release.2.version>1.10</commons.release.2.version>
-        <commons.release.2.desc>(old 1.x version)</commons.release.2.desc>
-        <commons.jira.id>CONFIGURATION</commons.jira.id>
-        <commons.jira.pid>12310467</commons.jira.pid>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-
-        <commons.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-configuration</commons.scmPubUrl>
-
-        <!-- Explicitly declare optional dependencies for the OSGi manifest. -->
-        <commons.osgi.import>
-            org.apache.commons.beanutils.*;resolution:=optional,
-            org.apache.commons.codec.*;resolution:=optional,
-            org.apache.commons.jxpath.*;resolution:=optional,
-            org.apache.xml.resolver.*;resolution:=optional,
-            javax.servlet.*;resolution:=optional,
-            org.apache.commons.jexl2.*;resolution:=optional,
-            org.apache.commons.vfs2.*;resolution:=optional,
-            org.springframework.*;resolution:=optional,
-            com.fasterxml.jackson.*;resolution:=optional,
-            org.yaml.snakeyaml.*;resolution:=optional,
-            *
-        </commons.osgi.import>
-        <slf4j.version>1.7.36</slf4j.version>
-        <spring.version>5.3.21</spring.version>
-
-        <commons.japicmp.version>0.15.7</commons.japicmp.version>
-        <japicmp.skip>false</japicmp.skip>
-        <commons.jacoco.version>0.8.8</commons.jacoco.version>
-        <commons.spotbugs.version>4.7.0.0</commons.spotbugs.version>
-
-        <!-- apache-rat-plugin 0.13 and jdepend-maven-plugin 2.0 both fail with LinkageError when generating reports
-        with maven site plugin 3.11+. However, javadoc 3.4.0+ fails with site plugin versions lower than 3.11. So, we'll
-        use slightly older site and javadoc versions here in order to be able to generate all reports. -->
-
-        <commons.site-plugin.version>3.10.0</commons.site-plugin.version>
-        <commons.javadoc.version>3.3.2</commons.javadoc.version>
-
-        <checkstyle.version>9.3</checkstyle.version>
-        <!-- commons.animal-sniffer.version 1.21 fails on Java 17. -->
-        <commons.animal-sniffer.version>1.20</commons.animal-sniffer.version>
-
-        <!-- Commons Release Plugin -->
-        <commons.bc.version>2.7</commons.bc.version>
-        <commons.rc.version>RC3</commons.rc.version>
-        <commons.release.isDistModule>true</commons.release.isDistModule>
-        <commons.distSvnStagingUrl>scm:svn:https://dist.apache.org/repos/dist/dev/commons/${commons.componentid}</commons.distSvnStagingUrl>
-        <commons.releaseManagerName>Matt Juntunen</commons.releaseManagerName>
-        <commons.releaseManagerKey>7DD53AEFEDF1C3D392B51EBE346F4FCECFB70B1A</commons.releaseManagerKey>
-    </properties>
-
     <build>
-        <defaultGoal>clean install apache-rat:check japicmp:cmp checkstyle:check spotbugs:check javadoc:javadoc</defaultGoal>
+        <defaultGoal>clean verify apache-rat:check japicmp:cmp checkstyle:check spotbugs:check pmd:check pmd:cpd-check javadoc:javadoc</defaultGoal>
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
@@ -650,26 +359,47 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.2</version>
                     <configuration>
-                        <configLocation>${basedir}/conf/checkstyle.xml</configLocation>
-                        <suppressionsLocation>${basedir}/conf/checkstyle-suppressions.xml</suppressionsLocation>
+                        <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+                        <suppressionsLocation>${basedir}/src/conf/checkstyle-suppressions.xml</suppressionsLocation>
                         <enableRulesSummary>false</enableRulesSummary>
-                        <propertyExpansion>basedir=${basedir}</propertyExpansion>
+                        <propertyExpansion>basedir=${basedir}/src</propertyExpansion>
                         <includeResources>false</includeResources>
                         <includeTestResources>false</includeTestResources>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <sourceDirectories>
                             <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                         </sourceDirectories>
                         <excludes>**/org/apache/commons/configuration2/plist/*.java</excludes>
                     </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>${checkstyle.version}</version>
-                        </dependency>
-                    </dependencies>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <!--
+                        The below setting for not failing upon error stems from the fact that javacc's generated
+                        code.
+
+                        Javacc is responsible for a portion of the code in the package org.apache.commons.configuration2.plist,
+                        and only generates a portion of the package. Furthermore, the javacc parser generator
+                        generates javadoc that does not conform to the java 1.8 standard and causes the build to fail. For the
+                        sake of releasing commons-configuration-2.4.
+                        -->
+                        <source>${maven.compiler.source}</source>
+                        <failOnError>false</failOnError>
+                        <links>
+                            <link>https://docs.spring.io/spring-framework/docs/${spring.version}/javadoc-api/</link>
+                            <link>https://commons.apache.org/proper/commons-text/javadocs/api-release/</link>
+                        </links>
+                        <additionalDependencies>
+                            <additionalDependency>
+                                <groupId>com.google.code.findbugs</groupId>
+                                <artifactId>jsr305</artifactId>
+                                <version>3.0.2</version>
+                                <scope>test</scope>
+                            </additionalDependency>
+                        </additionalDependencies>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -680,7 +410,6 @@
                 <configuration>
                     <!-- Uncomment to enable profiling unit tests -->
                     <!-- <argLine>-agentpath:"${yourkit.home}/bin/mac/libyjpagent.jnilib"</argLine> -->
-                    <forkMode>once</forkMode>
                     <excludes>
                         <exclude>**/TestWebdavConfigurationBuilder.java</exclude>
                     </excludes>
@@ -713,23 +442,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Uncomment to instrument with Clover
-              <plugin>
-              <groupId>com.atlassian.maven.plugins</groupId>
-              <artifactId>maven-clover2-plugin</artifactId>
-              <version>2.4.2</version>
-              <configuration>
-              <jdk>1.4</jdk>
-              </configuration>
-              <executions>
-              <execution>
-              <phase>pre-site</phase>
-              <goals>
-              <goal>instrument</goal>
-              </goals>
-              </execution>
-              </executions>
-              </plugin> -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -764,58 +476,42 @@
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>src/java/org/apache/commons/configuration2/plist/*.java</exclude>
-                        <exclude>velocity.log</exclude>
-                        <exclude>src/test/resources/test.json</exclude>
-                        <exclude>src/test/resources/test.yaml</exclude>
-                    </excludes>
+                    <inputExcludes>
+                        <inputExclude>src/java/org/apache/commons/configuration2/plist/*.java</inputExclude>
+                        <inputExclude>velocity.log</inputExclude>
+                        <inputExclude>src/test/resources/test.json</inputExclude>
+                        <inputExclude>src/test/resources/test.yaml</inputExclude>
+                        <inputExclude>src/conf/cpd-exclusions.txt</inputExclude>
+                    </inputExcludes>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <!--
-                      The below setting for not failing upon error stems from the fact that javacc's generated
-                      code.
-
-                      Javacc is responsible for a portion of the code in the package org.apache.commons.configuration2.plist,
-                      and only generates a portion of the package. Furthermore, the javacc parser generator
-                      generates javadoc that does not conform to the java 1.8 standard and causes the build to fail. For the
-                      sake of releasing commons-configuration-2.4.
-                    -->
-                    <source>${maven.compiler.source}</source>
-                    <failOnError>false</failOnError>
-                    <links>
-                        <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                        <link>https://docs.spring.io/spring/docs/${spring.version}/javadoc-api/</link>
-                        <link>https://commons.apache.org/proper/commons-text/javadocs/api-release/</link>
-                    </links>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${commons.spotbugs.version}</version>
                 <configuration>
                     <threshold>Normal</threshold>
                     <effort>Default</effort>
-                    <excludeFilterFile>${basedir}/conf/findbugs-exclude-filter.xml</excludeFilterFile>
+                    <excludeFilterFile>${basedir}/src/conf/findbugs-exclude-filter.xml</excludeFilterFile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <configuration>
+                    <!-- Show errors in console output, especially for CI PR builds -->
+                    <printFailingErrors>true</printFailingErrors>
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources/javacc</excludeRoot>
+                    </excludeRoots>
+                    <excludeFromFailureFile>src/conf/cpd-exclusions.txt</excludeFromFailureFile>
                 </configuration>
             </plugin>
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>java9</id>
-            <activation>
-                <jdk>9</jdk>
-            </activation>
-            <properties>
-                <!-- coverall version 4.3.0 does not work with java 9, see https://github.com/trautonen/coveralls-maven-plugin/issues/112 -->
-                <coveralls.skip>true</coveralls.skip>
-            </properties>
-        </profile>
         <profile>
             <id>java16</id>
             <!-- For testing with CGLIB on Java 16 and 17-ea. -->
@@ -829,6 +525,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>
+                                ${argLine}
                                 --illegal-access=permit
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                                 -javaagent:JOULARJX
@@ -851,22 +548,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-changes-plugin</artifactId>
-                <version>${commons.changes.version}</version>
-                <configuration>
-                    <xmlPath>${basedir}/src/changes/changes.xml</xmlPath>
-                    <issueLinkTemplate>%URL%/%ISSUE%</issueLinkTemplate>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>changes-report</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <reportSets>
                     <reportSet>
@@ -880,22 +561,22 @@
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>src/java/org/apache/commons/configuration2/plist/*.java</exclude>
-                        <exclude>velocity.log</exclude>
-                        <exclude>src/test/resources/test.json</exclude>
-                        <exclude>src/test/resources/test.yaml</exclude>
-                    </excludes>
+                    <inputExcludes>
+                        <inputExclude>src/java/org/apache/commons/configuration2/plist/*.java</inputExclude>
+                        <inputExclude>velocity.log</inputExclude>
+                        <inputExclude>src/test/resources/test.json</inputExclude>
+                        <inputExclude>src/test/resources/test.yaml</inputExclude>
+                        <inputExclude>src/conf/cpd-exclusions.txt</inputExclude>
+                    </inputExcludes>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${commons.spotbugs.version}</version>
                 <configuration>
                     <threshold>Normal</threshold>
                     <effort>Default</effort>
-                    <excludeFilterFile>${basedir}/conf/findbugs-exclude-filter.xml</excludeFilterFile>
+                    <excludeFilterFile>${basedir}/src/conf/findbugs-exclude-filter.xml</excludeFilterFile>
                 </configuration>
             </plugin>
             <plugin>
@@ -905,38 +586,218 @@
                         <reports>
                             <report>javadoc</report>
                         </reports>
-                        <configuration>
-                            <!--
-                              The below setting for not failing upon error stems from the fact that javacc's generated
-                              code.
-
-                              Javacc is responsible for a portion of the code in the package org.apache.commons.configuration2.plist,
-                              and only generates a portion of the package. Furthermore, the javacc parser generator
-                              generates javadoc that does not conform to the java 1.8 standard and causes the build to fail. For the
-                              sake of releasing commons-configuration-2.4.
-                            -->
-                            <source>${maven.compiler.source}</source>
-                            <failOnError>false</failOnError>
-                            <links>
-                                <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                                <link>https://docs.spring.io/spring/docs/${spring.version}/javadoc-api/</link>
-                                <link>https://commons.apache.org/proper/commons-text/javadocs/api-release/</link>
-                            </links>
-                            <!-- Disable Doclint since the Javadoc in the generated code does not comply. -->
-                            <doclint>none</doclint>
-                        </configuration>
                     </reportSet>
                 </reportSets>
                 <configuration>
                     <failOnError>false</failOnError>
                     <links>
                         <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                        <link>https://docs.spring.io/spring/docs/${spring.version}/javadoc-api/</link>
+                        <link>https://docs.spring.io/spring-framework/docs/5.3.39/javadoc-api/</link>
                         <link>https://commons.apache.org/proper/commons-text/javadocs/api-release/</link>
                     </links>
                 </configuration>
             </plugin>
         </plugins>
     </reporting>
-
+    <developers>
+        <developer>
+            <name>Daniel Rall</name>
+            <id>dlr</id>
+            <email>dlr@finemaltcoding.com</email>
+            <organization>CollabNet, Inc.</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Jason van Zyl</name>
+            <id>jvanzyl</id>
+            <email>jason@zenplex.com</email>
+            <organization>Zenplex</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Martin Poeschl</name>
+            <id>mpoeschl</id>
+            <email>mpoeschl@marmot.at</email>
+            <organization>tucana.at</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>dIon Gillard</name>
+            <id>dion</id>
+            <email>dion@multitask.com.au</email>
+            <organization>Multitask Consulting</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Henning P. Schmiedehausen</name>
+            <id>henning</id>
+            <email>hps@intermeta.de</email>
+            <organization>INTERMETA - Gesellschaft fuer Mehrwertdienste mbH</organization>
+            <timezone>2</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Eric Pugh</name>
+            <id>epugh</id>
+            <email>epugh@upstate.com</email>
+            <organization>upstate.com</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Brian E. Dunbar</name>
+            <id>bdunbar</id>
+            <email>bdunbar@dunbarconsulting.org</email>
+            <organization>dunbarconsulting.org</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Emmanuel Bourg</name>
+            <id>ebourg</id>
+            <email>ebourg@apache.org</email>
+            <organization>Ariane Software</organization>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Oliver Heger</name>
+            <id>oheger</id>
+            <email>oheger@apache.org</email>
+            <organization>Bosch Software Innovations</organization>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>J&#xF6;rg Schaible</name>
+            <id>joehni</id>
+            <email>joerg.schaible@gmx.de</email>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Ralph Goers</name>
+            <id>rgoers</id>
+            <email>rgoers@apache.org</email>
+            <organization>Intuit</organization>
+            <timezone>-8</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ggregory</id>
+            <name>Gary Gregory</name>
+            <email>ggregory at apache.org</email>
+            <url>https://www.garygregory.com</url>
+            <organization>The Apache Software Foundation</organization>
+            <organizationUrl>https://www.apache.org/</organizationUrl>
+            <roles>
+                <role>PMC Member</role>
+            </roles>
+            <timezone>America/New_York</timezone>
+            <properties>
+                <picUrl>https://people.apache.org/~ggregory/img/garydgregory80.png</picUrl>
+            </properties>
+        </developer>
+        <developer>
+            <name>Claude Warren</name>
+            <id>claudenw</id>
+            <email>claude@apache.org</email>
+            <timezone>0</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Rob Tompkins</name>
+            <id>chtompki</id>
+            <email>chtompki@apache.org</email>
+            <timezone>-4</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>Konstantin Shaposhnikov</name>
+            <email>ksh@scand.com</email>
+            <organization>scand.com</organization>
+        </contributor>
+        <contributor>
+            <name>Jamie M. Guillemette</name>
+            <email>JMGuillemette@gmail.com</email>
+            <organization>TD Bank</organization>
+        </contributor>
+        <contributor>
+            <name>Jorge Ferrer</name>
+            <email>jorge.ferrer@gmail.com</email>
+            <organization></organization>
+        </contributor>
+        <contributor>
+            <name>Gabriele Garuglieri</name>
+            <email>gabriele.garuglieri@infoblu.it</email>
+            <organization>Infoblu S.p.A</organization>
+        </contributor>
+        <contributor>
+            <name>Nicolas De Loof</name>
+            <email>nicolas.deloof@gmail.com</email>
+            <organization>Cap Gemini</organization>
+        </contributor>
+        <contributor>
+            <name>Oliver Kopp</name>
+            <email>koppdev@gmail.com</email>
+        </contributor>
+        <contributor>
+            <name>Dennis Kieselhorst</name>
+            <email>deki@apache.org</email>
+            <organization>IRIAN Deutschland</organization>
+        </contributor>
+        <contributor>
+            <name>Raviteja Lokineni</name>
+            <email>raviteja.lokineni@gmail.com</email>
+        </contributor>
+        <contributor>
+            <name>Vincent Maurin</name>
+            <email>vincent.maurin.fr@gmail.com</email>
+            <organization>glispa GmbH</organization>
+        </contributor>
+        <contributor>
+            <name>The Alchemist</name>
+            <email>kap4020@gmail.com</email>
+        </contributor>
+        <contributor>
+            <name>Pascal Essiembre</name>
+            <email>pascal.essiembre@norconex.com</email>
+            <organization>Norconex Inc.</organization>
+            <organizationUrl>https://www.norconex.com</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-4</timezone>
+        </contributor>
+        <contributor>
+            <name>Patrick Schmidt</name>
+            <email>patrick.schmidt@codecamp.de</email>
+        </contributor>
+    </contributors>
 </project>

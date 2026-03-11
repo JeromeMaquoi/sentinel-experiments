@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -239,5 +240,18 @@ class CsvParserTest {
         assertInstanceOf(TotalCallTreeMeasurementDTO.class, dto);
         assertEquals(List.of("funcX", "funcY", "funcZ"), ((TotalCallTreeMeasurementDTO) dto).getCallstack());
         assertEquals(45.67f, dto.getValue());
+    }
+
+    @Test
+    void createCallstackShouldCreateACallstackTest() {
+        String elements = "method1;method2;method3";
+        List<String> callstack = CsvParser.createCallstack(elements);
+        assertEquals(List.of("method3", "method2", "method1"), callstack);
+    }
+
+    @Test
+    void createCallstackShouldCreateAnEmptyListTest() {
+        List<String> callstack = CsvParser.createCallstack("");
+        assertEquals(List.of(""), callstack);
     }
 }

@@ -14,16 +14,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class ImportJoularJXMeasurementsStage implements Stage {
+public class ImportMeasurementsStage implements Stage {
     private final Path resultsRoot;
     private final SimpleHttpClient httpClient;
     private final DataSerializer serializer;
 
-    public ImportJoularJXMeasurementsStage(Path resultsRoot) {
+    public ImportMeasurementsStage(Path resultsRoot) {
         this(resultsRoot, new SimpleHttpClient(), new DataSerializer());
     }
 
-    public ImportJoularJXMeasurementsStage(Path resultsRoot, SimpleHttpClient httpClient, DataSerializer serializer) {
+    public ImportMeasurementsStage(Path resultsRoot, SimpleHttpClient httpClient, DataSerializer serializer) {
         this.resultsRoot = resultsRoot;
         this.httpClient = httpClient;
         this.serializer = serializer;

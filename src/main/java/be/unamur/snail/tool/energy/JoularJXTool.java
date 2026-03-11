@@ -1,15 +1,8 @@
 package be.unamur.snail.tool.energy;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.database.DatabasePreparerFactory;
-import be.unamur.snail.database.MongoServiceManager;
-import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.exceptions.BuildFileNotFoundException;
-import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
-import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.stages.*;
-import be.unamur.snail.utils.CommandRunner;
-import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,12 +61,12 @@ public class JoularJXTool implements EnergyMeasurementTool {
         );
     }
 
-    protected ImportJoularJXMeasurementsStage createImportMeasurementsStage() {
+    protected ImportMeasurementsStage createImportMeasurementsStage() {
         String subProject = config.getProject().getSubProject();
         String totalProjectString = subProject != null && !subProject.isBlank() ? subProject + "/joularjx-result" : "joularjx-result";
         Path totalProjectPath = Paths.get(totalProjectString).normalize();
         log.debug("Configured ImportJoularJXMeasurementsStage with results root: {}", totalProjectPath);
-        return new ImportJoularJXMeasurementsStage(totalProjectPath);
+        return new ImportMeasurementsStage(totalProjectPath);
     }
 
     /**

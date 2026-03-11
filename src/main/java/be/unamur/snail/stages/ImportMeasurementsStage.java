@@ -1,7 +1,8 @@
 package be.unamur.snail.stages;
 
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
-import be.unamur.snail.exceptions.MissingContextKeyException;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.*;
@@ -22,13 +23,15 @@ public class ImportMeasurementsStage implements Stage {
 
     @Override
     public void execute(Context context) throws Exception {
-        if (context.getRepoPath() == null || context.getRepoPath().isBlank()) {
-            throw new MissingContextKeyException("repoPath");
+        Config config = Config.getInstance();
+        String targetDir = config.getRepo().getTargetDir();
+        if (targetDir == null || targetDir.isBlank()) {
+            throw new MissingConfigKeyException("repoPath");
         }
 
         PipelineLogger log = context.getLogger();
 
-        Path totalPath = Path.of(context.getRepoPath()).resolve(resultsRoot).normalize();
+        Path totalPath = Path.of(targetDir).resolve(resultsRoot).normalize();
         log.debug("Starting importing results from results root: {}", totalPath);
 
         if (!Files.exists(totalPath) || !Files.isDirectory(totalPath)) {

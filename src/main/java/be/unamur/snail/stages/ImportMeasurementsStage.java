@@ -1,32 +1,23 @@
 package be.unamur.snail.stages;
 
-import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingContextKeyException;
 import be.unamur.snail.exceptions.SourceDirectoryNotFoundException;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.*;
 import be.unamur.snail.tool.energy.model.RunIterationDTO;
-import be.unamur.snail.tool.energy.serializer.DataSerializer;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 public class ImportMeasurementsStage implements Stage {
     private final Path resultsRoot;
-    private final SimpleHttpClient httpClient;
-    private final DataSerializer serializer;
+    private final FolderProcessorFactory processorFactory;
 
-    public ImportMeasurementsStage(Path resultsRoot) {
-        this(resultsRoot, new SimpleHttpClient(), new DataSerializer());
-    }
-
-    public ImportMeasurementsStage(Path resultsRoot, SimpleHttpClient httpClient, DataSerializer serializer) {
+    public ImportMeasurementsStage(Path resultsRoot, FolderProcessorFactory processorFactory) {
         this.resultsRoot = resultsRoot;
-        this.httpClient = httpClient;
-        this.serializer = serializer;
+        this.processorFactory = processorFactory;
     }
 
     @Override
@@ -34,8 +25,6 @@ public class ImportMeasurementsStage implements Stage {
         if (context.getRepoPath() == null || context.getRepoPath().isBlank()) {
             throw new MissingContextKeyException("repoPath");
         }
-        Config config = Config.getInstance();
-        Config.ImportConfig importConfig = config.getExecutionPlan().getEnergyMeasurements().getImportConfig();
 
         PipelineLogger log = context.getLogger();
 
@@ -45,13 +34,17 @@ public class ImportMeasurementsStage implements Stage {
         if (!Files.exists(totalPath) || !Files.isDirectory(totalPath)) {
             throw new SourceDirectoryNotFoundException(totalPath);
         }
-         List<Path> iterationFolders = Files.list(totalPath)
+
+        FolderProcessor processor = processorFactory.create(context);
+
+        List<Path> iterationFolders = Files.list(totalPath)
                          .filter(Files::isDirectory)
                         .toList();
+
         for (Path iterationFolder : iterationFolders) {
             log.info("Importing iteration folder: {}", iterationFolder);
             RunIterationDTO iteration = parseIterationFromFolder(iterationFolder);
-            processFolder(iterationFolder, iteration, log, importConfig, context);
+            processor.processFolder(iterationFolder, iteration, context);
         }
         log.info("Finished importing results from results root: {}", totalPath);
     }
@@ -59,11 +52,6 @@ public class ImportMeasurementsStage implements Stage {
     @Override
     public String getName() {
         return Stage.super.getName();
-    }
-
-    public void processFolder(Path folder, RunIterationDTO iteration, PipelineLogger log, Config.ImportConfig importConfig, Context context) throws IOException {
-        JoularJXFileProcessor fileProcessor = new JoularJXFileProcessor(serializer, httpClient, importConfig, log);
-        new JoularJXFolderProcessor(fileProcessor, log).processFolder(folder, iteration, context);
     }
 
     public RunIterationDTO parseIterationFromFolder(Path folder) {

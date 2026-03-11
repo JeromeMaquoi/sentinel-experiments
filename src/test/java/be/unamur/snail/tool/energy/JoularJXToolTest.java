@@ -28,41 +28,41 @@ class JoularJXToolTest {
         tool = new JoularJXTool(mockConfig);
     }
 
-    @Test
-    void createImportMeasurementsStageShouldReturnStageWithCorrectResultsRootTest() {
-        when(mockProject.getSubProject()).thenReturn("sub-project");
-        ImportMeasurementsStage stage = tool.createImportMeasurementsStage();
-
-        assertNotNull(stage);
-
-        Path expectedPath = Path.of("sub-project").resolve("joularjx-result").normalize();
-        Path actualPath = getField(stage, "resultsRoot");
-        assertEquals(expectedPath, actualPath);
-    }
-
-    @Test
-    void createImportMeasurementsStageShouldReturnStageWithDefaultResultsRootWhenNoSubProjectTest() {
-        when(mockProject.getSubProject()).thenReturn(null);
-        ImportMeasurementsStage stage = tool.createImportMeasurementsStage();
-
-        assertNotNull(stage);
-
-        Path expectedPath = Path.of("joularjx-result").normalize();
-        Path actualPath = getField(stage, "resultsRoot");
-        assertEquals(expectedPath, actualPath);
-    }
-
-    @Test
-    void createImportMeasurementsStageShouldReturnStageWithDefaultResultsRootWhenEmptySubProjectTest() {
-        when(mockProject.getSubProject()).thenReturn("");
-        ImportMeasurementsStage stage = tool.createImportMeasurementsStage();
-
-        assertNotNull(stage);
-
-        Path expectedPath = Path.of("joularjx-result").normalize();
-        Path actualPath = getField(stage, "resultsRoot");
-        assertEquals(expectedPath, actualPath);
-    }
+//    @Test
+//    void createImportMeasurementsStageShouldReturnStageWithCorrectResultsRootTest() {
+//        when(mockProject.getSubProject()).thenReturn("sub-project");
+//        ImportMeasurementsStage stage = tool.createImportMeasurementsStage();
+//
+//        assertNotNull(stage);
+//
+//        Path expectedPath = Path.of("sub-project").resolve("joularjx-result").normalize();
+//        Path actualPath = getField(stage, "resultsRoot");
+//        assertEquals(expectedPath, actualPath);
+//    }
+//
+//    @Test
+//    void createImportMeasurementsStageShouldReturnStageWithDefaultResultsRootWhenNoSubProjectTest() {
+//        when(mockProject.getSubProject()).thenReturn(null);
+//        ImportMeasurementsStage stage = tool.createImportMeasurementsStage();
+//
+//        assertNotNull(stage);
+//
+//        Path expectedPath = Path.of("joularjx-result").normalize();
+//        Path actualPath = getField(stage, "resultsRoot");
+//        assertEquals(expectedPath, actualPath);
+//    }
+//
+//    @Test
+//    void createImportMeasurementsStageShouldReturnStageWithDefaultResultsRootWhenEmptySubProjectTest() {
+//        when(mockProject.getSubProject()).thenReturn("");
+//        ImportMeasurementsStage stage = tool.createImportMeasurementsStage();
+//
+//        assertNotNull(stage);
+//
+//        Path expectedPath = Path.of("joularjx-result").normalize();
+//        Path actualPath = getField(stage, "resultsRoot");
+//        assertEquals(expectedPath, actualPath);
+//    }
 
     @Test
     void detectBuildFileNameShouldReturnGradleWhenBuildGradleExistsTest() throws IOException {

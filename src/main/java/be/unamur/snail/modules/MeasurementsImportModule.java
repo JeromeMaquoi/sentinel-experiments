@@ -13,6 +13,10 @@ import java.util.List;
 public class MeasurementsImportModule implements Module {
     private final List<Stage>  stages;
 
+    public MeasurementsImportModule() {
+        this(buildStagesFromConfig(new ImportToolFactory(Config.getInstance()), Config.getInstance()));
+    }
+
     public MeasurementsImportModule(List<Stage> stages) {
         this.stages = stages;
     }

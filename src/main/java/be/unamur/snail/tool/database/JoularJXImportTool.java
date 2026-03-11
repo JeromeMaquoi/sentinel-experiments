@@ -6,10 +6,11 @@ import be.unamur.snail.database.MongoServiceManager;
 import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
 import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
+import be.unamur.snail.stages.ImportMeasurementsStage;
 import be.unamur.snail.stages.PrepareBackendStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.stages.StopBackendStage;
-import be.unamur.snail.tool.energy.JoularJXTool;
+import be.unamur.snail.tool.energy.JoularJXFolderProcessorFactory;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
 
@@ -19,12 +20,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class JoularJXImportTool implements ImportTool {
-    private static final Logger log =  Logger.getLogger(JoularJXImportTool.class.getName());
     private final Config config;
-
-    public JoularJXImportTool() {
-        this(Config.getInstance());
-    }
 
     public JoularJXImportTool(Config config) {
         this.config = config;
@@ -43,8 +39,8 @@ public class JoularJXImportTool implements ImportTool {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
 
         return List.of(
-                new StopBackendStage(runner, backendFactory, databaseFactory),
-                new PrepareBackendStage(runner, backendFactory, databaseFactory),
+//                new StopBackendStage(runner, backendFactory, databaseFactory),
+//                new PrepareBackendStage(runner, backendFactory, databaseFactory)
         );
     }
 
@@ -54,7 +50,9 @@ public class JoularJXImportTool implements ImportTool {
         String totalProjectString = subProject != null && !subProject.isBlank() ? subProject + "/joularjx-result" : "joularjx-result";
         Path totalProjectPath = Paths.get(totalProjectString).normalize();
 
-        return List.of();
+        return List.of(
+                new ImportMeasurementsStage(totalProjectPath, new JoularJXFolderProcessorFactory())
+        );
     }
 
     @Override

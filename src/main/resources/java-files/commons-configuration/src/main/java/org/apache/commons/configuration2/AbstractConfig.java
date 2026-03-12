@@ -1,31 +1,61 @@
-/* Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
-
-    https://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.commons.configuration2;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.apache.commons.configuration2.convert.ConversionHandler;
+import org.apache.commons.configuration2.convert.DefaultConversionHandler;
+import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
 import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.event.BaseEventSource;
+import org.apache.commons.configuration2.event.ConfigurationErrorEvent;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.commons.configuration2.event.EventListener;
 import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.InterpolatorSpecification;
 import org.apache.commons.configuration2.interpol.Lookup;
+import org.apache.commons.configuration2.io.ConfigurationLogger;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.commons.configuration2.sync.NoOpSynchronizer;
 import org.apache.commons.configuration2.sync.Synchronizer;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.FailableRunnable;
+import org.apache.commons.lang3.function.FailableSupplier;
+
 /**
  * <p>
  * Abstract configuration class. Provides basic functionality but does not store any data.
@@ -62,26 +92,25 @@ import org.apache.commons.configuration2.sync.Synchronizer;
  * behavior. The public entry point methods are final to prevent subclasses from breaking basic functionality.
  * </p>
  */
-public abstract class AbstractConfiguration extends org.apache.commons.configuration2.event.BaseEventSource implements org.apache.commons.configuration2.Configuration {
+public abstract class AbstractConfiguration extends BaseEventSource implements Configuration {
+
     /**
      * Default configuration delimiter for properties and keys.
      */
-    static final java.lang.String DELIMITER = ".";
+    static final String DELIMITER = ".";
 
     /**
      * Checks an object provided as default value for the {@code getArray()} method. Throws an exception if this is not an
      * array with the correct component type.
      *
-     * @param cls
-     *          the component class for the array
-     * @param defaultValue
-     *          the default value object to be checked
-     * @throws IllegalArgumentException
-     *          if this is not a valid default object
+     * @param cls the component class for the array
+     * @param defaultValue the default value object to be checked
+     * @throws IllegalArgumentException if this is not a valid default object
      */
-    private static void checkDefaultValueArray(final java.lang.Class<?> cls, final java.lang.Object defaultValue) {
-        if ((defaultValue != null) && ((!defaultValue.getClass().isArray()) || (!cls.isAssignableFrom(defaultValue.getClass().getComponentType())))) {
-            throw new java.lang.IllegalArgumentException(((("The type of the default value (" + defaultValue.getClass()) + ") is not an array of the specified class (") + cls) + ")");
+    private static void checkDefaultValueArray(final Class<?> cls, final Object defaultValue) {
+        if (defaultValue != null && (!defaultValue.getClass().isArray() || !cls.isAssignableFrom(defaultValue.getClass().getComponentType()))) {
+            throw new IllegalArgumentException(
+                    "The type of the default value (" + defaultValue.getClass() + ") is not an array of the specified class (" + cls + ")");
         }
     }
 
@@ -89,19 +118,15 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Checks whether the specified value is <strong>null</strong> and throws an exception in this case. This method is used by
      * conversion methods returning primitive Java types. Here values to be returned must not be <strong>null</strong>.
      *
-     * @param <T>
-     *          the type of the object to be checked
-     * @param key
-     *          the key which caused the problem
-     * @param value
-     *          the value to be checked
+     * @param <T> the type of the object to be checked
+     * @param key the key which caused the problem
+     * @param value the value to be checked
      * @return the passed in value for chaining this method call
-     * @throws NoSuchElementException
-     *          if the value is <strong>null</strong>
+     * @throws NoSuchElementException if the value is <strong>null</strong>
      */
-    private static <T> T checkNonNullValue(final java.lang.String key, final T value) {
+    private static <T> T checkNonNullValue(final String key, final T value) {
         if (value == null) {
-            org.apache.commons.configuration2.AbstractConfiguration.throwMissingPropertyException(key);
+            throwMissingPropertyException(key);
         }
         return value;
     }
@@ -110,15 +135,13 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Finds a {@code ConfigurationLookup} pointing to the specified configuration in the default lookups for the specified
      * {@code ConfigurationInterpolator}.
      *
-     * @param ci
-     *          the {@code ConfigurationInterpolator} in question
-     * @param targetConf
-     *          the target configuration of the searched lookup
+     * @param ci the {@code ConfigurationInterpolator} in question
+     * @param targetConf the target configuration of the searched lookup
      * @return the found {@code Lookup} object or <strong>null</strong>
      */
-    private static org.apache.commons.configuration2.interpol.Lookup findConfigurationLookup(final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ci, final org.apache.commons.configuration2.ImmutableConfiguration targetConf) {
-        for (final org.apache.commons.configuration2.interpol.Lookup l : ci.getDefaultLookups()) {
-            if ((l instanceof org.apache.commons.configuration2.ConfigurationLookup) && (targetConf == ((org.apache.commons.configuration2.ConfigurationLookup) (l)).getConfiguration())) {
+    private static Lookup findConfigurationLookup(final ConfigurationInterpolator ci, final ImmutableConfiguration targetConf) {
+        for (final Lookup l : ci.getDefaultLookups()) {
+            if (l instanceof ConfigurationLookup && targetConf == ((ConfigurationLookup) l).getConfiguration()) {
                 return l;
             }
         }
@@ -129,19 +152,18 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Handles the default collection for a collection conversion. This method fills the target collection with the content
      * of the default collection. Both collections may be <strong>null</strong>.
      *
-     * @param target
-     *          the target collection
-     * @param defaultValue
-     *          the default collection
+     * @param target the target collection
+     * @param defaultValue the default collection
      * @return the initialized target collection
      */
-    private static <T> java.util.Collection<T> handleDefaultCollection(final java.util.Collection<T> target, final java.util.Collection<T> defaultValue) {
+    private static <T> Collection<T> handleDefaultCollection(final Collection<T> target, final Collection<T> defaultValue) {
         if (defaultValue == null) {
             return null;
         }
-        final java.util.Collection<T> result;
+
+        final Collection<T> result;
         if (target == null) {
-            result = new java.util.ArrayList<>(defaultValue);
+            result = new ArrayList<>(defaultValue);
         } else {
             target.addAll(defaultValue);
             result = target;
@@ -152,22 +174,17 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
     /**
      * Helper method for throwing an exception for a key that does not map to an existing object.
      *
-     * @param key
-     *          the key (to be part of the error message)
+     * @param key the key (to be part of the error message)
      */
-    private static void throwMissingPropertyException(final java.lang.String key) {
-        throw new java.util.NoSuchElementException(java.lang.String.format("Key '%s' does not map to an existing object!", key));
+    private static void throwMissingPropertyException(final String key) {
+        throw new NoSuchElementException(String.format("Key '%s' does not map to an existing object!", key));
     }
 
-    /**
-     * The list delimiter handler.
-     */
-    private org.apache.commons.configuration2.convert.ListDelimiterHandler listDelimiterHandler;
+    /** The list delimiter handler. */
+    private ListDelimiterHandler listDelimiterHandler;
 
-    /**
-     * The conversion handler.
-     */
-    private org.apache.commons.configuration2.convert.ConversionHandler conversionHandler;
+    /** The conversion handler. */
+    private ConversionHandler conversionHandler;
 
     /**
      * Whether the configuration should throw NoSuchElementExceptions or simply return null when a property does not exist.
@@ -175,42 +192,27 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      */
     private volatile boolean throwExceptionOnMissing;
 
-    /**
-     * Stores a reference to the object that handles variable interpolation.
-     */
-    private java.util.concurrent.atomic.AtomicReference<org.apache.commons.configuration2.interpol.ConfigurationInterpolator> interpolator;
+    /** Stores a reference to the object that handles variable interpolation. */
+    private AtomicReference<ConfigurationInterpolator> interpolator;
 
-    /**
-     * The object responsible for synchronization.
-     */
-    private volatile org.apache.commons.configuration2.sync.Synchronizer synchronizer = org.apache.commons.configuration2.sync.NoOpSynchronizer.INSTANCE;
+    /** The object responsible for synchronization. */
+    private volatile Synchronizer synchronizer = NoOpSynchronizer.INSTANCE;
 
-    /**
-     * The object used for dealing with encoded property values.
-     */
-    private org.apache.commons.configuration2.ConfigurationDecoder configurationDecoder;
+    /** The object used for dealing with encoded property values. */
+    private ConfigurationDecoder configurationDecoder;
 
-    /**
-     * Stores the logger.
-     */
-    private org.apache.commons.configuration2.io.ConfigurationLogger log;
+    /** Stores the logger. */
+    private ConfigurationLogger log;
 
     /**
      * Creates a new instance of {@code AbstractConfiguration}.
      */
     public AbstractConfiguration() {
-        be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils utils = new be.unamur.snail.spoon.constructor_instrumentation.SendConstructorsUtils();
-        utils.initConstructorContext("/home/commun/infom125/sentinel-group/test-repositories/test-sentinel-copy/commons-config/src/main/java/org/apache/commons/configuration2/AbstractConfiguration.java", "org.apache.commons.configuration2.AbstractConfiguration", "AbstractConfiguration", new java.util.ArrayList(java.util.Arrays.asList()));
-        interpolator = new java.util.concurrent.atomic.AtomicReference<>();
-        utils.addAttribute("interpolator", "java.util.concurrent.atomic.AtomicReference", interpolator, "constructor call");
+        interpolator = new AtomicReference<>();
         initLogger(null);
         installDefaultInterpolator();
-        listDelimiterHandler = org.apache.commons.configuration2.convert.DisabledListDelimiterHandler.INSTANCE;
-        utils.addAttribute("listDelimiterHandler", "org.apache.commons.configuration2.convert.ListDelimiterHandler", listDelimiterHandler, "variable reference");
-        conversionHandler = org.apache.commons.configuration2.convert.DefaultConversionHandler.INSTANCE;
-        utils.addAttribute("conversionHandler", "org.apache.commons.configuration2.convert.ConversionHandler", conversionHandler, "variable reference");
-        utils.getStackTrace();
-        utils.send();
+        listDelimiterHandler = DisabledListDelimiterHandler.INSTANCE;
+        conversionHandler = DefaultConversionHandler.INSTANCE;
     }
 
     /**
@@ -221,15 +223,15 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @since 1.4
      */
     public final void addErrorLogListener() {
-        addEventListener(org.apache.commons.configuration2.event.ConfigurationErrorEvent.ANY, event -> getLogger().warn("Internal error", event.getCause()));
+        addEventListener(ConfigurationErrorEvent.ANY, event -> getLogger().warn("Internal error", event.getCause()));
     }
 
-    @java.lang.Override
-    public final void addProperty(final java.lang.String key, final java.lang.Object value) {
+    @Override
+    public final void addProperty(final String key, final Object value) {
         syncWrite(() -> {
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.ADD_PROPERTY, key, value, true);
+            fireEvent(ConfigurationEvent.ADD_PROPERTY, key, value, true);
             addPropertyInternal(key, value);
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.ADD_PROPERTY, key, value, false);
+            fireEvent(ConfigurationEvent.ADD_PROPERTY, key, value, false);
         }, false);
     }
 
@@ -237,24 +239,20 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Adds a key/value pair to the Configuration. Override this method to provide write access to underlying Configuration
      * store.
      *
-     * @param key
-     *          key to use for mapping
-     * @param value
-     *          object to store
+     * @param key key to use for mapping
+     * @param value object to store
      */
-    protected abstract void addPropertyDirect(java.lang.String key, java.lang.Object value);
+    protected abstract void addPropertyDirect(String key, Object value);
 
     /**
      * Actually adds a property to this configuration. This method is called by {@code addProperty()}. It performs list
      * splitting if necessary and delegates to {@link #addPropertyDirect(String, Object)} for every single property value.
      *
-     * @param key
-     *          the key of the property to be added
-     * @param value
-     *          the new property value
+     * @param key the key of the property to be added
+     * @param value the new property value
      * @since 2.0
      */
-    protected void addPropertyInternal(final java.lang.String key, final java.lang.Object value) {
+    protected void addPropertyInternal(final String key, final Object value) {
         getListDelimiterHandler().parse(value).forEach(obj -> addPropertyDirect(key, obj));
     }
 
@@ -266,17 +264,16 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * structure (i.e. the parent-child-relationships will get lost). So when dealing with hierarchical configuration
      * objects their {@link BaseHierarchicalConfiguration#clone() clone()} methods should be used.
      *
-     * @param configuration
-     *          the configuration to be appended (can be <strong>null</strong>, then this operation will have no effect)
+     * @param configuration the configuration to be appended (can be <strong>null</strong>, then this operation will have no effect)
      * @since 1.5
      */
-    public void append(final org.apache.commons.configuration2.Configuration configuration) {
+    public void append(final Configuration configuration) {
         if (configuration != null) {
-            configuration.lock(org.apache.commons.configuration2.sync.LockMode.READ);
+            configuration.lock(LockMode.READ);
             try {
                 configuration.forEach((k, v) -> addProperty(k, encodeForCopy(v)));
             } finally {
-                configuration.unlock(org.apache.commons.configuration2.sync.LockMode.READ);
+                configuration.unlock(LockMode.READ);
             }
         }
     }
@@ -292,8 +289,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * <strong>false</strong>. <strong>In any case the inherited method must be called! Otherwise, proper synchronization is
      * not guaranteed.</strong>
      *
-     * @param optimize
-     *          a flag whether optimization can be performed
+     * @param optimize a flag whether optimization can be performed
      * @since 2.0
      */
     protected void beginRead(final boolean optimize) {
@@ -307,8 +303,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * {@code beginRead()}. <strong>In any case the inherited method must be called! Otherwise, proper synchronization is
      * not guaranteed.</strong>
      *
-     * @param optimize
-     *          a flag whether optimization can be performed
+     * @param optimize a flag whether optimization can be performed
      * @see #beginRead(boolean)
      * @since 2.0
      */
@@ -316,12 +311,12 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
         getSynchronizer().beginWrite();
     }
 
-    @java.lang.Override
+    @Override
     public final void clear() {
         syncWrite(() -> {
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.CLEAR, null, null, true);
+            fireEvent(ConfigurationEvent.CLEAR, null, null, true);
             clearInternal();
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.CLEAR, null, null, false);
+            fireEvent(ConfigurationEvent.CLEAR, null, null, false);
         }, false);
     }
 
@@ -334,19 +329,21 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
         setDetailEvents(false);
         boolean useIterator = true;
         try {
-            final java.util.Iterator<java.lang.String> it = getKeys();
+            final Iterator<String> it = getKeys();
             while (it.hasNext()) {
-                final java.lang.String key = it.next();
+                final String key = it.next();
                 if (useIterator) {
                     try {
                         it.remove();
-                    } catch (final java.lang.UnsupportedOperationException usoex) {
+                    } catch (final UnsupportedOperationException usoex) {
                         useIterator = false;
                     }
                 }
+
                 if (useIterator && containsKey(key)) {
                     useIterator = false;
                 }
+
                 if (!useIterator) {
                     // workaround for Iterators that do not remove the
                     // property
@@ -363,15 +360,14 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Removes the specified property from this configuration. This implementation performs some preparations and then
      * delegates to {@code clearPropertyDirect()}, which will do the real work.
      *
-     * @param key
-     *          the key to be removed
+     * @param key the key to be removed
      */
-    @java.lang.Override
-    public final void clearProperty(final java.lang.String key) {
+    @Override
+    public final void clearProperty(final String key) {
         syncWrite(() -> {
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.CLEAR_PROPERTY, key, null, true);
+            fireEvent(ConfigurationEvent.CLEAR_PROPERTY, key, null, true);
             clearPropertyDirect(key);
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.CLEAR_PROPERTY, key, null, false);
+            fireEvent(ConfigurationEvent.CLEAR_PROPERTY, key, null, false);
         }, false);
     }
 
@@ -379,10 +375,9 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Removes the specified property from this configuration. This method is called by {@code clearProperty()} after it has
      * done some preparations. It must be overridden in sub classes.
      *
-     * @param key
-     *          the key to be removed
+     * @param key the key to be removed
      */
-    protected abstract void clearPropertyDirect(java.lang.String key);
+    protected abstract void clearPropertyDirect(String key);
 
     /**
      * Creates a clone of the {@code ConfigurationInterpolator} used by this instance. This method can be called by
@@ -394,34 +389,32 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * passed in original configuration. This one is replaced by a corresponding {@code Lookup} referring to this
      * configuration.
      *
-     * @param orgConfig
-     *          the original configuration from which this one was cloned
+     * @param orgConfig the original configuration from which this one was cloned
      * @since 2.0
      */
-    protected void cloneInterpolator(final org.apache.commons.configuration2.AbstractConfiguration orgConfig) {
-        interpolator = new java.util.concurrent.atomic.AtomicReference<>();
-        final org.apache.commons.configuration2.interpol.ConfigurationInterpolator orgInterpolator = orgConfig.getInterpolator();
-        final java.util.List<org.apache.commons.configuration2.interpol.Lookup> defaultLookups = orgInterpolator.getDefaultLookups();
-        final org.apache.commons.configuration2.interpol.Lookup lookup = org.apache.commons.configuration2.AbstractConfiguration.findConfigurationLookup(orgInterpolator, orgConfig);
+    protected void cloneInterpolator(final AbstractConfiguration orgConfig) {
+        interpolator = new AtomicReference<>();
+        final ConfigurationInterpolator orgInterpolator = orgConfig.getInterpolator();
+        final List<Lookup> defaultLookups = orgInterpolator.getDefaultLookups();
+        final Lookup lookup = findConfigurationLookup(orgInterpolator, orgConfig);
         if (lookup != null) {
             defaultLookups.remove(lookup);
         }
+
         installInterpolator(orgInterpolator.getLookups(), defaultLookups);
     }
 
     /**
      * Checks if the specified value exists in the properties structure mapped by the provided keys.
      *
-     * @param keys
-     *          an Iterator of String keys to search for the value
-     * @param value
-     *          the String value to search for in the properties
+     * @param keys an Iterator of String keys to search for the value
+     * @param value the String value to search for in the properties
      * @return true if the value is found in the properties, false otherwise
      * @since 2.11.0
      */
-    protected boolean contains(final java.util.Iterator<java.lang.String> keys, final java.lang.Object value) {
+    protected boolean contains(final Iterator<String> keys, final Object value) {
         while (keys.hasNext()) {
-            if (java.util.Objects.equals(value, getProperty(keys.next()))) {
+            if (Objects.equals(value, getProperty(keys.next()))) {
                 return true;
             }
         }
@@ -429,10 +422,10 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
     }
 
     /**
-     * {@inheritDoc } This implementation handles synchronization and delegates to {@code containsKeyInternal()}.
+     * {@inheritDoc} This implementation handles synchronization and delegates to {@code containsKeyInternal()}.
      */
-    @java.lang.Override
-    public final boolean containsKey(final java.lang.String key) {
+    @Override
+    public final boolean containsKey(final String key) {
         return syncRead(() -> containsKeyInternal(key), false);
     }
 
@@ -440,20 +433,19 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Actually checks whether the specified key is contained in this configuration. This method is called by
      * {@code containsKey()}. It has to be defined by concrete subclasses.
      *
-     * @param key
-     *          the key in question
+     * @param key the key in question
      * @return <strong>true</strong> if this key is contained in this configuration, <strong>false</strong> otherwise
      * @since 2.0
      */
-    protected abstract boolean containsKeyInternal(java.lang.String key);
+    protected abstract boolean containsKeyInternal(String key);
 
     /**
-     * {@inheritDoc } This implementation handles synchronization and delegates to {@code containsKeyInternal()}.
+     * {@inheritDoc} This implementation handles synchronization and delegates to {@code containsKeyInternal()}.
      *
      * @since 2.11.0
      */
-    @java.lang.Override
-    public final boolean containsValue(final java.lang.Object value) {
+    @Override
+    public final boolean containsValue(final Object value) {
         return syncRead(() -> containsValueInternal(value), false);
     }
 
@@ -469,40 +461,36 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * interface).
      * </p>
      *
-     * @param value
-     *          the value in question
+     * @param value the value in question
      * @return {@code true} if and only if some key maps to the {@code value} argument in this configuration as determined by the {@code equals} method;
-    {@code false} otherwise.
+     *         {@code false} otherwise.
      * @since 2.11.0
      */
-    protected abstract boolean containsValueInternal(java.lang.Object value);
+    protected abstract boolean containsValueInternal(Object value);
 
     /**
      * Helper method for obtaining a property value with a type conversion.
      *
-     * @param <T>
-     *          the target type of the conversion
-     * @param cls
-     *          the target class
-     * @param key
-     *          the key of the desired property
-     * @param defValue
-     *          a default value
-     * @param throwOnMissing
-     *          a flag whether an exception should be thrown for a missing value
+     * @param <T> the target type of the conversion
+     * @param cls the target class
+     * @param key the key of the desired property
+     * @param defValue a default value
+     * @param throwOnMissing a flag whether an exception should be thrown for a missing value
      * @return the converted value
      */
-    private <T> T convert(final java.lang.Class<T> cls, final java.lang.String key, final T defValue, final boolean throwOnMissing) {
+    private <T> T convert(final Class<T> cls, final String key, final T defValue, final boolean throwOnMissing) {
         if (cls.isArray()) {
             return cls.cast(convertToArray(cls.getComponentType(), key, defValue));
         }
+
         final T result = getAndConvertProperty(cls, key, defValue);
         if (result == null) {
             if (throwOnMissing && isThrowExceptionOnMissing()) {
-                org.apache.commons.configuration2.AbstractConfiguration.throwMissingPropertyException(key);
+                throwMissingPropertyException(key);
             }
             return defValue;
         }
+
         return result;
     }
 
@@ -512,19 +500,15 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * default value is returned. It is checked whether the default value is an array with the correct component type. If
      * not, an exception is thrown.
      *
-     * @param cls
-     *          the component class of the array
-     * @param key
-     *          the configuration key
-     * @param defaultValue
-     *          an optional default value
+     * @param cls the component class of the array
+     * @param key the configuration key
+     * @param defaultValue an optional default value
      * @return the converted array
-     * @throws IllegalArgumentException
-     *          if the default value is not a compatible array
+     * @throws IllegalArgumentException if the default value is not a compatible array
      */
-    private java.lang.Object convertToArray(final java.lang.Class<?> cls, final java.lang.String key, final java.lang.Object defaultValue) {
-        org.apache.commons.configuration2.AbstractConfiguration.checkDefaultValueArray(cls, defaultValue);
-        return org.apache.commons.lang3.ObjectUtils.defaultIfNull(getConversionHandler().toArray(getProperty(key), cls, getInterpolator()), defaultValue);
+    private Object convertToArray(final Class<?> cls, final String key, final Object defaultValue) {
+        checkDefaultValueArray(cls, defaultValue);
+        return ObjectUtils.defaultIfNull(getConversionHandler().toArray(getProperty(key), cls, getInterpolator()), defaultValue);
     }
 
     /**
@@ -535,17 +519,16 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * hierarchical configuration objects their {@link BaseHierarchicalConfiguration#clone() clone()} methods should be
      * used.
      *
-     * @param configuration
-     *          the configuration to copy (can be <strong>null</strong>, then this operation will have no effect)
+     * @param configuration the configuration to copy (can be <strong>null</strong>, then this operation will have no effect)
      * @since 1.5
      */
-    public void copy(final org.apache.commons.configuration2.Configuration configuration) {
+    public void copy(final Configuration configuration) {
         if (configuration != null) {
-            configuration.lock(org.apache.commons.configuration2.sync.LockMode.READ);
+            configuration.lock(LockMode.READ);
             try {
                 configuration.forEach((k, v) -> setProperty(k, encodeForCopy(v)));
             } finally {
-                configuration.unlock(org.apache.commons.configuration2.sync.LockMode.READ);
+                configuration.unlock(LockMode.READ);
             }
         }
     }
@@ -555,27 +538,25 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * passed in object has to be escaped so that an add operation yields the same result. If it is a list, all of its
      * values have to be escaped.
      *
-     * @param value
-     *          the value to be encoded
+     * @param value the value to be encoded
      * @return the encoded value
      */
-    private java.lang.Object encodeForCopy(final java.lang.Object value) {
-        if (value instanceof java.util.Collection) {
-            return encodeListForCopy(((java.util.Collection<?>) (value)));
+    private Object encodeForCopy(final Object value) {
+        if (value instanceof Collection) {
+            return encodeListForCopy((Collection<?>) value);
         }
-        return getListDelimiterHandler().escape(value, org.apache.commons.configuration2.convert.ListDelimiterHandler.NOOP_TRANSFORMER);
+        return getListDelimiterHandler().escape(value, ListDelimiterHandler.NOOP_TRANSFORMER);
     }
 
     /**
      * Encodes a list with property values so that it can be added to this configuration. This method calls
      * {@code encodeForCopy()} for all list elements.
      *
-     * @param values
-     *          the list to be encoded
+     * @param values the list to be encoded
      * @return a list with encoded elements
      */
-    private java.lang.Object encodeListForCopy(final java.util.Collection<?> values) {
-        return values.stream().map(this::encodeForCopy).collect(java.util.stream.Collectors.toList());
+    private Object encodeListForCopy(final Collection<?> values) {
+        return values.stream().map(this::encodeForCopy).collect(Collectors.toList());
     }
 
     /**
@@ -607,160 +588,152 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * {@code ConfigurationInterpolator}. This method is called to ensure that there is exactly one default lookup querying
      * this configuration.
      *
-     * @param ci
-     *          the {@code ConfigurationInterpolator} in question
+     * @param ci the {@code ConfigurationInterpolator} in question
      * @return the found {@code Lookup} object or <strong>null</strong>
      */
-    private org.apache.commons.configuration2.interpol.Lookup findConfigurationLookup(final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ci) {
-        return org.apache.commons.configuration2.AbstractConfiguration.findConfigurationLookup(ci, this);
+    private Lookup findConfigurationLookup(final ConfigurationInterpolator ci) {
+        return findConfigurationLookup(ci, this);
     }
 
-    @java.lang.Override
-    public <T> T get(final java.lang.Class<T> cls, final java.lang.String key) {
+    @Override
+    public <T> T get(final Class<T> cls, final String key) {
         return convert(cls, key, null, true);
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to the {@link ConversionHandler} to perform the actual type conversion.
+     * {@inheritDoc} This implementation delegates to the {@link ConversionHandler} to perform the actual type conversion.
      */
-    @java.lang.Override
-    public <T> T get(final java.lang.Class<T> cls, final java.lang.String key, final T defaultValue) {
+    @Override
+    public <T> T get(final Class<T> cls, final String key, final T defaultValue) {
         return convert(cls, key, defaultValue, false);
     }
 
     /**
      * Obtains the property value for the specified key and converts it to the given target class.
      *
-     * @param <T>
-     *          the target type of the conversion
-     * @param cls
-     *          the target class
-     * @param key
-     *          the key of the desired property
-     * @param defaultValue
-     *          a default value
+     * @param <T> the target type of the conversion
+     * @param cls the target class
+     * @param key the key of the desired property
+     * @param defaultValue a default value
      * @return the converted value of this property
-     * @throws ConversionException
-     *          if the conversion cannot be performed
+     * @throws ConversionException if the conversion cannot be performed
      */
-    private <T> T getAndConvertProperty(final java.lang.Class<T> cls, final java.lang.String key, final T defaultValue) {
-        final java.lang.Object value = getProperty(key);
+    private <T> T getAndConvertProperty(final Class<T> cls, final String key, final T defaultValue) {
+        final Object value = getProperty(key);
         try {
-            return org.apache.commons.lang3.ObjectUtils.defaultIfNull(getConversionHandler().to(value, cls, getInterpolator()), defaultValue);
-        } catch (final org.apache.commons.configuration2.ex.ConversionException cex) {
+            return ObjectUtils.defaultIfNull(getConversionHandler().to(value, cls, getInterpolator()), defaultValue);
+        } catch (final ConversionException cex) {
             // improve error message
-            throw new org.apache.commons.configuration2.ex.ConversionException(java.lang.String.format("Key '%s' cannot be converted to class %s. Value is: '%s'.", key, cls.getName(), java.lang.String.valueOf(value)), cex.getCause());
+            throw new ConversionException(String.format("Key '%s' cannot be converted to class %s. Value is: '%s'.", key, cls.getName(), String.valueOf(value)),
+                    cex.getCause());
         }
     }
 
-    @java.lang.Override
-    public java.lang.Object getArray(final java.lang.Class<?> cls, final java.lang.String key) {
+    @Override
+    public Object getArray(final Class<?> cls, final String key) {
         return getArray(cls, key, null);
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to the {@link ConversionHandler} to perform the actual type conversion.
+     * {@inheritDoc} This implementation delegates to the {@link ConversionHandler} to perform the actual type conversion.
      * If this results in a <strong>null</strong> result (because the property is undefined), the default value is returned. It is
      * checked whether the default value is an array with the correct component type. If not, an exception is thrown.
      *
-     * @throws IllegalArgumentException
-     *          if the default value is not a compatible array
+     * @throws IllegalArgumentException if the default value is not a compatible array
      */
-    @java.lang.Override
-    public java.lang.Object getArray(final java.lang.Class<?> cls, final java.lang.String key, final java.lang.Object defaultValue) {
+    @Override
+    public Object getArray(final Class<?> cls, final String key, final Object defaultValue) {
         return convertToArray(cls, key, defaultValue);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      *
      * @see #setThrowExceptionOnMissing(boolean)
      */
-    @java.lang.Override
-    public java.math.BigDecimal getBigDecimal(final java.lang.String key) {
-        return convert(java.math.BigDecimal.class, key, null, true);
+    @Override
+    public BigDecimal getBigDecimal(final String key) {
+        return convert(BigDecimal.class, key, null, true);
     }
 
-    @java.lang.Override
-    public java.math.BigDecimal getBigDecimal(final java.lang.String key, final java.math.BigDecimal defaultValue) {
-        return convert(java.math.BigDecimal.class, key, defaultValue, false);
+    @Override
+    public BigDecimal getBigDecimal(final String key, final BigDecimal defaultValue) {
+        return convert(BigDecimal.class, key, defaultValue, false);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      *
      * @see #setThrowExceptionOnMissing(boolean)
      */
-    @java.lang.Override
-    public java.math.BigInteger getBigInteger(final java.lang.String key) {
-        return convert(java.math.BigInteger.class, key, null, true);
+    @Override
+    public BigInteger getBigInteger(final String key) {
+        return convert(BigInteger.class, key, null, true);
     }
 
-    @java.lang.Override
-    public java.math.BigInteger getBigInteger(final java.lang.String key, final java.math.BigInteger defaultValue) {
-        return convert(java.math.BigInteger.class, key, defaultValue, false);
+    @Override
+    public BigInteger getBigInteger(final String key, final BigInteger defaultValue) {
+        return convert(BigInteger.class, key, defaultValue, false);
     }
 
-    @java.lang.Override
-    public boolean getBoolean(final java.lang.String key) {
-        final java.lang.Boolean b = convert(java.lang.Boolean.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, b).booleanValue();
+    @Override
+    public boolean getBoolean(final String key) {
+        final Boolean b = convert(Boolean.class, key, null, true);
+        return checkNonNullValue(key, b).booleanValue();
     }
 
-    @java.lang.Override
-    public boolean getBoolean(final java.lang.String key, final boolean defaultValue) {
-        return getBoolean(key, java.lang.Boolean.valueOf(defaultValue)).booleanValue();
+    @Override
+    public boolean getBoolean(final String key, final boolean defaultValue) {
+        return getBoolean(key, Boolean.valueOf(defaultValue)).booleanValue();
     }
 
     /**
      * Obtains the value of the specified key and tries to convert it into a {@code Boolean} object. If the property has no
      * value, the passed in default value will be used.
      *
-     * @param key
-     *          the key of the property
-     * @param defaultValue
-     *          the default value
+     * @param key the key of the property
+     * @param defaultValue the default value
      * @return the value of this key converted to a {@code Boolean}
-     * @throws ConversionException
-     *          if the value cannot be converted to a {@code Boolean}
+     * @throws ConversionException if the value cannot be converted to a {@code Boolean}
      */
-    @java.lang.Override
-    public java.lang.Boolean getBoolean(final java.lang.String key, final java.lang.Boolean defaultValue) {
-        return convert(java.lang.Boolean.class, key, defaultValue, false);
+    @Override
+    public Boolean getBoolean(final String key, final Boolean defaultValue) {
+        return convert(Boolean.class, key, defaultValue, false);
     }
 
-    @java.lang.Override
-    public byte getByte(final java.lang.String key) {
-        final java.lang.Byte b = convert(java.lang.Byte.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, b).byteValue();
+    @Override
+    public byte getByte(final String key) {
+        final Byte b = convert(Byte.class, key, null, true);
+        return checkNonNullValue(key, b).byteValue();
     }
 
-    @java.lang.Override
-    public byte getByte(final java.lang.String key, final byte defaultValue) {
-        return getByte(key, java.lang.Byte.valueOf(defaultValue)).byteValue();
+    @Override
+    public byte getByte(final String key, final byte defaultValue) {
+        return getByte(key, Byte.valueOf(defaultValue)).byteValue();
     }
 
-    @java.lang.Override
-    public java.lang.Byte getByte(final java.lang.String key, final java.lang.Byte defaultValue) {
-        return convert(java.lang.Byte.class, key, defaultValue, false);
+    @Override
+    public Byte getByte(final String key, final Byte defaultValue) {
+        return convert(Byte.class, key, defaultValue, false);
     }
 
-    @java.lang.Override
-    public <T> java.util.Collection<T> getCollection(final java.lang.Class<T> cls, final java.lang.String key, final java.util.Collection<T> target) {
+    @Override
+    public <T> Collection<T> getCollection(final Class<T> cls, final String key, final Collection<T> target) {
         return getCollection(cls, key, target, null);
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to the {@link ConversionHandler} to perform the actual conversion. If no
+     * {@inheritDoc} This implementation delegates to the {@link ConversionHandler} to perform the actual conversion. If no
      * target collection is provided, an {@code ArrayList} is created.
      */
-    @java.lang.Override
-    public <T> java.util.Collection<T> getCollection(final java.lang.Class<T> cls, final java.lang.String key, final java.util.Collection<T> target, final java.util.Collection<T> defaultValue) {
-        final java.lang.Object src = getProperty(key);
+    @Override
+    public <T> Collection<T> getCollection(final Class<T> cls, final String key, final Collection<T> target, final Collection<T> defaultValue) {
+        final Object src = getProperty(key);
         if (src == null) {
-            return org.apache.commons.configuration2.AbstractConfiguration.handleDefaultCollection(target, defaultValue);
+            return handleDefaultCollection(target, defaultValue);
         }
-        final java.util.Collection<T> targetCol = (target != null) ? target : new java.util.ArrayList<>();
+
+        final Collection<T> targetCol = target != null ? target : new ArrayList<>();
         getConversionHandler().toCollection(src, cls, getInterpolator(), targetCol);
         return targetCol;
     }
@@ -771,7 +744,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @return the {@code ConfigurationDecoder}
      * @since 2.0
      */
-    public org.apache.commons.configuration2.ConfigurationDecoder getConfigurationDecoder() {
+    public ConfigurationDecoder getConfigurationDecoder() {
         return configurationDecoder;
     }
 
@@ -781,97 +754,97 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @return the {@code ConversionHandler}
      * @since 2.0
      */
-    public org.apache.commons.configuration2.convert.ConversionHandler getConversionHandler() {
+    public ConversionHandler getConversionHandler() {
         return conversionHandler;
     }
 
-    @java.lang.Override
-    public double getDouble(final java.lang.String key) {
-        final java.lang.Double d = convert(java.lang.Double.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, d).doubleValue();
+    @Override
+    public double getDouble(final String key) {
+        final Double d = convert(Double.class, key, null, true);
+        return checkNonNullValue(key, d).doubleValue();
     }
 
-    @java.lang.Override
-    public double getDouble(final java.lang.String key, final double defaultValue) {
-        return getDouble(key, java.lang.Double.valueOf(defaultValue)).doubleValue();
+    @Override
+    public double getDouble(final String key, final double defaultValue) {
+        return getDouble(key, Double.valueOf(defaultValue)).doubleValue();
     }
 
-    @java.lang.Override
-    public java.lang.Double getDouble(final java.lang.String key, final java.lang.Double defaultValue) {
-        return convert(java.lang.Double.class, key, defaultValue, false);
+    @Override
+    public Double getDouble(final String key, final Double defaultValue) {
+        return convert(Double.class, key, defaultValue, false);
     }
 
-    @java.lang.Override
-    public java.time.Duration getDuration(final java.lang.String key) {
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, convert(java.time.Duration.class, key, null, true));
+    @Override
+    public Duration getDuration(final String key) {
+        return checkNonNullValue(key, convert(Duration.class, key, null, true));
     }
 
-    @java.lang.Override
-    public java.time.Duration getDuration(final java.lang.String key, final java.time.Duration defaultValue) {
-        return convert(java.time.Duration.class, key, defaultValue, false);
+    @Override
+    public Duration getDuration(final String key, final Duration defaultValue) {
+        return convert(Duration.class, key, defaultValue, false);
     }
 
     /**
-     * {@inheritDoc } This implementation makes use of the {@code ConfigurationDecoder} set for this configuration. If no
+     * {@inheritDoc} This implementation makes use of the {@code ConfigurationDecoder} set for this configuration. If no
      * such object has been set, an {@code IllegalStateException} exception is thrown.
      *
-     * @throws IllegalStateException
-     *          if no {@code ConfigurationDecoder} is set
+     * @throws IllegalStateException if no {@code ConfigurationDecoder} is set
      * @see #setConfigurationDecoder(ConfigurationDecoder)
      */
-    @java.lang.Override
-    public java.lang.String getEncodedString(final java.lang.String key) {
-        final org.apache.commons.configuration2.ConfigurationDecoder decoder = getConfigurationDecoder();
+    @Override
+    public String getEncodedString(final String key) {
+        final ConfigurationDecoder decoder = getConfigurationDecoder();
         if (decoder == null) {
-            throw new java.lang.IllegalStateException("No default ConfigurationDecoder defined!");
+            throw new IllegalStateException("No default ConfigurationDecoder defined!");
         }
         return getEncodedString(key, decoder);
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to {@link #getString(String)} in order to obtain the value of the passed
+     * {@inheritDoc} This implementation delegates to {@link #getString(String)} in order to obtain the value of the passed
      * in key. This value is passed to the decoder. Because {@code getString()} is used behind the scenes all standard
      * features like handling of missing keys and interpolation work as expected.
      */
-    @java.lang.Override
-    public java.lang.String getEncodedString(final java.lang.String key, final org.apache.commons.configuration2.ConfigurationDecoder decoder) {
+    @Override
+    public String getEncodedString(final String key, final ConfigurationDecoder decoder) {
         if (decoder == null) {
-            throw new java.lang.IllegalArgumentException("ConfigurationDecoder must not be null!");
+            throw new IllegalArgumentException("ConfigurationDecoder must not be null!");
         }
-        final java.lang.String value = getString(key);
+
+        final String value = getString(key);
         return value != null ? decoder.decode(value) : null;
     }
 
-    @java.lang.Override
-    public float getFloat(final java.lang.String key) {
-        final java.lang.Float f = convert(java.lang.Float.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, f).floatValue();
+    @Override
+    public float getFloat(final String key) {
+        final Float f = convert(Float.class, key, null, true);
+        return checkNonNullValue(key, f).floatValue();
     }
 
-    @java.lang.Override
-    public float getFloat(final java.lang.String key, final float defaultValue) {
-        return getFloat(key, java.lang.Float.valueOf(defaultValue)).floatValue();
+    @Override
+    public float getFloat(final String key, final float defaultValue) {
+        return getFloat(key, Float.valueOf(defaultValue)).floatValue();
     }
 
-    @java.lang.Override
-    public java.lang.Float getFloat(final java.lang.String key, final java.lang.Float defaultValue) {
-        return convert(java.lang.Float.class, key, defaultValue, false);
+    @Override
+    public Float getFloat(final String key, final Float defaultValue) {
+        return convert(Float.class, key, defaultValue, false);
     }
 
-    @java.lang.Override
-    public int getInt(final java.lang.String key) {
-        final java.lang.Integer i = convert(java.lang.Integer.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, i).intValue();
+    @Override
+    public int getInt(final String key) {
+        final Integer i = convert(Integer.class, key, null, true);
+        return checkNonNullValue(key, i).intValue();
     }
 
-    @java.lang.Override
-    public int getInt(final java.lang.String key, final int defaultValue) {
-        return getInteger(key, java.lang.Integer.valueOf(defaultValue)).intValue();
+    @Override
+    public int getInt(final String key, final int defaultValue) {
+        return getInteger(key, Integer.valueOf(defaultValue)).intValue();
     }
 
-    @java.lang.Override
-    public java.lang.Integer getInteger(final java.lang.String key, final java.lang.Integer defaultValue) {
-        return convert(java.lang.Integer.class, key, defaultValue, false);
+    @Override
+    public Integer getInteger(final String key, final Integer defaultValue) {
+        return convert(Integer.class, key, defaultValue, false);
     }
 
     /**
@@ -884,38 +857,38 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @since 1.4
      * @see ConfigurationInterpolator#getDefaultPrefixLookups()
      */
-    @java.lang.Override
-    public org.apache.commons.configuration2.interpol.ConfigurationInterpolator getInterpolator() {
+    @Override
+    public ConfigurationInterpolator getInterpolator() {
         return interpolator.get();
     }
 
     /**
-     * {@inheritDoc } This implementation takes care of synchronization and then delegates to {@code getKeysInternal()} for
+     * {@inheritDoc} This implementation takes care of synchronization and then delegates to {@code getKeysInternal()} for
      * obtaining the actual iterator. Note that depending on a concrete implementation, an iteration may fail if the
      * configuration is updated concurrently.
      */
-    @java.lang.Override
-    public final java.util.Iterator<java.lang.String> getKeys() {
+    @Override
+    public final Iterator<String> getKeys() {
         return syncRead(() -> getKeysInternal(), false);
     }
 
     /**
-     * {@inheritDoc } This implementation returns keys that either match the prefix or start with the prefix followed by a
+     * {@inheritDoc} This implementation returns keys that either match the prefix or start with the prefix followed by a
      * dot ('.'). So the call {@code getKeys("db");} will find the keys {@code db}, {@code db.user}, or {@code db.password},
      * but not the key {@code dbdriver}.
      */
-    @java.lang.Override
-    public final java.util.Iterator<java.lang.String> getKeys(final java.lang.String prefix) {
+    @Override
+    public final Iterator<String> getKeys(final String prefix) {
         return syncRead(() -> getKeysInternal(prefix), false);
     }
 
     /**
-     * {@inheritDoc } This implementation returns keys that either match the prefix or start with the prefix followed by the delimiter.
+     * {@inheritDoc} This implementation returns keys that either match the prefix or start with the prefix followed by the delimiter.
      * So the call {@code getKeys("db");} will find the keys {@code db}, {@code db@user}, or {@code db@password},
      * but not the key {@code dbdriver}.
      */
-    @java.lang.Override
-    public final java.util.Iterator<java.lang.String> getKeys(final java.lang.String prefix, final java.lang.String delimiter) {
+    @Override
+    public final Iterator<String> getKeys(final String prefix, final String delimiter) {
         return syncRead(() -> getKeysInternal(prefix, delimiter), false);
     }
 
@@ -926,7 +899,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @return an {@code Iterator} with all property keys in this configuration
      * @since 2.0
      */
-    protected abstract java.util.Iterator<java.lang.String> getKeysInternal();
+    protected abstract Iterator<String> getKeysInternal();
 
     /**
      * Gets an {@code Iterator} with all property keys starting with the specified prefix. This method is called by
@@ -934,13 +907,12 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * iterator which filters for the passed in prefix. Subclasses can override it if they can provide a more efficient way
      * to iterate over specific keys only.
      *
-     * @param prefix
-     *          the prefix for the keys to be taken into account
+     * @param prefix the prefix for the keys to be taken into account
      * @return an {@code Iterator} returning the filtered keys
      * @since 2.0
      */
-    protected java.util.Iterator<java.lang.String> getKeysInternal(final java.lang.String prefix) {
-        return new org.apache.commons.configuration2.PrefixedKeysIterator(getKeysInternal(), prefix);
+    protected Iterator<String> getKeysInternal(final String prefix) {
+        return new PrefixedKeysIterator(getKeysInternal(), prefix);
     }
 
     /**
@@ -949,29 +921,27 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * iterator which filters for the passed in prefix. Subclasses can override it if they can provide a more efficient way
      * to iterate over specific keys only.
      *
-     * @param prefix
-     *          the prefix for the keys to be taken into account
-     * @param delimiter
-     *          the prefix delimiter
+     * @param prefix the prefix for the keys to be taken into account
+     * @param delimiter the prefix delimiter
      * @return an {@code Iterator} returning the filtered keys
      * @since 2.10.0
      */
-    protected java.util.Iterator<java.lang.String> getKeysInternal(final java.lang.String prefix, final java.lang.String delimiter) {
-        return new org.apache.commons.configuration2.PrefixedKeysIterator(getKeysInternal(), prefix, delimiter);
+    protected Iterator<String> getKeysInternal(final String prefix, final String delimiter) {
+        return new PrefixedKeysIterator(getKeysInternal(), prefix, delimiter);
     }
 
-    @java.lang.Override
-    public <T> java.util.List<T> getList(final java.lang.Class<T> cls, final java.lang.String key) {
+    @Override
+    public <T> List<T> getList(final Class<T> cls, final String key) {
         return getList(cls, key, null);
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to the generic {@code getCollection()}. As target collection a newly
+     * {@inheritDoc} This implementation delegates to the generic {@code getCollection()}. As target collection a newly
      * created {@code ArrayList} is passed in.
      */
-    @java.lang.Override
-    public <T> java.util.List<T> getList(final java.lang.Class<T> cls, final java.lang.String key, final java.util.List<T> defaultValue) {
-        final java.util.List<T> result = new java.util.ArrayList<>();
+    @Override
+    public <T> List<T> getList(final Class<T> cls, final String key, final List<T> defaultValue) {
+        final List<T> result = new ArrayList<>();
         if (getCollection(cls, key, result, defaultValue) == null) {
             return null;
         }
@@ -979,38 +949,40 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      *
      * @see #getStringArray(String)
      */
-    @java.lang.Override
-    public java.util.List<java.lang.Object> getList(final java.lang.String key) {
-        return getList(key, new java.util.ArrayList<>());
+    @Override
+    public List<Object> getList(final String key) {
+        return getList(key, new ArrayList<>());
     }
 
-    @java.lang.Override
-    public java.util.List<java.lang.Object> getList(final java.lang.String key, final java.util.List<?> defaultValue) {
-        final java.lang.Object value = getProperty(key);
-        final java.util.List<java.lang.Object> list;
-        if (value instanceof java.lang.String) {
-            list = new java.util.ArrayList<>(1);
-            list.add(interpolate(((java.lang.String) (value))));
-        } else if (value instanceof java.util.List) {
-            list = new java.util.ArrayList<>();
-            final java.util.List<?> l = ((java.util.List<?>) (value));
+    @Override
+    public List<Object> getList(final String key, final List<?> defaultValue) {
+        final Object value = getProperty(key);
+        final List<Object> list;
+
+        if (value instanceof String) {
+            list = new ArrayList<>(1);
+            list.add(interpolate((String) value));
+        } else if (value instanceof List) {
+            list = new ArrayList<>();
+            final List<?> l = (List<?>) value;
+
             // add the interpolated elements in the new list
             l.forEach(elem -> list.add(interpolate(elem)));
         } else if (value == null) {
             // This is okay because we just return this list to the caller
-            @java.lang.SuppressWarnings("unchecked")
-            final java.util.List<java.lang.Object> resultList = ((java.util.List<java.lang.Object>) (defaultValue));
+            @SuppressWarnings("unchecked")
+            final List<Object> resultList = (List<Object>) defaultValue;
             list = resultList;
         } else if (value.getClass().isArray()) {
-            return java.util.Arrays.asList(((java.lang.Object[]) (value)));
+            return Arrays.asList((Object[]) value);
         } else if (isScalarValue(value)) {
-            return java.util.Collections.singletonList(((java.lang.Object) (value.toString())));
+            return Collections.singletonList((Object) value.toString());
         } else {
-            throw new org.apache.commons.configuration2.ex.ConversionException((((('\'' + key) + "' doesn't map to a List object: ") + value) + ", a ") + value.getClass().getName());
+            throw new ConversionException('\'' + key + "' doesn't map to a List object: " + value + ", a " + value.getClass().getName());
         }
         return list;
     }
@@ -1021,7 +993,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @return the {@code ListDelimiterHandler}
      * @since 2.0
      */
-    public org.apache.commons.configuration2.convert.ListDelimiterHandler getListDelimiterHandler() {
+    public ListDelimiterHandler getListDelimiterHandler() {
         return listDelimiterHandler;
     }
 
@@ -1031,72 +1003,73 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @return the logger
      * @since 2.0
      */
-    public org.apache.commons.configuration2.io.ConfigurationLogger getLogger() {
+    public ConfigurationLogger getLogger() {
         return log;
     }
 
-    @java.lang.Override
-    public long getLong(final java.lang.String key) {
-        final java.lang.Long l = convert(java.lang.Long.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, l).longValue();
+    @Override
+    public long getLong(final String key) {
+        final Long l = convert(Long.class, key, null, true);
+        return checkNonNullValue(key, l).longValue();
     }
 
-    @java.lang.Override
-    public long getLong(final java.lang.String key, final long defaultValue) {
-        return getLong(key, java.lang.Long.valueOf(defaultValue)).longValue();
+    @Override
+    public long getLong(final String key, final long defaultValue) {
+        return getLong(key, Long.valueOf(defaultValue)).longValue();
     }
 
-    @java.lang.Override
-    public java.lang.Long getLong(final java.lang.String key, final java.lang.Long defaultValue) {
-        return convert(java.lang.Long.class, key, defaultValue, false);
+    @Override
+    public Long getLong(final String key, final Long defaultValue) {
+        return convert(Long.class, key, defaultValue, false);
     }
 
-    @java.lang.Override
-    public java.util.Properties getProperties(final java.lang.String key) {
+    @Override
+    public Properties getProperties(final String key) {
         return getProperties(key, null);
     }
 
     /**
      * Gets a list of properties associated with the given configuration key.
      *
-     * @param key
-     *          The configuration key.
-     * @param defaults
-     *          Any default values for the returned {@code Properties} object. Ignored if {@code null}.
+     * @param key The configuration key.
+     * @param defaults Any default values for the returned {@code Properties} object. Ignored if {@code null}.
      * @return The associated properties if key is found.
-     * @throws ConversionException
-     *          is thrown if the key maps to an object that is not a String/List of Strings.
-     * @throws IllegalArgumentException
-     *          if one of the tokens is malformed (does not contain an equals sign).
+     * @throws ConversionException is thrown if the key maps to an object that is not a String/List of Strings.
+     * @throws IllegalArgumentException if one of the tokens is malformed (does not contain an equals sign).
      */
-    public java.util.Properties getProperties(final java.lang.String key, final java.util.Properties defaults) {
-        /* Grab an array of the tokens for this key. */
-        final java.lang.String[] tokens = getStringArray(key);
-        /* Each token is of the form 'key=value'. */
-        final java.util.Properties props = (defaults == null) ? new java.util.Properties() : new java.util.Properties(defaults);
-        for (final java.lang.String token : tokens) {
+    public Properties getProperties(final String key, final Properties defaults) {
+        /*
+         * Grab an array of the tokens for this key.
+         */
+        final String[] tokens = getStringArray(key);
+
+        /*
+         * Each token is of the form 'key=value'.
+         */
+        final Properties props = defaults == null ? new Properties() : new Properties(defaults);
+        for (final String token : tokens) {
             final int equalSign = token.indexOf('=');
             if (equalSign > 0) {
-                final java.lang.String pkey = token.substring(0, equalSign).trim();
-                final java.lang.String pvalue = token.substring(equalSign + 1).trim();
+                final String pkey = token.substring(0, equalSign).trim();
+                final String pvalue = token.substring(equalSign + 1).trim();
                 props.put(pkey, pvalue);
-            } else if ((tokens.length == 1) && org.apache.commons.lang3.StringUtils.isEmpty(key)) {
+            } else if (tokens.length == 1 && StringUtils.isEmpty(key)) {
                 // Semantically equivalent to an empty Properties
                 // object.
                 break;
             } else {
-                throw new java.lang.IllegalArgumentException(('\'' + token) + "' does not contain an equals sign");
+                throw new IllegalArgumentException('\'' + token + "' does not contain an equals sign");
             }
         }
         return props;
     }
 
     /**
-     * {@inheritDoc } This implementation ensures proper synchronization. Subclasses have to define the abstract
+     * {@inheritDoc} This implementation ensures proper synchronization. Subclasses have to define the abstract
      * {@code getPropertyInternal()} method which is called from here.
      */
-    @java.lang.Override
-    public final java.lang.Object getProperty(final java.lang.String key) {
+    @Override
+    public final Object getProperty(final String key) {
         return syncRead(() -> getPropertyInternal(key), false);
     }
 
@@ -1104,42 +1077,41 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Actually obtains the value of the specified property. This method is called by {@code getProperty()}. Concrete
      * subclasses must define it to fetch the value of the desired property.
      *
-     * @param key
-     *          the key of the property in question
+     * @param key the key of the property in question
      * @return the (raw) value of this property
      * @since 2.0
      */
-    protected abstract java.lang.Object getPropertyInternal(java.lang.String key);
+    protected abstract Object getPropertyInternal(String key);
 
-    @java.lang.Override
-    public short getShort(final java.lang.String key) {
-        final java.lang.Short s = convert(java.lang.Short.class, key, null, true);
-        return org.apache.commons.configuration2.AbstractConfiguration.checkNonNullValue(key, s).shortValue();
+    @Override
+    public short getShort(final String key) {
+        final Short s = convert(Short.class, key, null, true);
+        return checkNonNullValue(key, s).shortValue();
     }
 
-    @java.lang.Override
-    public short getShort(final java.lang.String key, final short defaultValue) {
-        return getShort(key, java.lang.Short.valueOf(defaultValue)).shortValue();
+    @Override
+    public short getShort(final String key, final short defaultValue) {
+        return getShort(key, Short.valueOf(defaultValue)).shortValue();
     }
 
-    @java.lang.Override
-    public java.lang.Short getShort(final java.lang.String key, final java.lang.Short defaultValue) {
-        return convert(java.lang.Short.class, key, defaultValue, false);
+    @Override
+    public Short getShort(final String key, final Short defaultValue) {
+        return convert(Short.class, key, defaultValue, false);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      *
      * @see #setThrowExceptionOnMissing(boolean)
      */
-    @java.lang.Override
-    public java.lang.String getString(final java.lang.String key) {
-        return convert(java.lang.String.class, key, null, true);
+    @Override
+    public String getString(final String key) {
+        return convert(String.class, key, null, true);
     }
 
-    @java.lang.Override
-    public java.lang.String getString(final java.lang.String key, final java.lang.String defaultValue) {
-        final java.lang.String result = convert(java.lang.String.class, key, null, false);
+    @Override
+    public String getString(final String key, final String defaultValue) {
+        final String result = convert(String.class, key, null, false);
         return result != null ? result : interpolate(defaultValue);
     }
 
@@ -1149,17 +1121,15 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * values. This is obvious if the added object is a list or an array. For strings the association
      * {@link ListDelimiterHandler} is consulted to find out whether the string can be split into multiple values.
      *
-     * @param key
-     *          The configuration key.
+     * @param key The configuration key.
      * @return The associated string array if key is found.
-     * @throws ConversionException
-     *          is thrown if the key maps to an object that is not a String/List of Strings.
+     * @throws ConversionException is thrown if the key maps to an object that is not a String/List of Strings.
      * @see #setListDelimiterHandler(ListDelimiterHandler)
      */
-    @java.lang.Override
-    public java.lang.String[] getStringArray(final java.lang.String key) {
-        final java.lang.String[] result = ((java.lang.String[]) (getArray(java.lang.String.class, key)));
-        return result == null ? org.apache.commons.lang3.ArrayUtils.EMPTY_STRING_ARRAY : result;
+    @Override
+    public String[] getStringArray(final String key) {
+        final String[] result = (String[]) getArray(String.class, key);
+        return result == null ? ArrayUtils.EMPTY_STRING_ARRAY : result;
     }
 
     /**
@@ -1171,26 +1141,25 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * @return the {@code Synchronizer} used by this instance
      * @since 2.0
      */
-    @java.lang.Override
-    public final org.apache.commons.configuration2.sync.Synchronizer getSynchronizer() {
+    @Override
+    public final Synchronizer getSynchronizer() {
         return synchronizer;
     }
 
-    @java.lang.Override
-    public org.apache.commons.configuration2.ImmutableConfiguration immutableSubset(final java.lang.String prefix) {
-        return org.apache.commons.configuration2.ConfigurationUtils.unmodifiableConfiguration(subset(prefix));
+    @Override
+    public ImmutableConfiguration immutableSubset(final String prefix) {
+        return ConfigurationUtils.unmodifiableConfiguration(subset(prefix));
     }
 
     /**
      * Initializes the logger. Supports <strong>null</strong> input. This method can be called by derived classes in order to enable
      * logging.
      *
-     * @param log
-     *          the logger
+     * @param log the logger
      * @since 2.0
      */
-    protected final void initLogger(final org.apache.commons.configuration2.io.ConfigurationLogger log) {
-        this.log = (log != null) ? log : org.apache.commons.configuration2.io.ConfigurationLogger.newDummyLogger();
+    protected final void initLogger(final ConfigurationLogger log) {
+        this.log = log != null ? log : ConfigurationLogger.newDummyLogger();
     }
 
     /**
@@ -1199,44 +1168,43 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * instance.
      */
     private void installDefaultInterpolator() {
-        installInterpolator(org.apache.commons.configuration2.interpol.ConfigurationInterpolator.getDefaultPrefixLookups(), null);
+        installInterpolator(ConfigurationInterpolator.getDefaultPrefixLookups(), null);
     }
 
     /**
-     * {@inheritDoc } This implementation creates a new {@code ConfigurationInterpolator} instance and initializes it with
+     * {@inheritDoc} This implementation creates a new {@code ConfigurationInterpolator} instance and initializes it with
      * the given {@code Lookup} objects. In addition, it adds a specialized default {@code Lookup} object which queries this
      * {@code Configuration}.
      *
      * @since 2.0
      */
-    @java.lang.Override
-    public final void installInterpolator(final java.util.Map<java.lang.String, ? extends org.apache.commons.configuration2.interpol.Lookup> prefixLookups, final java.util.Collection<? extends org.apache.commons.configuration2.interpol.Lookup> defLookups) {
-        final org.apache.commons.configuration2.interpol.InterpolatorSpecification spec = new org.apache.commons.configuration2.interpol.InterpolatorSpecification.Builder().withPrefixLookups(prefixLookups).withDefaultLookups(defLookups).withDefaultLookup(new org.apache.commons.configuration2.ConfigurationLookup(this)).create();
-        setInterpolator(org.apache.commons.configuration2.interpol.ConfigurationInterpolator.fromSpecification(spec));
+    @Override
+    public final void installInterpolator(final Map<String, ? extends Lookup> prefixLookups, final Collection<? extends Lookup> defLookups) {
+        final InterpolatorSpecification spec = new InterpolatorSpecification.Builder().withPrefixLookups(prefixLookups).withDefaultLookups(defLookups)
+                .withDefaultLookup(new ConfigurationLookup(this)).create();
+        setInterpolator(ConfigurationInterpolator.fromSpecification(spec));
     }
 
     /**
      * Returns the interpolated value. This implementation delegates to the current {@code ConfigurationInterpolator}. If no
      * {@code ConfigurationInterpolator} is set, the passed in value is returned without changes.
      *
-     * @param value
-     *          the value to interpolate
+     * @param value the value to interpolate
      * @return the value with variables substituted
      */
-    protected java.lang.Object interpolate(final java.lang.Object value) {
-        final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ci = getInterpolator();
+    protected Object interpolate(final Object value) {
+        final ConfigurationInterpolator ci = getInterpolator();
         return ci != null ? ci.interpolate(value) : value;
     }
 
     /**
      * interpolate key names to handle ${key} stuff
      *
-     * @param base
-     *          string to interpolate
+     * @param base string to interpolate
      * @return the key name with the ${key} substituted
      */
-    protected java.lang.String interpolate(final java.lang.String base) {
-        return java.util.Objects.toString(interpolate(((java.lang.Object) (base))), null);
+    protected String interpolate(final String base) {
+        return Objects.toString(interpolate((Object) base), null);
     }
 
     /**
@@ -1247,24 +1215,23 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * component that does not support variable interpolation.
      *
      * @return a configuration with all variables interpolated
-     * @throws org.apache.commons.configuration2.ex.ConfigurationRuntimeException
-     *          if this configuration cannot be cloned
+     * @throws org.apache.commons.configuration2.ex.ConfigurationRuntimeException if this configuration cannot be cloned
      * @since 1.5
      */
-    public org.apache.commons.configuration2.Configuration interpolatedConfiguration() {
+    public Configuration interpolatedConfiguration() {
         // first clone this configuration
-        final org.apache.commons.configuration2.AbstractConfiguration config = ((org.apache.commons.configuration2.AbstractConfiguration) (org.apache.commons.configuration2.ConfigurationUtils.cloneConfiguration(this)));
+        final AbstractConfiguration config = (AbstractConfiguration) ConfigurationUtils.cloneConfiguration(this);
         // now perform interpolation
-        config.setListDelimiterHandler(new org.apache.commons.configuration2.convert.DisabledListDelimiterHandler());
+        config.setListDelimiterHandler(new DisabledListDelimiterHandler());
         getKeys().forEachRemaining(key -> config.setProperty(key, getList(key)));
         config.setListDelimiterHandler(getListDelimiterHandler());
         return config;
     }
 
     /**
-     * {@inheritDoc } This implementation handles synchronization and delegates to {@code isEmptyInternal()}.
+     * {@inheritDoc} This implementation handles synchronization and delegates to {@code isEmptyInternal()}.
      */
-    @java.lang.Override
+    @Override
     public final boolean isEmpty() {
         return syncRead(() -> isEmptyInternal(), false);
     }
@@ -1284,13 +1251,12 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * the calling method transforms the value to a string and returns a list or an array with this single element. This
      * implementation returns <strong>true</strong> if the value is of a wrapper type for a primitive type.
      *
-     * @param value
-     *          the value to be checked
+     * @param value the value to be checked
      * @return a flag whether the value is a scalar
      * @since 1.7
      */
-    protected boolean isScalarValue(final java.lang.Object value) {
-        return org.apache.commons.lang3.ClassUtils.wrapperToPrimitive(value.getClass()) != null;
+    protected boolean isScalarValue(final Object value) {
+        return ClassUtils.wrapperToPrimitive(value.getClass()) != null;
     }
 
     /**
@@ -1303,25 +1269,24 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to {@code beginRead()} or {@code beginWrite()}, depending on the
+     * {@inheritDoc} This implementation delegates to {@code beginRead()} or {@code beginWrite()}, depending on the
      * {@code LockMode} argument. Subclasses can override these protected methods to perform additional steps when a
      * configuration is locked.
      *
-     * @throws NullPointerException
-     *          if the argument is <strong>null</strong>
+     * @throws NullPointerException if the argument is <strong>null</strong>
      * @since 2.0
      */
-    @java.lang.Override
-    public final void lock(final org.apache.commons.configuration2.sync.LockMode mode) {
+    @Override
+    public final void lock(final LockMode mode) {
         switch (mode) {
-            case org.apache.commons.configuration2.sync.LockMode.READ :
+            case READ:
                 beginRead(false);
                 break;
-            case org.apache.commons.configuration2.sync.LockMode.WRITE :
+            case WRITE:
                 beginWrite(false);
                 break;
-            default :
-                throw new java.lang.IllegalArgumentException("Unsupported LockMode: " + mode);
+            default:
+                throw new IllegalArgumentException("Unsupported LockMode: " + mode);
         }
     }
 
@@ -1329,11 +1294,10 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Sets the {@code ConfigurationDecoder} for this configuration. This object is used by
      * {@link #getEncodedString(String)}.
      *
-     * @param configurationDecoder
-     *          the {@code ConfigurationDecoder}
+     * @param configurationDecoder the {@code ConfigurationDecoder}
      * @since 2.0
      */
-    public void setConfigurationDecoder(final org.apache.commons.configuration2.ConfigurationDecoder configurationDecoder) {
+    public void setConfigurationDecoder(final ConfigurationDecoder configurationDecoder) {
         this.configurationDecoder = configurationDecoder;
     }
 
@@ -1343,15 +1307,13 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * newly created configuration uses a default {@code ConversionHandler} implementation. This can be changed while
      * initializing the configuration (for example via a builder). Note that access to this property is not synchronized.
      *
-     * @param conversionHandler
-     *          the {@code ConversionHandler} to be used (must not be <strong>null</strong>)
-     * @throws IllegalArgumentException
-     *          if the {@code ConversionHandler} is <strong>null</strong>
+     * @param conversionHandler the {@code ConversionHandler} to be used (must not be <strong>null</strong>)
+     * @throws IllegalArgumentException if the {@code ConversionHandler} is <strong>null</strong>
      * @since 2.0
      */
-    public void setConversionHandler(final org.apache.commons.configuration2.convert.ConversionHandler conversionHandler) {
+    public void setConversionHandler(final ConversionHandler conversionHandler) {
         if (conversionHandler == null) {
-            throw new java.lang.IllegalArgumentException("ConversionHandler must not be null!");
+            throw new IllegalArgumentException("ConversionHandler must not be null!");
         }
         this.conversionHandler = conversionHandler;
     }
@@ -1365,35 +1327,34 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * builder. Normal client code should better call {@link #installInterpolator(Map, Collection)} to define the
      * {@code ConfigurationInterpolator} in a single step.
      *
-     * @param lookups
-     *          the collection with default {@code Lookup} objects to be added
+     * @param lookups the collection with default {@code Lookup} objects to be added
      * @since 2.0
      */
-    public void setDefaultLookups(final java.util.Collection<? extends org.apache.commons.configuration2.interpol.Lookup> lookups) {
+    public void setDefaultLookups(final Collection<? extends Lookup> lookups) {
         boolean success;
         do {
-            final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ciOld = getInterpolator();
-            final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ciNew = (ciOld != null) ? ciOld : new org.apache.commons.configuration2.interpol.ConfigurationInterpolator();
-            org.apache.commons.configuration2.interpol.Lookup confLookup = findConfigurationLookup(ciNew);
+            final ConfigurationInterpolator ciOld = getInterpolator();
+            final ConfigurationInterpolator ciNew = ciOld != null ? ciOld : new ConfigurationInterpolator();
+            Lookup confLookup = findConfigurationLookup(ciNew);
             if (confLookup == null) {
-                confLookup = new org.apache.commons.configuration2.ConfigurationLookup(this);
+                confLookup = new ConfigurationLookup(this);
             } else {
                 ciNew.removeDefaultLookup(confLookup);
             }
             ciNew.addDefaultLookups(lookups);
             ciNew.addDefaultLookup(confLookup);
             success = interpolator.compareAndSet(ciOld, ciNew);
-        } while (!success );
+        } while (!success);
     }
 
     /**
-     * {@inheritDoc } This implementation sets the passed in object without further modifications. A <strong>null</strong> argument is
+     * {@inheritDoc} This implementation sets the passed in object without further modifications. A <strong>null</strong> argument is
      * allowed; this disables interpolation.
      *
      * @since 2.0
      */
-    @java.lang.Override
-    public final void setInterpolator(final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ci) {
+    @Override
+    public final void setInterpolator(final ConfigurationInterpolator ci) {
         interpolator.set(ci);
     }
 
@@ -1412,15 +1373,13 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * exceptions.
      * </p>
      *
-     * @param listDelimiterHandler
-     *          the {@code ListDelimiterHandler} to be used (must not be <strong>null</strong>)
-     * @throws IllegalArgumentException
-     *          if the {@code ListDelimiterHandler} is <strong>null</strong>
+     * @param listDelimiterHandler the {@code ListDelimiterHandler} to be used (must not be <strong>null</strong>)
+     * @throws IllegalArgumentException if the {@code ListDelimiterHandler} is <strong>null</strong>
      * @since 2.0
      */
-    public void setListDelimiterHandler(final org.apache.commons.configuration2.convert.ListDelimiterHandler listDelimiterHandler) {
+    public void setListDelimiterHandler(final ListDelimiterHandler listDelimiterHandler) {
         if (listDelimiterHandler == null) {
-            throw new java.lang.IllegalArgumentException("List delimiter handler must not be null!");
+            throw new IllegalArgumentException("List delimiter handler must not be null!");
         }
         this.listDelimiterHandler = listDelimiterHandler;
     }
@@ -1431,11 +1390,10 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * want to enable logging should call this method during their initialization with the logger to be used. It is legal to
      * pass a <strong>null</strong> logger; in this case, logging will be disabled.
      *
-     * @param log
-     *          the new logger
+     * @param log the new logger
      * @since 2.0
      */
-    public void setLogger(final org.apache.commons.configuration2.io.ConfigurationLogger log) {
+    public void setLogger(final ConfigurationLogger log) {
         initLogger(log);
     }
 
@@ -1445,18 +1403,17 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * instance is created. Note: This method is mainly intended to be used for initializing a configuration when it is
      * created by a builder. Normal client code can directly update the {@code ConfigurationInterpolator}.
      *
-     * @param parent
-     *          the parent {@code ConfigurationInterpolator} to be set
+     * @param parent the parent {@code ConfigurationInterpolator} to be set
      * @since 2.0
      */
-    public void setParentInterpolator(final org.apache.commons.configuration2.interpol.ConfigurationInterpolator parent) {
+    public void setParentInterpolator(final ConfigurationInterpolator parent) {
         boolean success;
         do {
-            final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ciOld = getInterpolator();
-            final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ciNew = (ciOld != null) ? ciOld : new org.apache.commons.configuration2.interpol.ConfigurationInterpolator();
+            final ConfigurationInterpolator ciOld = getInterpolator();
+            final ConfigurationInterpolator ciNew = ciOld != null ? ciOld : new ConfigurationInterpolator();
             ciNew.setParentInterpolator(parent);
             success = interpolator.compareAndSet(ciOld, ciNew);
-        } while (!success );
+        } while (!success);
     }
 
     /**
@@ -1467,28 +1424,27 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * should better call {@link #installInterpolator(Map, Collection)} to define the {@code ConfigurationInterpolator} in a
      * single step.
      *
-     * @param lookups
-     *          a map with new {@code Lookup} objects and their prefixes (may be <strong>null</strong>)
+     * @param lookups a map with new {@code Lookup} objects and their prefixes (may be <strong>null</strong>)
      * @since 2.0
      */
-    public void setPrefixLookups(final java.util.Map<java.lang.String, ? extends org.apache.commons.configuration2.interpol.Lookup> lookups) {
+    public void setPrefixLookups(final Map<String, ? extends Lookup> lookups) {
         boolean success;
         do {
             // do this in a loop because the ConfigurationInterpolator
             // instance may be changed by another thread
-            final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ciOld = getInterpolator();
-            final org.apache.commons.configuration2.interpol.ConfigurationInterpolator ciNew = (ciOld != null) ? ciOld : new org.apache.commons.configuration2.interpol.ConfigurationInterpolator();
+            final ConfigurationInterpolator ciOld = getInterpolator();
+            final ConfigurationInterpolator ciNew = ciOld != null ? ciOld : new ConfigurationInterpolator();
             ciNew.registerLookups(lookups);
             success = interpolator.compareAndSet(ciOld, ciNew);
-        } while (!success );
+        } while (!success);
     }
 
-    @java.lang.Override
-    public final void setProperty(final java.lang.String key, final java.lang.Object value) {
+    @Override
+    public final void setProperty(final String key, final Object value) {
         syncWrite(() -> {
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.SET_PROPERTY, key, value, true);
+            fireEvent(ConfigurationEvent.SET_PROPERTY, key, value, true);
             setPropertyInternal(key, value);
-            fireEvent(org.apache.commons.configuration2.event.ConfigurationEvent.SET_PROPERTY, key, value, false);
+            fireEvent(ConfigurationEvent.SET_PROPERTY, key, value, false);
         }, false);
     }
 
@@ -1497,13 +1453,11 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * implementation of this functionality by clearing the specified key and delegating to {@code addProperty()}.
      * Subclasses should override this method if they can provide a more efficient algorithm for setting a property value.
      *
-     * @param key
-     *          the property key
-     * @param value
-     *          the new property value
+     * @param key the property key
+     * @param value the new property value
      * @since 2.0
      */
-    protected void setPropertyInternal(final java.lang.String key, final java.lang.Object value) {
+    protected void setPropertyInternal(final String key, final Object value) {
         setDetailEvents(false);
         try {
             clearProperty(key);
@@ -1517,14 +1471,13 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * Sets the object responsible for synchronizing this configuration. This method has to be called with a suitable
      * {@code Synchronizer} object when initializing this configuration instance in order to make it thread-safe.
      *
-     * @param synchronizer
-     *          the new {@code Synchronizer}; can be <strong>null</strong>, then this instance uses a
-     *          {@link NoOpSynchronizer}
+     * @param synchronizer the new {@code Synchronizer}; can be <strong>null</strong>, then this instance uses a
+     *        {@link NoOpSynchronizer}
      * @since 2.0
      */
-    @java.lang.Override
-    public final void setSynchronizer(final org.apache.commons.configuration2.sync.Synchronizer synchronizer) {
-        this.synchronizer = (synchronizer != null) ? synchronizer : org.apache.commons.configuration2.sync.NoOpSynchronizer.INSTANCE;
+    @Override
+    public final void setSynchronizer(final Synchronizer synchronizer) {
+        this.synchronizer = synchronizer != null ? synchronizer : NoOpSynchronizer.INSTANCE;
     }
 
     /**
@@ -1534,17 +1487,16 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      * {@code NoSuchElementException} exception. Note that getter methods for primitive data types are not affected by this
      * flag.
      *
-     * @param throwExceptionOnMissing
-     *          The new value for the property
+     * @param throwExceptionOnMissing The new value for the property
      */
     public void setThrowExceptionOnMissing(final boolean throwExceptionOnMissing) {
         this.throwExceptionOnMissing = throwExceptionOnMissing;
     }
 
     /**
-     * {@inheritDoc } This implementation handles synchronization and delegates to {@code sizeInternal()}.
+     * {@inheritDoc} This implementation handles synchronization and delegates to {@code sizeInternal()}.
      */
-    @java.lang.Override
+    @Override
     public final int size() {
         return syncRead(this::sizeInternal, false);
     }
@@ -1558,18 +1510,18 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
      */
     protected int sizeInternal() {
         int size = 0;
-        for (final java.util.Iterator<java.lang.String> keyIt = getKeysInternal(); keyIt.hasNext(); size++) {
+        for (final Iterator<String> keyIt = getKeysInternal(); keyIt.hasNext(); size++) {
             keyIt.next();
         }
         return size;
     }
 
-    @java.lang.Override
-    public org.apache.commons.configuration2.Configuration subset(final java.lang.String prefix) {
-        return new org.apache.commons.configuration2.SubsetConfiguration(this, prefix, org.apache.commons.configuration2.AbstractConfiguration.DELIMITER);
+    @Override
+    public Configuration subset(final String prefix) {
+        return new SubsetConfiguration(this, prefix, DELIMITER);
     }
 
-    <T, E extends java.lang.Throwable> T syncRead(final org.apache.commons.lang3.function.FailableSupplier<T, E> supplier, final boolean optimize) throws E {
+    <T, E extends Throwable> T syncRead(final FailableSupplier<T, E> supplier, final boolean optimize) throws E {
         beginRead(optimize);
         try {
             return supplier.get();
@@ -1578,7 +1530,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
         }
     }
 
-    void syncRead(final java.lang.Runnable runnable, final boolean optimize) {
+    void syncRead(final Runnable runnable, final boolean optimize) {
         beginRead(optimize);
         try {
             runnable.run();
@@ -1596,7 +1548,7 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
         }
     }
 
-    <E extends java.lang.Throwable> void syncWrite(final org.apache.commons.lang3.function.FailableRunnable<E> runnable, final boolean optimize) throws E {
+    <E extends Throwable> void syncWrite(final FailableRunnable<E> runnable, final boolean optimize) throws E {
         beginWrite(optimize);
         try {
             runnable.run();
@@ -1606,24 +1558,23 @@ public abstract class AbstractConfiguration extends org.apache.commons.configura
     }
 
     /**
-     * {@inheritDoc } This implementation delegates to {@code endRead()} or {@code endWrite()}, depending on the
+     * {@inheritDoc} This implementation delegates to {@code endRead()} or {@code endWrite()}, depending on the
      * {@code LockMode} argument. Subclasses can override these protected methods to perform additional steps when a
      * configuration's lock is released.
      *
-     * @throws NullPointerException
-     *          if the argument is <strong>null</strong>
+     * @throws NullPointerException if the argument is <strong>null</strong>
      */
-    @java.lang.Override
-    public final void unlock(final org.apache.commons.configuration2.sync.LockMode mode) {
+    @Override
+    public final void unlock(final LockMode mode) {
         switch (mode) {
-            case org.apache.commons.configuration2.sync.LockMode.READ :
+            case READ:
                 endRead();
                 break;
-            case org.apache.commons.configuration2.sync.LockMode.WRITE :
+            case WRITE:
                 endWrite();
                 break;
-            default :
-                throw new java.lang.IllegalArgumentException("Unsupported LockMode: " + mode);
+            default:
+                throw new IllegalArgumentException("Unsupported LockMode: " + mode);
         }
     }
 }

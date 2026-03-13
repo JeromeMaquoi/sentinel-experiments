@@ -5,6 +5,7 @@ import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.FilePipelineLogger;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.modules.EnergyMeasurementsModule;
+import be.unamur.snail.modules.MeasurementsImportModule;
 import be.unamur.snail.modules.Module;
 import be.unamur.snail.exceptions.ModuleException;
 import be.unamur.snail.modules.SpoonInstrumentConstructorModule;
@@ -43,6 +44,9 @@ public class Main {
                 break;
             case "measure":
                 module = new EnergyMeasurementsModule();
+                break;
+            case "import-measurements":
+                module = new MeasurementsImportModule();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported module type: " + moduleArg); 

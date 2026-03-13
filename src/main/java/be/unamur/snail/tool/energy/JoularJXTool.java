@@ -1,21 +1,13 @@
 package be.unamur.snail.tool.energy;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.database.DatabasePreparerFactory;
-import be.unamur.snail.database.MongoServiceManager;
-import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.exceptions.BuildFileNotFoundException;
-import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
-import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.stages.*;
-import be.unamur.snail.utils.CommandRunner;
-import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 public class JoularJXTool implements EnergyMeasurementTool {
@@ -56,24 +48,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
 
     @Override
     public List<Stage> createPostProcessingStages() {
-        // TODO: create a new module that contains the following stages, so that this new module is responsible for putting all the JoularJX measurements in the database, and this module is only responsible for generating the CSV files with JoularJX
-//        CommandRunner runner = new SimpleCommandRunner();
-//        MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);
-//        BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
-//        DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
-        return List.of(
-//                new StopBackendStage(runner, backendFactory, databaseFactory),
-//                new PrepareBackendStage(runner, backendFactory, databaseFactory),
-//                createImportMeasurementsStage()
-        );
-    }
-
-    protected ImportJoularJXMeasurementsStage createImportMeasurementsStage() {
-        String subProject = config.getProject().getSubProject();
-        String totalProjectString = subProject != null && !subProject.isBlank() ? subProject + "/joularjx-result" : "joularjx-result";
-        Path totalProjectPath = Paths.get(totalProjectString).normalize();
-        log.debug("Configured ImportJoularJXMeasurementsStage with results root: {}", totalProjectPath);
-        return new ImportJoularJXMeasurementsStage(totalProjectPath);
+        return List.of();
     }
 
     /**

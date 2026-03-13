@@ -24,8 +24,6 @@ public class Config {
      * Configuration of the Git repository of the project being analyzed, including the URL, commit hash, target directory for cloning, JDK version, and flags for overwriting existing clones or copies.
      */
     private RepoConfig repo;
-
-    private EnvironmentConfig environment;
     /**
      * Configuration for logging during the execution of the pipeline, including the logging level, directory for log files, whether to also log to console, and whether to clear previous logs before starting a new execution.
      */
@@ -102,14 +100,6 @@ public class Config {
 
     public void setRepoForTests(RepoConfig repo) {
         this.repo = repo;
-    }
-
-    public EnvironmentConfig getEnvironment() {
-        return environment;
-    }
-
-    public void setEnvironmentForTests(EnvironmentConfig environment) {
-        this.environment = environment;
     }
 
     /**
@@ -336,16 +326,6 @@ public class Config {
         }
     }
 
-    public static class EnvironmentConfig {
-        @JsonProperty("sdkman-init")
-        private String sdkmanInit;
-
-        public  String getSdkmanInit() {
-            return sdkmanInit;
-        }
-
-        public void setSdkmanInitForTests(String sdkmanInit) {}
-    }
 
     /**
      * LogConfig class represents the configuration related to logging during the execution of the pipeline. It is a nested class within the Config class.

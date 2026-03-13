@@ -96,7 +96,7 @@ class JoularJXFileProcessorTest {
     }
 
     @Test
-    void processFileShouldImportFileWhenAllowedTest() throws IOException, InterruptedException {
+    void processShouldImportFileWhenAllowedTest() throws IOException, InterruptedException {
         Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-app-runtime-calltrees.csv");
         JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
         BaseMeasurementDTO dto = new RuntimeMethodMeasurementDTO();
@@ -121,7 +121,7 @@ class JoularJXFileProcessorTest {
             csvParser.when(() -> CsvParser.parseCsvFile(filePath, Scope.APP, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES, iteration, new CommitSimpleDTO(), context))
                     .thenReturn(List.of(dto));
 
-            fileProcessor.processFile(filePath, iteration, context);
+            fileProcessor.process(filePath, iteration, context);
 
             verify(serializer).serialize(any());
             verify(httpClient).post(eq("http://localhost:8080/api/v2/measurements/runtime/calltrees/bulk"), eq("[json]"));
@@ -130,7 +130,7 @@ class JoularJXFileProcessorTest {
     }
 
     @Test
-    void processFileShouldSkipFileWhenNotAllowedTest() {
+    void processShouldSkipFileWhenNotAllowedTest() {
         Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-all-total-methods.csv");
         JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
 
@@ -146,7 +146,7 @@ class JoularJXFileProcessorTest {
             mapper.when(() -> JoularJXMapper.mapMeasurementLevel("runtime")).thenReturn(MeasurementLevel.RUNTIME);
             mapper.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
 
-            fileProcessor.processFile(filePath, iteration, context);
+            fileProcessor.process(filePath, iteration, context);
 
             verify(log).debug(eq("Skipping file {}: scope {}, measurement type {}, monitoring type {} not allowed by config"), eq(filePath), any(), any(), any());
             verifyNoInteractions(serializer);
@@ -155,13 +155,13 @@ class JoularJXFileProcessorTest {
     }
 
     @Test
-    void processFileShouldSkipWhenPathParsingFailsTest() {
+    void processShouldSkipWhenPathParsingFailsTest() {
         Path filePath = Path.of("/some/invalid/path/file.csv");
 
         try (MockedStatic<JoularJXPathParser> pathParser = mockStatic(JoularJXPathParser.class)) {
             pathParser.when(() -> JoularJXPathParser.parse(filePath)).thenThrow(new IllegalArgumentException("Invalid path"));
 
-            fileProcessor.processFile(filePath, iteration, context);
+            fileProcessor.process(filePath, iteration, context);
 
             verify(log).debug(contains("Skipping file"), eq(filePath), contains("Invalid path"));
             verifyNoInteractions(serializer);
@@ -170,7 +170,7 @@ class JoularJXFileProcessorTest {
     }
 
     @Test
-    void processFileShouldThrowRuntimeExceptionOnUnexpectedErrorTest() throws IOException {
+    void processShouldThrowRuntimeExceptionOnUnexpectedErrorTest() throws IOException {
         Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-app-runtime-calltrees.csv");
         JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
 
@@ -192,7 +192,7 @@ class JoularJXFileProcessorTest {
                     .thenThrow(new IOException("File read error"));
 
             RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-                fileProcessor.processFile(filePath, iteration, context);
+                fileProcessor.process(filePath, iteration, context);
             });
             assertInstanceOf(IOException.class, ex.getCause());
             verify(log).error(contains("Error processing file"), eq(filePath), contains("File read error"));

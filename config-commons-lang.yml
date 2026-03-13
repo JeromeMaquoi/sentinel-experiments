@@ -16,6 +16,8 @@ repo:
   jdk: "17.0.18-tem"
   overwrite-clone: true
   overwrite-copy: true
+environment:
+  sdkman-init: "/etc/profile.d/sdkman.sh"
 log:
   level: INFO
   directory: "/home/commun/infom125/sentinel-group/sentinel-experiments/logs/commons-lang/"

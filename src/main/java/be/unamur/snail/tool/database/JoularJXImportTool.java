@@ -52,7 +52,7 @@ public class JoularJXImportTool implements ImportTool {
         String totalProjectString = subProject != null && !subProject.isBlank() ? subProject + "/joularjx-result" : "joularjx-result";
         Path totalProjectPath = Paths.get(totalProjectString).normalize();
 
-        FolderProcessorFactory processorFactory = new JoularJXFolderProcessorFactory();
+        FolderProcessorFactory processorFactory = new JoularJXFolderProcessorFactory(config.getExecutionPlan().getEnergyMeasurements().getImportConfig());
 
         MeasurementsImportService service = new MeasurementsImportService(new DefaultDirectoryService(), processorFactory);
 

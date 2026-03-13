@@ -6,11 +6,13 @@ import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
 
 public class JoularJXFolderProcessorFactory implements FolderProcessorFactory {
+    private final Config.ImportConfig importConfig;
+    public JoularJXFolderProcessorFactory(Config.ImportConfig importConfig) {
+        this.importConfig = importConfig;
+    }
+
     @Override
     public FolderProcessor create(Context context) {
-        Config config = Config.getInstance();
-        Config.ImportConfig importConfig = config.getExecutionPlan().getEnergyMeasurements().getImportConfig();
-
         PipelineLogger log =  context.getLogger();
 
         SimpleHttpClient httpClient = new SimpleHttpClient();

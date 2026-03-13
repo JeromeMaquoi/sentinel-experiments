@@ -4,12 +4,15 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.database.MongoServiceManager;
 import be.unamur.snail.database.SimpleDatabasePreparerFactory;
+import be.unamur.snail.files.DefaultDirectoryService;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
 import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
+import be.unamur.snail.services.MeasurementsImportService;
 import be.unamur.snail.stages.ImportMeasurementsStage;
 import be.unamur.snail.stages.PrepareBackendStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.stages.StopBackendStage;
+import be.unamur.snail.tool.energy.FolderProcessorFactory;
 import be.unamur.snail.tool.energy.JoularJXFolderProcessorFactory;
 import be.unamur.snail.utils.CommandRunner;
 import be.unamur.snail.utils.SimpleCommandRunner;
@@ -17,7 +20,6 @@ import be.unamur.snail.utils.SimpleCommandRunner;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class JoularJXImportTool implements ImportTool {
     private final Config config;
@@ -39,8 +41,8 @@ public class JoularJXImportTool implements ImportTool {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
 
         return List.of(
-//                new StopBackendStage(runner, backendFactory, databaseFactory),
-//                new PrepareBackendStage(runner, backendFactory, databaseFactory)
+                new StopBackendStage(runner, backendFactory, databaseFactory),
+                new PrepareBackendStage(runner, backendFactory, databaseFactory)
         );
     }
 
@@ -50,8 +52,12 @@ public class JoularJXImportTool implements ImportTool {
         String totalProjectString = subProject != null && !subProject.isBlank() ? subProject + "/joularjx-result" : "joularjx-result";
         Path totalProjectPath = Paths.get(totalProjectString).normalize();
 
+        FolderProcessorFactory processorFactory = new JoularJXFolderProcessorFactory();
+
+        MeasurementsImportService service = new MeasurementsImportService(new DefaultDirectoryService(), processorFactory);
+
         return List.of(
-                new ImportMeasurementsStage(totalProjectPath, new JoularJXFolderProcessorFactory())
+                new ImportMeasurementsStage(totalProjectPath, service)
         );
     }
 

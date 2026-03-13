@@ -1,11 +1,10 @@
 package be.unamur.snail.stages;
 
+import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
-import be.unamur.snail.exceptions.MissingContextKeyException;
-import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.tool.energy.FolderProcessor;
-import be.unamur.snail.tool.energy.FolderProcessorFactory;
-import be.unamur.snail.tool.energy.model.RunIterationDTO;
+import be.unamur.snail.exceptions.MissingConfigKeyException;
+import be.unamur.snail.services.MeasurementsImportService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -18,44 +17,47 @@ import static org.mockito.Mockito.*;
 class ImportMeasurementsStageTest {
     @TempDir
     Path tempDir;
+    private Config config;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        Path yaml = tempDir.resolve("config.yml");
+        Files.writeString(yaml, """
+            project:
+              sub-project: ""
+            repo:
+              url: "https://example.com/repo.git"
+              commit: "123abc"
+              target-dir: ""
+            log:
+              level: "DEBUG"
+        """);
+        Config.load(yaml.toString());
+        config = Config.getInstance();
+    }
 
     @Test
     void executeThrowsWhenRepoPathMissingTest() {
         Context context = mock(Context.class);
-        when(context.getRepoPath()).thenReturn(null);
 
-        FolderProcessorFactory factory = mock(FolderProcessorFactory.class);
-        ImportMeasurementsStage stage = new ImportMeasurementsStage(Path.of("results"), factory);
+        MeasurementsImportService service  = mock(MeasurementsImportService.class);
+        ImportMeasurementsStage stage = new ImportMeasurementsStage(Path.of("results"), service);
+        assertThrows(MissingConfigKeyException.class, () -> stage.execute(context));
 
-        assertThrows(MissingContextKeyException.class, () -> stage.execute(context));
+        config.setRepoForTests(new Config.RepoConfig());
+        assertThrows(MissingConfigKeyException.class, () -> stage.execute(context));
     }
 
     @Test
-    void executeProcessesIterationFoldersTest() throws Exception {
-        Path results = Files.createDirectory(tempDir.resolve("results"));
-        Path iteration = Files.createDirectory(results.resolve("123-4567"));
-
+    void executeCallsServiceTest() throws Exception {
+        MeasurementsImportService service = mock(MeasurementsImportService.class);
+        ImportMeasurementsStage stage = new ImportMeasurementsStage(Path.of("results"), service);
         Context context = mock(Context.class);
-        when(context.getRepoPath()).thenReturn(tempDir.toString());
 
-        PipelineLogger log =  mock(PipelineLogger.class);
-        when(context.getLogger()).thenReturn(log);
+        config.getRepo().setTargetDirForTests("/repo");
 
-        FolderProcessor processor = mock(FolderProcessor.class);
-        FolderProcessorFactory factory = mock(FolderProcessorFactory.class);
-        when(factory.create(context)).thenReturn(processor);
-
-        ImportMeasurementsStage stage = new ImportMeasurementsStage(Path.of("results"), factory);
         stage.execute(context);
 
-        verify(processor).processFolder(eq(iteration), any(), eq(context));
-    }
-
-    @Test
-    void parseIterationExtractsPidAndTimestampTest() {
-        ImportMeasurementsStage stage = new ImportMeasurementsStage(Path.of("results"), mock(FolderProcessorFactory.class));
-        RunIterationDTO dto = stage.parseIterationFromFolder(Path.of("123-4567"));
-        assertEquals(123, dto.getPid());
-        assertEquals(4567L, dto.getStartTimestamp());
+        verify(service).importMeasurements(eq(Path.of("results")), eq("/repo"), eq(context));
     }
 }

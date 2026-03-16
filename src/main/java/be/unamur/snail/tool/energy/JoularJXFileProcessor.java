@@ -25,7 +25,7 @@ public class JoularJXFileProcessor {
         this.log = log;
     }
 
-    public void process(Path path, RunIterationDTO iteration, Context context) {
+    public void processFile(Path path, RunIterationDTO iteration, Context context) {
         try {
             JoularJXPathParser.PathInfo pathInfo = parsePath(path);
             if (pathInfo == null) return;

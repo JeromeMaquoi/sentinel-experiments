@@ -16,6 +16,8 @@ repo:
   jdk: "17.0.17-tem"
   overwrite-clone: true
   overwrite-copy: true
+environment:
+  sdkman-init: "/etc/profile.d/sdkman.sh"
 log:
   level: INFO
   directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/spring-boot/"

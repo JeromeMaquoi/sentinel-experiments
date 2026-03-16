@@ -20,7 +20,7 @@ public class SetupJdkStage implements Stage {
     private final CommandRunner runner;
 
     public SetupJdkStage() {
-        this(new SdkmanJdkManager(new SimpleCommandRunner()), Config.getInstance(), new SimpleCommandRunner());
+        this(new SdkmanJdkManager(new SimpleCommandRunner(), Config.getInstance().getEnvironment().getSdkmanInit()), Config.getInstance(), new SimpleCommandRunner());
     }
 
     public SetupJdkStage(JdkManager manager, Config config, CommandRunner runner) {

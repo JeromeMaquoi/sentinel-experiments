@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 class MeasurementsImportServiceTest {
@@ -72,19 +73,24 @@ class MeasurementsImportServiceTest {
         when(directoryService.exists(totalPath)).thenReturn(true);
         when(directoryService.isDirectory(totalPath)).thenReturn(true);
 
-        Path iteration1 = totalPath.resolve("/repo/results/1234-5678");
-        Path iteration2 = totalPath.resolve("/repo/results/4321-8765");
+        Path iteration1 = totalPath.resolve("1234-5678");
+        Path iteration2 = totalPath.resolve("4321-8765");
 
         when(directoryService.listDirectories(totalPath)).thenReturn(List.of(iteration1, iteration2));
 
-        service.importMeasurements(resultsRoot, targetDir, context);
+        ImportReport report = service.importMeasurements(resultsRoot, targetDir, context);
 
+        assertNotNull(report);
         verify(processorFactory).create(context);
         verify(processor).processFolder(eq(iteration1), any(RunIterationDTO.class), eq(context));
         verify(processor).processFolder(eq(iteration2), any(RunIterationDTO.class), eq(context));
 
-        verify(logger).info("Importing iteration folder: {}", iteration1);
-        verify(logger).info("Importing iteration folder: {}", iteration2);
+        // Verify new log messages - verify approximate messages were logged
+        verify(logger).info(contains("Starting measurements import from"), any());
+        verify(logger).info(contains("Found"), anyInt());
+        verify(logger).info(contains("Processing iteration folder"), eq(iteration1));
+        verify(logger).info(contains("Processing iteration folder"), eq(iteration2));
+        verify(logger).info(contains("Measurement import completed"), any());
     }
 
     @Test

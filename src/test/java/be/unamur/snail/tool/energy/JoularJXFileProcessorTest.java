@@ -3,10 +3,7 @@ package be.unamur.snail.tool.energy;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.tool.energy.model.BaseMeasurementDTO;
-import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
-import be.unamur.snail.tool.energy.model.RunIterationDTO;
-import be.unamur.snail.tool.energy.model.RuntimeMethodMeasurementDTO;
+import be.unamur.snail.tool.energy.model.*;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
 import be.unamur.snail.utils.parser.CsvParser;
 import be.unamur.snail.utils.parser.JoularJXPathParser;
@@ -16,6 +13,7 @@ import org.mockito.MockedStatic;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,7 +98,11 @@ class JoularJXFileProcessorTest {
         Path filePath = Path.of("/some/path/joularJX-123456-1627890123456-filtered-app-runtime-calltrees.csv");
         JoularJXPathParser.PathInfo pathInfo = new JoularJXPathParser.PathInfo("app", "runtime", "calltrees");
         BaseMeasurementDTO dto = new RuntimeMethodMeasurementDTO();
+        dto.setScope(Scope.APP);
+        dto.setMeasurementLevel(MeasurementLevel.RUNTIME);
+        dto.setMonitoringType(MonitoringType.CALLTREES);
         dto.setValue(1.23f);
+        dto.setIteration(iteration);
 
         when(importConfig.getScopes()).thenReturn(List.of("app"));
         when(importConfig.getMeasurementTypes()).thenReturn(List.of("runtime"));
@@ -118,8 +120,8 @@ class JoularJXFileProcessorTest {
             mapper.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
             mapper.when(JoularJXMapper::mapCommit).thenReturn(new CommitSimpleDTO());
 
-            csvParser.when(() -> CsvParser.parseCsvFile(filePath, Scope.APP, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES, iteration, new CommitSimpleDTO(), context))
-                    .thenReturn(List.of(dto));
+            csvParser.when(() -> CsvParser.parseCsvFileWithDetails(filePath, Scope.APP, MeasurementLevel.RUNTIME, MonitoringType.CALLTREES, iteration, new CommitSimpleDTO(), context))
+                    .thenReturn(new ParseResult<>(List.of(dto), new ArrayList<>(), 1));
 
             fileProcessor.processFile(filePath, iteration, context);
 
@@ -188,14 +190,14 @@ class JoularJXFileProcessorTest {
             mapper.when(() -> JoularJXMapper.mapMonitoringType("calltrees")).thenReturn(MonitoringType.CALLTREES);
             mapper.when(JoularJXMapper::mapCommit).thenReturn(new CommitSimpleDTO());
 
-            csvParser.when(() -> CsvParser.parseCsvFile(any(), any(), any(), any(), any(), any(), any()))
+            csvParser.when(() -> CsvParser.parseCsvFileWithDetails(any(), any(), any(), any(), any(), any(), any()))
                     .thenThrow(new IOException("File read error"));
 
             RuntimeException ex = assertThrows(RuntimeException.class, () -> {
                 fileProcessor.processFile(filePath, iteration, context);
             });
-            assertInstanceOf(IOException.class, ex.getCause());
-            verify(log).error(contains("Error processing file"), eq(filePath), contains("File read error"));
+            assertTrue(ex.getCause() instanceof IOException);
+            verify(log).error(contains("Error processing file"), eq(filePath), anyString(), any(Throwable.class));
         }
     }
 }

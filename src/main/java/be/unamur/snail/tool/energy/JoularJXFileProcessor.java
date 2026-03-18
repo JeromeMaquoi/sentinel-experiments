@@ -3,8 +3,10 @@ package be.unamur.snail.tool.energy;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.services.ImportValidationService;
 import be.unamur.snail.tool.energy.model.*;
 import be.unamur.snail.tool.energy.serializer.DataSerializer;
+import be.unamur.snail.utils.ChecksumUtil;
 import be.unamur.snail.utils.Utils;
 import be.unamur.snail.utils.parser.CsvParser;
 import be.unamur.snail.utils.parser.JoularJXPathParser;
@@ -42,8 +44,43 @@ public class JoularJXFileProcessor {
             log.debug("Importing file: {}", path);
             CommitSimpleDTO commit = JoularJXMapper.mapCommit();
 
-            List<? extends BaseMeasurementDTO> dtos = CsvParser.parseCsvFile(path, scope, measurementLevel, monitoringType, iteration, commit, context);
-            String json = serializer.serialize(dtos);
+            // Parse CSV file with detailed error tracking
+            ParseResult<? extends BaseMeasurementDTO> parseResult = CsvParser.parseCsvFileWithDetails(
+                    path, scope, measurementLevel, monitoringType, iteration, commit, context
+            );
+
+            List<? extends BaseMeasurementDTO> dtos = parseResult.getParsedItems();
+            
+            log.debug("CSV File '{}' parse result: Total lines: {}, Parsed: {}, Errors: {}, Success rate: {:.2}%",
+                    path.getFileName(),
+                    parseResult.getTotalLinesRead(),
+                    parseResult.getSuccessfulCount(),
+                    parseResult.getErrorCount(),
+                    parseResult.getSuccessRate());
+
+            // Validate DTOs before sending to backend
+            ImportValidationService validationService = new ImportValidationService(log);
+            ImportValidationService.ValidationResult validationResult = validationService.validate(dtos);
+            
+            if (!validationResult.isValid()) {
+                log.warn("Validation found {} invalid items out of {}", 
+                        validationResult.getInvalidCount(), dtos.size());
+                for (String error : validationResult.getErrors()) {
+                    log.warn("Validation error: {}", error);
+                }
+            }
+
+            List<BaseMeasurementDTO> validDtos = validationResult.getValidDtos();
+            
+            if (validDtos.isEmpty()) {
+//                log.warn("No valid DTOs to send to backend after parsing and validation");
+                return;
+            }
+
+            log.debug("Sending {} items to backend (parsed: {}, validated: {})",
+                    validDtos.size(), dtos.size(), validDtos.size());
+
+            String json = serializer.serialize(validDtos);
 
             // TODO put the endpoint into the configuration file
             String endpoint = String.format(
@@ -54,8 +91,11 @@ public class JoularJXFileProcessor {
             String url = Utils.createEndpointURL(Config.getInstance(), endpoint);
 
             httpClient.post(url, json);
+            
+            log.debug("Successfully sent {} items to backend endpoint: {}", validDtos.size(), endpoint);
+            
         } catch (Exception e) {
-            log.error("Error processing file {}: {}", path, e.getMessage());
+            log.error("Error processing file {}: {}", path, e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

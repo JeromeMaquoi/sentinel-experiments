@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -66,7 +67,7 @@ public class CsvParser {
     ) {
         if (monitoringType == MonitoringType.CALLTREES) {
             RuntimeCallTreeMeasurementDTO dto = new RuntimeCallTreeMeasurementDTO();
-            dto.setCallstack(List.of(parts[0].split(";")));
+            dto.setCallstack(createCallstack(parts[0]));
             fillCommonFields(dto, timestamp, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
             return dto;
         } else {
@@ -75,6 +76,12 @@ public class CsvParser {
             fillCommonFields(dto, timestamp, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
             return dto;
         }
+    }
+
+    public static List<String> createCallstack(String elements) {
+        List<String> callstack = new ArrayList<>(List.of(elements.split(";")));
+        Collections.reverse(callstack);
+        return  callstack;
     }
 
     public static BaseMeasurementDTO buildTotalDTO(

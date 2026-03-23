@@ -68,7 +68,7 @@ class CsvParserTest {
 
             assertEquals(2, dtos.size());
             RuntimeCallTreeMeasurementDTO resultDto1 = (RuntimeCallTreeMeasurementDTO) dtos.get(0);
-            assertEquals(List.of("methodA", "methodB"), resultDto1.getCallstack());
+            assertEquals(List.of("methodB", "methodA"), resultDto1.getCallstack());
             assertEquals(1.23f, resultDto1.getValue());
             assertEquals(Scope.APP, resultDto1.getScope());
             assertEquals(MeasurementLevel.RUNTIME, resultDto1.getMeasurementLevel());
@@ -205,7 +205,7 @@ class CsvParserTest {
                 commit
         );
         assertInstanceOf(RuntimeCallTreeMeasurementDTO.class, dto);
-        assertEquals(List.of("funcA", "funcB", "funcC"), ((RuntimeCallTreeMeasurementDTO) dto).getCallstack());
+        assertEquals(List.of("funcC", "funcB", "funcA"), ((RuntimeCallTreeMeasurementDTO) dto).getCallstack());
         assertEquals(23.45f, dto.getValue());
         assertEquals(163L, ((RuntimeCallTreeMeasurementDTO) dto).getTimestamp());
     }

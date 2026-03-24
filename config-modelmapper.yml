@@ -13,6 +13,8 @@ repo:
   jdk: "17.0.17-tem"
   overwrite-clone: true
   overwrite-copy: true
+environment:
+  sdkman-init: "/etc/profile.d/sdkman.sh"
 log:
   level: DEBUG
   directory: "/home/commun/infom125/sentinel-group/julien/sentinel-experiments/logs/modelmapper/"

@@ -14,7 +14,7 @@ repo:
   overwrite-clone: true
   overwrite-copy: true
 log:
-  level: INFO
+  level: DEBUG
   directory: "/home/commun/infom125/sentinel-group/julien/sentinel-experiments/logs/modelmapper/"
   also-log-to-console: true
   clear-previous-logs: true

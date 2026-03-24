@@ -21,7 +21,7 @@ log:
   also-log-to-console: true
   clear-previous-logs: true
 execution-plan:
-  test-command: "mvn clean test -Drat.skip=true -Dtest='!*TestXMLConfiguration'"
+  test-command: "mvn clean test'"
   ignore-failures: false
   ignore-spoon-failures: true
   num-test-runs: 1

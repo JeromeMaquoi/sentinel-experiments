@@ -8,7 +8,7 @@ project:
   package-prefix: "org.apache.commons"
 repo:
   url: "https://github.com/modelmapper/modelmapper"
-  commit: ""
+  commit: "7f345d2a7e5c13738dd1ff39512367e0eebaf39f"
   target-dir: "/home/commun/infom125/sentinel-group/test-repositories/test-sentinel-copy/modelmapper"
   jdk: "17.0.17-tem"
   overwrite-clone: true

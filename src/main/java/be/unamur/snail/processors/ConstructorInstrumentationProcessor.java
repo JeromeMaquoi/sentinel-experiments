@@ -1,5 +1,8 @@
 package be.unamur.snail.processors;
 
+import be.unamur.snail.core.Config;
+import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
+import be.unamur.snail.tool.energy.model.RepositorySimpleDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
@@ -65,6 +68,10 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         List<String> params = utils.getParameterTypes(constructor.getParameters());
         log.debug("Found constructor {} with parameters {}", constructorName, params);
 
+        // Create CommitSimpleDTO from Config
+        Config config = Config.getInstance();
+        CommitSimpleDTO commit = createCommitSimpleDTO(config);
+
         CtLocalVariable<?> utilsVariable = utils.createThreadLocalUtilsVariable(FQCN, "utils");
         CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
 
@@ -77,7 +84,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                         factory.Code().createLiteral(fileName),
                         factory.Code().createLiteral(className),
                         factory.Code().createLiteral(constructorName),
-                        utils.createStringListLiteral(params)
+                        utils.createStringListLiteral(params),
+                        factory.Code().createLiteral(commit)
                 )
         );
 
@@ -136,5 +144,26 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             fileName = constructor.getPosition().getFile().getPath();
         }
         return fileName;
+    }
+
+    /**
+     * Creates a CommitSimpleDTO from the Config containing project name, owner, and commit hash.
+     *
+     * @param config the Config instance
+     * @return CommitSimpleDTO with repository and commit information
+     */
+    private CommitSimpleDTO createCommitSimpleDTO(Config config) {
+        CommitSimpleDTO commit = new CommitSimpleDTO();
+
+        // Set commit SHA
+        commit.setSha(config.getRepo().getCommit());
+
+        // Create and set repository information
+        RepositorySimpleDTO repository = new RepositorySimpleDTO();
+        repository.setName(config.getProject().getName());
+        repository.setOwner(config.getProject().getOwner());
+        commit.setRepository(repository);
+
+        return commit;
     }
 }

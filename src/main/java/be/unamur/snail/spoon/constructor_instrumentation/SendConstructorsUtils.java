@@ -1,5 +1,6 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
+import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,9 +58,10 @@ public class SendConstructorsUtils {
      * @param className class where the constructor is
      * @param methodName method/constructor name
      * @param parameters a list of parameters of the constructor
+     * @param commit commit information from the config (project name, owner, commit hash)
      */
-    public void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new ArrayList<>());
+    public void initConstructorContext(String fileName, String className, String methodName, List<String> parameters, CommitSimpleDTO commit) {
+        constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new ArrayList<>()).withCommit(commit);
     }
 
     public void resetConstructorContextForTests() {

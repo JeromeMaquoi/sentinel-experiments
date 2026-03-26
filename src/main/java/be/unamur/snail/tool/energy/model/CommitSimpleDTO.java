@@ -6,6 +6,13 @@ public class CommitSimpleDTO {
     private String sha;
     private RepositorySimpleDTO repository;
 
+    public CommitSimpleDTO() {}
+
+    public CommitSimpleDTO(String sha, RepositorySimpleDTO repository) {
+        this.sha = sha;
+        this.repository = repository;
+    }
+
     public String getSha() {
         return sha;
     }

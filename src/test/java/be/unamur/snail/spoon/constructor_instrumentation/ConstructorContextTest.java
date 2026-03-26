@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstructorContextTest {
     @Test
     void isCompleteShouldReturnTrueIfAllNecessaryFieldsAreSetTest() {
-        RepositorySimpleDTO repo = new RepositorySimpleDTO("project", "owner");
-        CommitSimpleDTO commit = new CommitSimpleDTO("sha", repo);
+        RepositorySimpleInstrDTO repo = new RepositorySimpleInstrDTO("project", "owner");
+        CommitSimpleInstrDTO commit = new CommitSimpleInstrDTO("sha", repo);
         ConstructorContext context = new ConstructorContext().withFileName("name").withClassName("class").withMethodName("method").withParameters(List.of()).withStackTrace(List.of()).withAttributes(new ArrayList<>()).withCommit(commit);
         AttributeContext attribute = new AttributeContext("name", "type", "actualType", "rhs");
         context.addAttribute(attribute);

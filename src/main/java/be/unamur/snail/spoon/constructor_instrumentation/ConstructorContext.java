@@ -1,6 +1,5 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
-import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +12,7 @@ public class ConstructorContext implements AstElement {
     private List<AttributeContext> attributes;
     private List<StackTraceElement> stacktrace;
     private String snapshot;
-    private CommitSimpleDTO commit;
+    private CommitSimpleInstrDTO commit;
 
     public ConstructorContext() {}
 
@@ -64,7 +63,7 @@ public class ConstructorContext implements AstElement {
         return this;
     }
 
-    public ConstructorContext withCommit(CommitSimpleDTO commit) {
+    public ConstructorContext withCommit(CommitSimpleInstrDTO commit) {
         this.commit = commit;
         return this;
     }
@@ -97,7 +96,7 @@ public class ConstructorContext implements AstElement {
         return snapshot;
     }
 
-    public CommitSimpleDTO getCommit() {
+    public CommitSimpleInstrDTO getCommit() {
         return commit;
     }
 

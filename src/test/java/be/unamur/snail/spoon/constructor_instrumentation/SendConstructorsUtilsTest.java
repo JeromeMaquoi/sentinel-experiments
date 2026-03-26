@@ -1,16 +1,10 @@
 package be.unamur.snail.spoon.constructor_instrumentation;
 
-import be.unamur.snail.tool.energy.model.CommitSimpleDTO;
-import be.unamur.snail.tool.energy.model.RepositorySimpleDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -48,7 +42,7 @@ class SendConstructorsUtilsTest {
 
     @Test
     void initConstructorContextStoresCorrectContextTest() {
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
 
@@ -62,7 +56,7 @@ class SendConstructorsUtilsTest {
 
     @Test
     void addAttributeWorkingTest() {
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
 
@@ -88,7 +82,7 @@ class SendConstructorsUtilsTest {
 
     @Test
     void addAttributeWithNullActualObjectTest() {
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "int", null, "literal");
 
@@ -114,7 +108,7 @@ class SendConstructorsUtilsTest {
 
     @Test
     void getStackTraceWorkingTest() {
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.getStackTrace();
 
@@ -130,7 +124,7 @@ class SendConstructorsUtilsTest {
 
     @Test
     void sendThrowsExceptionIfConstructorNotCompleteTest() {
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
 
@@ -139,7 +133,7 @@ class SendConstructorsUtilsTest {
 
     @Test
     void sendDelegatesToSenderWhenSenderIsNotNullTest() {
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
         constructorUtils.getStackTrace();
@@ -157,7 +151,7 @@ class SendConstructorsUtilsTest {
         dispatcher = mock(ConstructorEventDispatcher.class);
         setDispatcher(dispatcher);
 
-        CommitSimpleDTO commit = createTestCommit();
+        CommitSimpleInstrDTO commit = createTestCommit();
         constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
         constructorUtils.getStackTrace();
@@ -210,10 +204,10 @@ class SendConstructorsUtilsTest {
         }
     }
 
-    private CommitSimpleDTO createTestCommit() {
-        CommitSimpleDTO commit = new CommitSimpleDTO();
+    private CommitSimpleInstrDTO createTestCommit() {
+        CommitSimpleInstrDTO commit = new CommitSimpleInstrDTO();
         commit.setSha("test-commit-sha-123");
-        RepositorySimpleDTO repository = new RepositorySimpleDTO();
+        RepositorySimpleInstrDTO repository = new RepositorySimpleInstrDTO();
         repository.setName("test-repo");
         repository.setOwner("test-owner");
         commit.setRepository(repository);

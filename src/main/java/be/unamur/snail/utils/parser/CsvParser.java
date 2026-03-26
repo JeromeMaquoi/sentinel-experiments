@@ -94,7 +94,7 @@ public class CsvParser {
     ) {
         if (monitoringType == MonitoringType.CALLTREES) {
             TotalCallTreeMeasurementDTO dto = new TotalCallTreeMeasurementDTO();
-            dto.setCallstack(List.of(parts[0].split(";")));
+            dto.setCallstack(createCallstack(parts[0]));
             fillCommonFields(dto, null, scope, measurementLevel, monitoringType, iteration, commit, Float.valueOf(parts[1]));
             return dto;
         } else {

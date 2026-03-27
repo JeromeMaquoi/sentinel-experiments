@@ -1,14 +1,14 @@
-package be.unamur.snail.tool.energy.model;
+package be.unamur.snail.spoon.constructor_instrumentation;
 
 import java.util.Objects;
 
-public class CommitSimpleDTO {
+public class CommitSimpleInstrDTO {
     private String sha;
-    private RepositorySimpleDTO repository;
+    private RepositorySimpleInstrDTO repository;
 
-    public CommitSimpleDTO() {}
+    public CommitSimpleInstrDTO() {}
 
-    public CommitSimpleDTO(String sha, RepositorySimpleDTO repository) {
+    public CommitSimpleInstrDTO(String sha, RepositorySimpleInstrDTO repository) {
         this.sha = sha;
         this.repository = repository;
     }
@@ -21,19 +21,18 @@ public class CommitSimpleDTO {
         this.sha = sha;
     }
 
-    public RepositorySimpleDTO getRepository() {
+    public RepositorySimpleInstrDTO getRepository() {
         return repository;
     }
 
-    public void setRepository(RepositorySimpleDTO repository) {
+    public void setRepository(RepositorySimpleInstrDTO repository) {
         this.repository = repository;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CommitSimpleDTO that = (CommitSimpleDTO) o;
+        CommitSimpleInstrDTO that = (CommitSimpleInstrDTO) o;
         return Objects.equals(sha, that.sha) && Objects.equals(repository, that.repository);
     }
 
@@ -44,9 +43,9 @@ public class CommitSimpleDTO {
 
     @Override
     public String toString() {
-        return "CommitSimpleDTO{" +
+        return "CommitSimpleInstrDTO{" +
                 "sha='" + sha + '\'' +
-                ", repositorySimpleDTO=" + repository +
+                ", repository=" + repository +
                 '}';
     }
 }

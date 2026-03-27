@@ -12,6 +12,7 @@ public class ConstructorContext implements AstElement {
     private List<AttributeContext> attributes;
     private List<StackTraceElement> stacktrace;
     private String snapshot;
+    private CommitSimpleInstrDTO commit;
 
     public ConstructorContext() {}
 
@@ -23,7 +24,8 @@ public class ConstructorContext implements AstElement {
                 .withParameters(this.parameters == null ? null : new ArrayList<>(this.parameters))
                 .withAttributes(this.attributes == null ? null : new ArrayList<>(this.attributes))
                 .withStackTrace(this.stacktrace == null ? null : new ArrayList<>(this.stacktrace))
-                .withSnapshot(this.snapshot);
+                .withSnapshot(this.snapshot)
+                .withCommit(this.commit);
     }
 
     public ConstructorContext withFileName(String fileName) {
@@ -61,6 +63,11 @@ public class ConstructorContext implements AstElement {
         return this;
     }
 
+    public ConstructorContext withCommit(CommitSimpleInstrDTO commit) {
+        this.commit = commit;
+        return this;
+    }
+
     public String getFileName() {
         return fileName;
     }
@@ -89,6 +96,10 @@ public class ConstructorContext implements AstElement {
         return snapshot;
     }
 
+    public CommitSimpleInstrDTO getCommit() {
+        return commit;
+    }
+
     public void addAttribute(AttributeContext attribute) {
         this.attributes.add(attribute);
     }
@@ -98,7 +109,7 @@ public class ConstructorContext implements AstElement {
     }
 
     public boolean isComplete() {
-        return fileName != null && className != null && methodName != null && parameters != null && attributes != null & stacktrace != null;
+        return fileName != null && className != null && methodName != null && parameters != null && attributes != null && stacktrace != null && commit != null;
     }
 
     @Override
@@ -111,6 +122,7 @@ public class ConstructorContext implements AstElement {
                 ", attributes=" + attributes +
                 ", stacktrace=" + stacktrace +
                 ", snapshot='" + snapshot + '\'' +
+                ", commit=" + commit +
                 '}';
     }
 
@@ -118,11 +130,11 @@ public class ConstructorContext implements AstElement {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ConstructorContext that = (ConstructorContext) o;
-        return Objects.equals(fileName, that.fileName) && Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName) && Objects.equals(parameters, that.parameters) && Objects.equals(attributes, that.attributes) && Objects.equals(stacktrace, that.stacktrace) && Objects.equals(snapshot, that.snapshot);
+        return Objects.equals(fileName, that.fileName) && Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName) && Objects.equals(parameters, that.parameters) && Objects.equals(attributes, that.attributes) && Objects.equals(stacktrace, that.stacktrace) && Objects.equals(snapshot, that.snapshot) && Objects.equals(commit, that.commit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileName, className, methodName, parameters, stacktrace);
+        return Objects.hash(fileName, className, methodName, parameters, stacktrace, commit);
     }
 }

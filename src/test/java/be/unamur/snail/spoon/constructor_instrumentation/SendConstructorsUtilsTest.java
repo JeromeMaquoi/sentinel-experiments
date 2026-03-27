@@ -2,13 +2,9 @@ package be.unamur.snail.spoon.constructor_instrumentation;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -46,7 +42,8 @@ class SendConstructorsUtilsTest {
 
     @Test
     void initConstructorContextStoresCorrectContextTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
 
         assertNotNull(context);
@@ -54,11 +51,13 @@ class SendConstructorsUtilsTest {
         assertEquals("Class", context.getClassName());
         assertEquals("method", context.getMethodName());
         assertEquals(List.of("java.lang.String"), context.getParameters());
+        assertNotNull(context.getCommit());
     }
 
     @Test
     void addAttributeWorkingTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
 
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
@@ -83,7 +82,8 @@ class SendConstructorsUtilsTest {
 
     @Test
     void addAttributeWithNullActualObjectTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "int", null, "literal");
 
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
@@ -108,7 +108,8 @@ class SendConstructorsUtilsTest {
 
     @Test
     void getStackTraceWorkingTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.getStackTrace();
 
         ConstructorContext context = constructorUtils.getConstructorContextForTests();
@@ -123,7 +124,8 @@ class SendConstructorsUtilsTest {
 
     @Test
     void sendThrowsExceptionIfConstructorNotCompleteTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
 
         assertThrows(ConstructorContextNotCompletedException.class, () -> constructorUtils.send());
@@ -131,7 +133,8 @@ class SendConstructorsUtilsTest {
 
     @Test
     void sendDelegatesToSenderWhenSenderIsNotNullTest() {
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
         constructorUtils.getStackTrace();
 
@@ -148,7 +151,8 @@ class SendConstructorsUtilsTest {
         dispatcher = mock(ConstructorEventDispatcher.class);
         setDispatcher(dispatcher);
 
-        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        CommitSimpleInstrDTO commit = createTestCommit();
+        constructorUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")), commit);
         constructorUtils.addAttribute("field", "String", "hello", "literal");
         constructorUtils.getStackTrace();
 
@@ -198,6 +202,16 @@ class SendConstructorsUtilsTest {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private CommitSimpleInstrDTO createTestCommit() {
+        CommitSimpleInstrDTO commit = new CommitSimpleInstrDTO();
+        commit.setSha("test-commit-sha-123");
+        RepositorySimpleInstrDTO repository = new RepositorySimpleInstrDTO();
+        repository.setName("test-repo");
+        repository.setOwner("test-owner");
+        commit.setRepository(repository);
+        return commit;
     }
 
     private ConstructorEventDispatcher getDispatcher() {

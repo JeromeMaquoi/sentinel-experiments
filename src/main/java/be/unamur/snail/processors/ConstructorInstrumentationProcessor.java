@@ -1,5 +1,6 @@
 package be.unamur.snail.processors;
 
+import be.unamur.snail.core.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
@@ -65,8 +66,17 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         List<String> params = utils.getParameterTypes(constructor.getParameters());
         log.debug("Found constructor {} with parameters {}", constructorName, params);
 
+        // Get commit data from Config
+        Config config = Config.getInstance();
+        String commitSha = config.getRepo().getCommit();
+        String projectName = config.getProject().getName();
+        String projectOwner = config.getProject().getOwner();
+
         CtLocalVariable<?> utilsVariable = utils.createThreadLocalUtilsVariable(FQCN, "utils");
         CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
+
+        // Generate code to create CommitSimpleInstrDTO in instrumented code
+        String commitCode = generateCommitInstrDTOCode(commitSha, projectName, projectOwner);
 
         // Init constructor context
         constructor.getBody().insertBegin(
@@ -77,7 +87,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                         factory.Code().createLiteral(fileName),
                         factory.Code().createLiteral(className),
                         factory.Code().createLiteral(constructorName),
-                        utils.createStringListLiteral(params)
+                        utils.createStringListLiteral(params),
+                        factory.Code().createCodeSnippetExpression(commitCode)
                 )
         );
 
@@ -136,5 +147,20 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             fileName = constructor.getPosition().getFile().getPath();
         }
         return fileName;
+    }
+
+    /**
+     * Generates Java code string that creates a CommitSimpleInstrDTO with the given values.
+     * @param sha commit SHA hash
+     * @param projectName project name
+     * @param projectOwner project owner
+     * @return Java code string that instantiates the CommitSimpleInstrDTO
+     */
+    private String generateCommitInstrDTOCode(String sha, String projectName, String projectOwner) {
+        return String.format(
+            "new be.unamur.snail.spoon.constructor_instrumentation.CommitSimpleInstrDTO(\"%s\", " +
+            "new be.unamur.snail.spoon.constructor_instrumentation.RepositorySimpleInstrDTO(\"%s\", \"%s\"))",
+            sha, projectName, projectOwner
+        );
     }
 }

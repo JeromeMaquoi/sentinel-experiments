@@ -68,6 +68,7 @@ public class RunInstrumentedProjectTestsStage implements Stage {
             log.info("Setting endpoint to {}", completeEndpoint);
             commandWithInit += " -DapiUrl=" + completeEndpoint;
         }
+        log.info("Executing test command {}", commandWithInit);
         Utils.CompletedProcess result = Utils.runCommand(commandWithInit, cwd);
 
         if (result.returnCode() != 0) {

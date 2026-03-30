@@ -37,7 +37,7 @@ public class WarmupStage implements Stage {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + (warmupDurationSeconds * 1000L);
 
-        int n = 5000;
+        int n = 1000;
         while (System.currentTimeMillis() < endTime) {
             computeFibonacci(n, endTime);
             n += 100;
@@ -67,9 +67,8 @@ public class WarmupStage implements Stage {
         BigInteger curr = BigInteger.ONE;
 
         for (int i = 2; i <= n; i++) {
-            // Check time limit on every iteration for precise stopping
             if (System.currentTimeMillis() >= endTime) {
-                return curr; // Stop computation immediately
+                return curr;
             }
             BigInteger next = curr.add(prev);
             prev = curr;

@@ -29,6 +29,7 @@ execution-plan:
   ignore-spoon-failures: false
   num-test-runs: 2
   energy-measurements:
+    warmup-duration-seconds: 300
     tool: "joularjx"
     tool-version: "3.0.1"
     release-url: "https://github.com/joular/joularjx"

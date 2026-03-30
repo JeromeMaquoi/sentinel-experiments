@@ -27,7 +27,7 @@ execution-plan:
   test-command: "mvn clean test --errors --show-version --batch-mode --no-transfer-progress -Ddoclint=all -Drat.skip=true"
   ignore-failures: false
   ignore-spoon-failures: true
-  num-test-runs: 2
+  num-test-runs: 100
   energy-measurements:
     warmup-duration-seconds: 300
     sleep-duration-seconds: 60

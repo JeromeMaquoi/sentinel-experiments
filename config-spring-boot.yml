@@ -1,5 +1,5 @@
 command-time-out: 360000
-code-constructors-instrumentation-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
+code-constructors-instrumentation-path: "/home/commun/infom125/sentinel-group/sentinel-experiments/src/main/java/be/unamur/snail/spoon/constructor_instrumentation"
 project:
   name: "spring-boot"
   owner: "spring-projects"
@@ -12,7 +12,7 @@ repo:
   # ATTENTION de ne pas supprimer le dossier joularjx-results en instrumentant
   # un projet qui a été analysé auparavant => spécifier 2 target-dir différents
   # pour l'instrumentation et les mesures
-  target-dir: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/spring-boot"
+  target-dir: "/home/commun/infom125/sentinel-group/test-repositories/spring-boot"
   jdk: "17.0.17-tem"
   overwrite-clone: true
   overwrite-copy: true
@@ -20,7 +20,7 @@ environment:
   sdkman-init: "/etc/profile.d/sdkman.sh"
 log:
   level: INFO
-  directory: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-experiments/logs/spring-boot/"
+  directory: "/home/commun/infom125/sentinel-group/sentinel-experiments/logs/spring-boot/"
   also-log-to-console: true
   clear-previous-logs: true
 execution-plan:
@@ -34,7 +34,7 @@ execution-plan:
     tool: "joularjx"
     tool-version: "3.0.1"
     release-url: "https://github.com/joular/joularjx"
-    tool-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/joularjx"
+    tool-path: "/home/commun/infom125/sentinel-group/joularjx"
     import-config:
       scopes: ["app"]
       measurement-types: ["runtime", "total"]
@@ -43,12 +43,12 @@ backend:
   mode: dev
   server-host: localhost
   server-port: 8080
-  server-timeout-seconds: 120
+  server-timeout-seconds: 240
   server-log-path: "/tmp/sentinel-backend.log"
   server-ready-path: "/tmp/backend-ready"
   endpoint: "/api/v2/constructor-contexts"
   # dev-specific
-  server-path: "/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-backend/"
+  server-path: "/home/commun/infom125/sentinel-group/sentinel-backend/"
   nb-check-server-start: 20
   # prod-specific
   ssh-user: "jmaquoi"

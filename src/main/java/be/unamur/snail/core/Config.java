@@ -469,6 +469,10 @@ public class Config {
         public EnergyMeasurementConfig getEnergyMeasurements() {
             return energyMeasurements;
         }
+
+        public void setEnergyMeasurementsForTests(EnergyMeasurementConfig energyMeasurements) {
+            this.energyMeasurements = energyMeasurements;
+        }
     }
 
     /**
@@ -499,6 +503,11 @@ public class Config {
          */
         @JsonProperty("import-config")
         private ImportConfig importConfig;
+        /**
+         * The duration in seconds for which the warmup stage should run before starting the main measurements. This is used to warm up the system and stabilize performance before collecting actual energy measurements.
+         */
+        @JsonProperty("warmup-duration-seconds")
+        private int warmupDurationSeconds;
 
         /**
          * Returns the name of the tool to use for energy measurements. This is used to specify which tool should be used to perform energy measurements during the execution of the pipeline. The tool specified here will be used to collect energy consumption data while running the test suite of the project being analyzed.
@@ -540,6 +549,18 @@ public class Config {
             return importConfig;
         }
 
+        /**
+         * Returns the duration in seconds for which the warmup stage should run before starting the main measurements.
+         * @return the warmup duration in seconds
+         */
+        public int getWarmupDurationSeconds() {
+            return warmupDurationSeconds;
+        }
+
+        public void setWarmupDurationSecondsForTests(int warmupDurationSeconds) {
+            this.warmupDurationSeconds = warmupDurationSeconds;
+        }
+
         @Override
         public String toString() {
             return "EnergyMeasurementConfig{" +
@@ -548,6 +569,7 @@ public class Config {
                     ", releaseUrl='" + releaseUrl + '\'' +
                     ", toolPath='" + toolPath + '\'' +
                     ", importConfig=" + importConfig +
+                    ", warmupDurationSeconds=" + warmupDurationSeconds +
                     '}';
         }
     }

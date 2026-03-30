@@ -34,7 +34,8 @@ public class JoularJXTool implements EnergyMeasurementTool {
                 createCopyBuildFileStage(),
                 new UpdateBuildFileStage(),
                 createCopyConfigFileStage(),
-                new SetupJdkStage()
+                new SetupJdkStage(),
+                new WarmupStage()
         );
     }
 

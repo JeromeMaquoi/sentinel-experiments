@@ -18,7 +18,7 @@ public class EnergyMeasurementsModule implements Module {
         this(buildStagesFromConfig(new EnergyMeasurementToolFactory(), Config.getInstance()));
     }
 
-    private EnergyMeasurementsModule(List<Stage> stages) {
+    EnergyMeasurementsModule(List<Stage> stages) {
         this.stages = stages;
     }
 

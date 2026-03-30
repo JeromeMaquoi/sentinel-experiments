@@ -43,7 +43,8 @@ public class JoularJXTool implements EnergyMeasurementTool {
     public List<Stage> createMeasurementStages() {
         return List.of(
                 new SetDirectoryStage(),
-                new RunProjectTestsStage()
+                new RunProjectTestsStage(),
+                new SleepStage()
         );
     }
 

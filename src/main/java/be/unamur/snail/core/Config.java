@@ -473,6 +473,10 @@ public class Config {
         public void setEnergyMeasurementsForTests(EnergyMeasurementConfig energyMeasurements) {
             this.energyMeasurements = energyMeasurements;
         }
+
+        public void setNumTestRunsForTests(int numTestRuns) {
+            this.numTestRuns = numTestRuns;
+        }
     }
 
     /**
@@ -508,6 +512,12 @@ public class Config {
          */
         @JsonProperty("warmup-duration-seconds")
         private int warmupDurationSeconds;
+
+        /**
+         * The number of seconds of pause between each iteration of the measurements
+         */
+        @JsonProperty("sleep-duration-seconds")
+        private int sleepDurationSeconds;
 
         /**
          * Returns the name of the tool to use for energy measurements. This is used to specify which tool should be used to perform energy measurements during the execution of the pipeline. The tool specified here will be used to collect energy consumption data while running the test suite of the project being analyzed.
@@ -561,6 +571,14 @@ public class Config {
             this.warmupDurationSeconds = warmupDurationSeconds;
         }
 
+        public int getSleepDurationSeconds() {
+            return sleepDurationSeconds;
+        }
+
+        public void setSleepDurationSecondsForTests(int sleepDurationSeconds) {
+            this.sleepDurationSeconds = sleepDurationSeconds;
+        }
+
         @Override
         public String toString() {
             return "EnergyMeasurementConfig{" +
@@ -570,6 +588,7 @@ public class Config {
                     ", toolPath='" + toolPath + '\'' +
                     ", importConfig=" + importConfig +
                     ", warmupDurationSeconds=" + warmupDurationSeconds +
+                    ", sleepDurationSeconds=" + sleepDurationSeconds +
                     '}';
         }
     }

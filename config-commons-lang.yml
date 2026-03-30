@@ -30,6 +30,7 @@ execution-plan:
   num-test-runs: 2
   energy-measurements:
     warmup-duration-seconds: 300
+    sleep-duration-seconds: 60
     tool: "joularjx"
     tool-version: "3.0.1"
     release-url: "https://github.com/joular/joularjx"

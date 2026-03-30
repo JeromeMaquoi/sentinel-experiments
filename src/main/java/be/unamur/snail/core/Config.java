@@ -473,6 +473,10 @@ public class Config {
         public void setEnergyMeasurementsForTests(EnergyMeasurementConfig energyMeasurements) {
             this.energyMeasurements = energyMeasurements;
         }
+
+        public void setNumTestRunsForTests(int numTestRuns) {
+            this.numTestRuns = numTestRuns;
+        }
     }
 
     /**

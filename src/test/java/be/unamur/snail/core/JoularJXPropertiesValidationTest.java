@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +59,35 @@ class JoularJXPropertiesValidationTest {
             fail("Failed to load properties file: " + filePath, e);
         }
         return props;
+    }
+
+    private static Stream<String> provideConfigFileProjectNames() {
+        try {
+            return Files.list(Paths.get("."))
+                    .filter(path -> path.toFile().isFile())
+                    .map(path -> path.getFileName().toString())
+                    .filter(filename -> filename.matches("config-.*\\.yml"))
+                    .map(filename -> {
+                        Pattern pattern = Pattern.compile("config-(.+)\\.yml");
+                        Matcher matcher = pattern.matcher(filename);
+                        if (matcher.find()) {
+                            return matcher.group(1);
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .sorted();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to discover config files", e);
+        }
+    }
+
+    @ParameterizedTest(name = "config-{0}.yml has corresponding config.properties")
+    @MethodSource("provideConfigFileProjectNames")
+    @DisplayName("Each config-<project-name>.yml has a corresponding config.properties")
+    void everyConfigFileHasPropertiesFileTest(String projectName) {
+        Path propertiesPath = Paths.get("src/main/resources/build-files/" +  projectName + "/config.properties");
+        assertTrue(Files.exists(propertiesPath), "config.properties file not found for project '" + projectName + "' (expected at: " + propertiesPath.toAbsolutePath() + ")");
     }
 
     @ParameterizedTest(name = "{0}")

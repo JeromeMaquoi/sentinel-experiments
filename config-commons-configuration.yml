@@ -9,7 +9,7 @@ project:
 repo:
   url: "https://github.com/apache/commons-configuration"
   commit: "525bd980b07dba983d931baeff573c0aa9880821"
-  target-dir: "/home/commun/infom125/sentinel-group/test-repositories/test-sentinel-copy/commons-config"
+  target-dir: "/home/commun/infom125/sentinel-group/test-repositories/commons-configuration"
   jdk: "17.0.17-tem"
   overwrite-clone: true
   overwrite-copy: true
@@ -17,15 +17,17 @@ environment:
   sdkman-init: "/etc/profile.d/sdkman.sh"
 log:
   level: INFO
-  directory: "/home/commun/infom125/sentinel-group/sentinel-experiments/logs/commons-config/"
+  directory: "/home/commun/infom125/sentinel-group/sentinel-experiments/logs/commons-configuration/"
   also-log-to-console: true
   clear-previous-logs: true
 execution-plan:
   test-command: "mvn clean test -Drat.skip=true -Dtest='!*TestXMLConfiguration'"
   ignore-failures: false
   ignore-spoon-failures: true
-  num-test-runs: 1
+  num-test-runs: 30
   energy-measurements:
+    warmup-duration-seconds: 300
+    sleep-duration-seconds: 60
     tool: "joularjx"
     tool-version: "3.0.1"
     release-url: "https://github.com/joular/joularjx"

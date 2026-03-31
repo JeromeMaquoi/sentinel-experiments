@@ -130,7 +130,7 @@ class ConstructorInstrumentationProcessorTest {
         when(position.getFile()).thenReturn(file);
         when(file.getPath()).thenReturn("/path/to/testProject/constructor/file.java");
 
-        String filePath = processor.getFilePath(mockConstructor, "testProject", "abc123");
+        String filePath = processor.getFilePath(mockConstructor, "/path/to/testProject", "abc123");
         assertEquals("/path/to/testProject_abc123/constructor/file.java", filePath);
     }
 

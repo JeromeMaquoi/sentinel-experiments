@@ -75,7 +75,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         String commitCode = generateCommitInstrDTOCode(commitSha, projectName, projectOwner);
 
         // Get file name with <project-name>_<commit-sha>
-        String fileName = getFilePath(constructor, projectName, commitSha);
+        String targetDir = config.getRepo().getTargetDir();
+        String fileName = getFilePath(constructor, targetDir, commitSha);
 
         CtLocalVariable<?> utilsVariable = utils.createThreadLocalUtilsVariable(FQCN, "utils");
         CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
@@ -146,16 +147,16 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
     /**
      * Returns the file path of the constructor within the copy of the project, inside the 'project-name_commit-sha' folder
      * @param constructor Constructor for which we want to get the file path
-     * @param projectName Name of the project
+     * @param targetDir Target directory of the project
      * @param commitSha SHA of the commit
      * @return The file path of the constructor
      */
-    public String getFilePath(CtConstructor<?> constructor, String projectName, String commitSha) {
+    public String getFilePath(CtConstructor<?> constructor, String targetDir, String commitSha) {
         String fileName = "Unknown File";
         if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
-            String oldFilename = constructor.getPosition().getFile().getPath();
-            String projectWithCommitShaName = projectName + "_" + commitSha;
-            fileName = oldFilename.replace(projectName, projectWithCommitShaName);
+            String newTargetDir = targetDir + "_" + commitSha;
+            String srcConstructorPath = constructor.getPosition().getFile().getPath().replace(targetDir, "");
+            fileName = newTargetDir + srcConstructorPath;
         }
         return fileName;
     }

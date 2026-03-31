@@ -60,7 +60,6 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
     public void instrument(CtConstructor<?> constructor, InstrumentationUtils utils) {
         Factory factory = getFactory();
 
-        String fileName = getFileName(constructor);
         String className = constructor.getDeclaringType().getQualifiedName();
         String constructorName = constructor.getDeclaringType().getSimpleName();
         List<String> params = utils.getParameterTypes(constructor.getParameters());
@@ -72,11 +71,14 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         String projectName = config.getProject().getName();
         String projectOwner = config.getProject().getOwner();
 
-        CtLocalVariable<?> utilsVariable = utils.createThreadLocalUtilsVariable(FQCN, "utils");
-        CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
-
         // Generate code to create CommitSimpleInstrDTO in instrumented code
         String commitCode = generateCommitInstrDTOCode(commitSha, projectName, projectOwner);
+
+        // Get file name with <project-name>_<commit-sha>
+        String fileName = getFilePath(constructor, projectName, commitSha);
+
+        CtLocalVariable<?> utilsVariable = utils.createThreadLocalUtilsVariable(FQCN, "utils");
+        CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
 
         // Init constructor context
         constructor.getBody().insertBegin(
@@ -141,10 +143,19 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return sourceType;
     }
 
-    public String getFileName(CtConstructor<?> constructor) {
+    /**
+     * Returns the file path of the constructor within the copy of the project, inside the 'project-name_commit-sha' folder
+     * @param constructor Constructor for which we want to get the file path
+     * @param projectName Name of the project
+     * @param commitSha SHA of the commit
+     * @return The file path of the constructor
+     */
+    public String getFilePath(CtConstructor<?> constructor, String projectName, String commitSha) {
         String fileName = "Unknown File";
         if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
-            fileName = constructor.getPosition().getFile().getPath();
+            String oldFilename = constructor.getPosition().getFile().getPath();
+            String projectWithCommitShaName = projectName + "_" + commitSha;
+            fileName = oldFilename.replace(projectName, projectWithCommitShaName);
         }
         return fileName;
     }

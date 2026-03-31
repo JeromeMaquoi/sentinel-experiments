@@ -1,5 +1,6 @@
 package be.unamur.snail.processors;
 
+import be.unamur.snail.core.Config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -8,20 +9,23 @@ import spoon.reflect.CtModel;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtVariableRead;
+import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ConstructorInstrumentationProcessorTest {
     private Launcher launcher;
@@ -34,7 +38,7 @@ class ConstructorInstrumentationProcessorTest {
     private Factory factory;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         inputPath = Paths.get("src/test/resources/test-code-instrumentation/");
         outputPath = tempDir.resolve("output");
         processor = new ConstructorInstrumentationProcessor();
@@ -54,6 +58,28 @@ class ConstructorInstrumentationProcessorTest {
                 "param"
         );
         constructor.addParameter(param);
+
+        Config.reset();
+        Path yaml = tempDir.resolve("config.yaml");
+        Files.writeString(yaml, """
+            project:
+              sub-project: ""
+              name: "test"
+            repo:
+              url: "https://example.com/repo.git"
+              commit: "123abc"
+              target-dir: "/tmp/repo"
+            log:
+              level: "DEBUG"
+            backend:
+              server-host: localhost
+              server-port: 8080
+              server-timeout-seconds: 120
+              nb-check-server-start: 5
+              server-log-path: "/tmp/sentinel-backend.log"
+              server-ready-path: "/tmp/backend-ready"
+        """);
+        Config.load(yaml.toString());
     }
 
     @Test
@@ -93,5 +119,30 @@ class ConstructorInstrumentationProcessorTest {
         CtExpression<?> expr = factory.Code().createConstructorCall(factory.Type().createReference("java.lang.String"));
         String result = processor.getRightHandSideExpression(expr, constructor);
         assertEquals("constructor call", result);
+    }
+
+    @Test
+    void getFilePathWorkingTest() {
+        CtConstructor<?> mockConstructor = mock(CtConstructor.class);
+        SourcePosition position = mock(SourcePosition.class);
+        when(mockConstructor.getPosition()).thenReturn(position);
+        File file = mock(File.class);
+        when(position.getFile()).thenReturn(file);
+        when(file.getPath()).thenReturn("/path/to/testProject/constructor/file.java");
+
+        String filePath = processor.getFilePath(mockConstructor, "testProject", "abc123");
+        assertEquals("/path/to/testProject_abc123/constructor/file.java", filePath);
+    }
+
+    @Test
+    void getFilePathUnknownFileTest() {
+        CtConstructor<?> mockConstructor = mock(CtConstructor.class);
+        when(mockConstructor.getPosition()).thenReturn(null);
+        assertEquals("Unknown File",  processor.getFilePath(mockConstructor, "testProject", "abc123"));
+
+        SourcePosition position = mock(SourcePosition.class);
+        when(mockConstructor.getPosition()).thenReturn(position);
+        when(position.getFile()).thenReturn(null);
+        assertEquals("Unknown File",  processor.getFilePath(mockConstructor, "testProject", "abc123"));
     }
 }

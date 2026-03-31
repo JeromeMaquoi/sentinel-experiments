@@ -4,11 +4,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -32,15 +35,18 @@ class JoularJXPropertiesValidationTest {
 
                 if (matcher.find()) {
                     String projectName = matcher.group(1);
+                    String subProject = getSubProjectPathFromConfig(projectName);
+                    String pathSuffix = !subProject.isEmpty() ? "/" + subProject : "";
+                    String searchPath = "src/main/resources/build-files/" + projectName + pathSuffix;
 
                     try {
-                        return Files.walk(Paths.get("src/main/resources/build-files/" + projectName))
+                        return Files.walk(Paths.get(searchPath))
                                 .filter(path -> path.toFile().isFile())
                                 .filter(path -> path.getFileName().toString().equals("config.properties"))
                                 .map(Path::toString)
                                 .limit(1);
                     } catch (IOException e) {
-                        System.out.println("Warning: No config.properties found for project " + projectName);
+                        System.out.println("Warning: No config.properties found for project " + projectName + " at " + searchPath);
                         return Stream.empty();
                     }
                 }
@@ -59,6 +65,24 @@ class JoularJXPropertiesValidationTest {
             fail("Failed to load properties file: " + filePath, e);
         }
         return props;
+    }
+
+    private static String getSubProjectPathFromConfig(String projectName) {
+        try {
+            String configFileName = "config-" + projectName + ".yml";
+            Yaml yaml = new Yaml();
+            try (FileInputStream fis = new FileInputStream(configFileName)) {
+                Map<String, Object> data = yaml.load(fis);
+                if (data != null && data.containsKey("project")) {
+                    Map<String, Object> project = (Map<String, Object>) data.get("project");
+                    String subProject = (String) project.getOrDefault("sub-project", "");
+                    return subProject != null && !subProject.isEmpty() ? subProject : "";
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read yaml config for project: " + projectName, e);
+        }
+        return "";
     }
 
     private static Stream<String> provideConfigFileProjectNames() {
@@ -86,7 +110,9 @@ class JoularJXPropertiesValidationTest {
     @MethodSource("provideConfigFileProjectNames")
     @DisplayName("Each config-<project-name>.yml has a corresponding config.properties")
     void everyConfigFileHasPropertiesFileTest(String projectName) {
-        Path propertiesPath = Paths.get("src/main/resources/build-files/" +  projectName + "/config.properties");
+        String subProject = getSubProjectPathFromConfig(projectName);
+        String pathSuffix = !subProject.isEmpty() ? "/" + subProject : "";
+        Path propertiesPath = Paths.get("src/main/resources/build-files/" + projectName + pathSuffix + "/config.properties");
         assertTrue(Files.exists(propertiesPath), "config.properties file not found for project '" + projectName + "' (expected at: " + propertiesPath.toAbsolutePath() + ")");
     }
 

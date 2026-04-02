@@ -24,7 +24,7 @@ execution-plan:
   test-command: "mvn clean test -Drat.skip=true -Dtest='!*TestXMLConfiguration'"
   ignore-failures: false
   ignore-spoon-failures: true
-  num-test-runs: 100
+  num-test-runs: 200
   energy-measurements:
     warmup-duration-seconds: 300
     sleep-duration-seconds: 60

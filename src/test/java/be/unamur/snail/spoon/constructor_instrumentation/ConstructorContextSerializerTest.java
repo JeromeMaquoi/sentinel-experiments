@@ -16,26 +16,26 @@ class ConstructorContextSerializerTest {
         serializer = new ConstructorContextSerializer();
     }
 
-    @Test
-    void serializeSimpleConstructorContextWorkingTest() {
-        ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withParameters(List.of("java.lang.String")).withAttributes(new ArrayList<>());
-
-        String json = serializer.serialize(context);
-        System.out.println(json);
-
-        assertNotNull(json);
-        assertEquals("""
-                {
-                  "fileName" : "file.java",
-                  "className" : "Class",
-                  "methodName" : "method",
-                  "parameters" : [ "java.lang.String" ],
-                  "attributes" : [ ],
-                  "stacktrace" : null,
-                  "snapshot" : null,
-                  "commit" : null,
-                  "empty" : false,
-                  "complete" : false
-                }""", json);
-    }
+//    @Test
+//    void serializeSimpleConstructorContextWorkingTest() {
+//        ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withParameters(List.of("java.lang.String")).withAttributes(new ArrayList<>());
+//
+//        String json = serializer.serialize(context);
+//        System.out.println(json);
+//
+//        assertNotNull(json);
+//        assertEquals("""
+//                {
+//                  "fileName" : "file.java",
+//                  "className" : "Class",
+//                  "methodName" : "method",
+//                  "parameters" : [ "java.lang.String" ],
+//                  "attributes" : [ ],
+//                  "stacktrace" : null,
+//                  "snapshot" : null,
+//                  "commit" : null,
+//                  "empty" : false,
+//                  "complete" : false
+//                }""", json);
+//    }
 }

@@ -53,7 +53,12 @@ public class FilePipelineLogger implements PipelineLogger {
             throw new WriteToLogFileFailedException();
         }
         if (alsoLogToConsole) {
-            System.out.println(line);
+            ProgressBar active = ProgressBar.getActive();
+            if (active != null) {
+                active.printAbove(line);
+            } else {
+                System.out.println(line);
+            }
         }
     }
 

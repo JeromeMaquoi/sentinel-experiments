@@ -1,12 +1,14 @@
 package be.unamur.snail.core;
 
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.logging.ProgressBar;
 
 import java.io.File;
 import java.util.List;
 
 public class Context {
     private PipelineLogger logger;
+    private ProgressBar progressBar;
     private List<String> classPath;
     private String repoPath;
     private String baseRepoPath;
@@ -24,6 +26,14 @@ public class Context {
 
     public void setLogger(PipelineLogger logger) {
         this.logger = logger;
+    }
+
+    public ProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public void setProgressBar(ProgressBar progressBar) {
+        this.progressBar = progressBar;
     }
 
     public List<String> getClassPath() {

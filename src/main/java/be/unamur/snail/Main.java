@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.FilePipelineLogger;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.logging.ProgressBar;
 import be.unamur.snail.modules.EnergyMeasurementsModule;
 import be.unamur.snail.modules.MeasurementsImportModule;
 import be.unamur.snail.modules.Module;
@@ -46,6 +47,7 @@ public class Main {
 
         Context context = new Context();
         context.setLogger(pipelineLogger);
+        context.setProgressBar(new ProgressBar());
 
         try {
             module.run(context);

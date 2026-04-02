@@ -1,8 +1,6 @@
 package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.core.Context;
-import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.stages.CloneAndCheckoutRepositoryStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.tool.energy.EnergyMeasurementTool;
@@ -11,7 +9,7 @@ import be.unamur.snail.tool.energy.EnergyMeasurementToolFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnergyMeasurementsModule implements Module {
+public class EnergyMeasurementsModule extends AbstractModule {
     private final List<Stage> stages;
 
     public EnergyMeasurementsModule() {
@@ -20,6 +18,11 @@ public class EnergyMeasurementsModule implements Module {
 
     EnergyMeasurementsModule(List<Stage> stages) {
         this.stages = stages;
+    }
+
+    @Override
+    protected List<Stage> getStages() {
+        return stages;
     }
 
     public static List<Stage> buildStagesFromConfig(EnergyMeasurementToolFactory factory, Config config) {
@@ -42,15 +45,5 @@ public class EnergyMeasurementsModule implements Module {
         allStages.addAll(tool.createPostProcessingStages());
 
         return allStages;
-    }
-
-    @Override
-    public void run(Context context) throws Exception {
-        PipelineLogger log = context.getLogger();
-        for (Stage stage : stages) {
-            log.stageStart(stage.getName());
-            stage.execute(context);
-            log.stageEnd(stage.getName());
-        }
     }
 }

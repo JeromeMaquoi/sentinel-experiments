@@ -57,7 +57,7 @@ class ConfigurationValidationTest {
         loadConfig(configFileName);
         Config config = Config.getInstance();
 
-        assertEquals("/home/commun/infom125/sentinel-group/test-repositories/" + config.getProject().getName(), config.getRepo().getTargetDir(), "repo.targetDir should be set to the expected value in " + configFileName);
+        assertEquals("/home/commun/infom125/sentinel-group/repositories/" + config.getProject().getName(), config.getRepo().getTargetDir(), "repo.targetDir should be set to the expected value in " + configFileName);
     }
 
     @ParameterizedTest(name = "{0}")

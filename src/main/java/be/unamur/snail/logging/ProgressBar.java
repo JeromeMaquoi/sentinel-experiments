@@ -96,6 +96,26 @@ public class ProgressBar {
     }
 
     /**
+     * Updates the displayed stage name <em>without</em> advancing the progress
+     * counter. Useful when many stages share one logical unit of progress (e.g.
+     * a single measurement iteration made up of several stages).
+     *
+     * @param stageName human-readable stage name
+     */
+    public void setStageName(String stageName) {
+        currentStageName.set(stageName != null ? stageName : "");
+    }
+
+    /**
+     * Advances the progress counter by one <em>without</em> changing the
+     * displayed stage name. Call this once a logical unit of work (e.g. a full
+     * measurement iteration) has completed.
+     */
+    public void tick() {
+        current.incrementAndGet();
+    }
+
+    /**
      * Clears the current bar line, prints {@code message} on its own line, then
      * redraws the bar below it. This keeps log lines and the bar from
      * overwriting each other when console logging is enabled.
@@ -119,6 +139,8 @@ public class ProgressBar {
         synchronized (this) {
             doRender();
             out.println();
+            out.println(GREEN + "  \u2713 Pipeline completed in "
+                    + RESET + YELLOW + formatDuration(totalElapsed) + RESET);
         }
     }
 

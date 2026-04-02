@@ -10,6 +10,8 @@ import be.unamur.snail.processors.ConstructorInstrumentationProcessor;
 import spoon.Launcher;
 import spoon.SpoonException;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -36,7 +38,13 @@ public class InstrumentConstructorsStage implements Stage {
 
         try {
             Launcher launcher = new Launcher();
-            launcher.addInputResource(inputSourceCodePath);
+            for (Path p : Files.walk(Path.of(inputSourceCodePath)).toList()) {
+                boolean isJavaFile = p.toString().endsWith(".java");
+                boolean isNotModuleInfo = !p.getFileName().toString().equals("module-info.java");
+                if (isJavaFile && isNotModuleInfo) {
+                    launcher.addInputResource(p.toString());
+                }
+            }
             launcher.setSourceOutputDirectory(outputSourceCodePath);
 //            launcher.getEnvironment().setNoClasspath(true);
 //            launcher.getEnvironment().setShouldCompile(true);

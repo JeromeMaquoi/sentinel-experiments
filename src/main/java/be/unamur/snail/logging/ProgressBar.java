@@ -96,26 +96,6 @@ public class ProgressBar {
     }
 
     /**
-     * Updates the displayed stage name <em>without</em> advancing the progress
-     * counter. Useful when many stages share one logical unit of progress (e.g.
-     * a single measurement iteration made up of several stages).
-     *
-     * @param stageName human-readable stage name
-     */
-    public void setStageName(String stageName) {
-        currentStageName.set(stageName != null ? stageName : "");
-    }
-
-    /**
-     * Advances the progress counter by one <em>without</em> changing the
-     * displayed stage name. Call this once a logical unit of work (e.g. a full
-     * measurement iteration) has completed.
-     */
-    public void tick() {
-        current.incrementAndGet();
-    }
-
-    /**
      * Clears the current bar line, prints {@code message} on its own line, then
      * redraws the bar below it. This keeps log lines and the bar from
      * overwriting each other when console logging is enabled.
@@ -139,8 +119,6 @@ public class ProgressBar {
         synchronized (this) {
             doRender();
             out.println();
-            out.println(GREEN + "  \u2713 Pipeline completed in "
-                    + RESET + YELLOW + formatDuration(totalElapsed) + RESET);
         }
     }
 
@@ -161,15 +139,6 @@ public class ProgressBar {
         String   stageName = currentStageName.get();
         Duration elapsed   = Duration.between(startTime, Instant.now());
 
-        // ── ETA ───────────────────────────────────────────────────────────
-        String etaStr;
-        if (done > 0 && total > 0) {
-            long etaSecs = (elapsed.getSeconds() * (long)(total - done)) / done;
-            etaStr = formatDuration(Duration.ofSeconds(etaSecs));
-        } else {
-            etaStr = "--:--:--";
-        }
-
         // ── bar ───────────────────────────────────────────────────────────
         int filled = total > 0 ? (int) Math.round(((double) done / total) * BAR_WIDTH) : 0;
         int empty  = BAR_WIDTH - filled;
@@ -180,12 +149,10 @@ public class ProgressBar {
         // ── assemble line (no trailing newline – \r overwrites in place) ──
         String line = String.format(
                 "\r[%s] %3d%% %2d/%-2d  " + CYAN + "%-40s" + RESET
-                        + "  Elapsed: " + YELLOW + "%s" + RESET
-                        + "  ETA: "     + YELLOW + "%s" + RESET + "   ",
+                        + "  Elapsed: " + YELLOW + "%s" + RESET+ "   ",
                 bar, pct, done, total,
                 truncate(stageName, 40),
-                formatDuration(elapsed),
-                etaStr
+                formatDuration(elapsed)
         );
 
         out.print(line);

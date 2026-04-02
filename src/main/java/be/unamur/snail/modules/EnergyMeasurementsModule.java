@@ -85,12 +85,16 @@ public class EnergyMeasurementsModule extends AbstractModule {
         try {
             int stageIndex = 0;
             for (Stage stage : stages) {
+                String label = iterationLabel(stageIndex);
                 if (progressBar != null) {
-                    progressBar.advance(iterationLabel(stageIndex) + stage.getName());
+                    progressBar.setStageName(label + stage.getName()); // show name before executing
                 }
                 log.stageStart(stage.getName());
                 stage.execute(context);
                 log.stageEnd(stage.getName());
+                if (progressBar != null) {
+                    progressBar.advance(label + stage.getName()); // increment only after completion
+                }
                 stageIndex++;
             }
         } finally {

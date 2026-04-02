@@ -85,13 +85,25 @@ public class ProgressBar {
     }
 
     /**
-     * Advances the bar by one step and records the name of the stage that is
-     * about to execute.
+     * Advances the bar by one step and records the name of the completed stage.
+     * Call this <em>after</em> a stage finishes so the counter only reaches
+     * 100 % once every stage has completed.
      *
      * @param stageName human-readable stage name
      */
     public void advance(String stageName) {
         current.incrementAndGet();
+        currentStageName.set(stageName != null ? stageName : "");
+    }
+
+    /**
+     * Updates the displayed stage name <em>without</em> advancing the counter.
+     * Call this <em>before</em> a stage starts so the name is visible while the
+     * stage is executing, at the percentage of the <em>previous</em> stage.
+     *
+     * @param stageName human-readable stage name
+     */
+    public void setStageName(String stageName) {
         currentStageName.set(stageName != null ? stageName : "");
     }
 

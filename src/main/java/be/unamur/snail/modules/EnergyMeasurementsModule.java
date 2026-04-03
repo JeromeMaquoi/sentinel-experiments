@@ -29,7 +29,7 @@ public class EnergyMeasurementsModule implements Module {
 
         List<Stage> allStages = new ArrayList<>();
 
-        String repoDir = config.getProject().getName() + "_" + config.getRepo().getCommit() + "_measurements";
+        String repoDir = config.getProject().getName() + "_measurements_" + config.getRepo().getCommit();
         allStages.add(new CloneAndCheckoutRepositoryStage(repoDir));
         allStages.addAll(tool.createSetupStages());
 

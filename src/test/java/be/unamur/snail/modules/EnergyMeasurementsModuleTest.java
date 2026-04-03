@@ -3,6 +3,7 @@ package be.unamur.snail.modules;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.ConsolePipelineLogger;
+import be.unamur.snail.stages.CloneAndCheckoutRepositoryStage;
 import be.unamur.snail.stages.SleepStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.stages.WarmupStage;
@@ -75,6 +76,22 @@ class EnergyMeasurementsModuleTest {
         // Total: 1 clone + 1 setup + (1 measurement * numRuns) + 1 post
         assertEquals(expectedStageCount, stages.size());
         verify(mockTool, times(numRuns)).createMeasurementStages();
+    }
+
+    @Test
+    void repoDirIsCorrectlyFormattedTest() {
+        when(mockEnergyMeasurements.getTool()).thenReturn("joularjx");
+        when(mockExecutionPlan.getNumTestRuns()).thenReturn(1);
+        when(mockTool.createSetupStages()).thenReturn(List.of());
+        when(mockTool.createMeasurementStages()).thenReturn(List.of());
+        when(mockTool.createPostProcessingStages()).thenReturn(List.of());
+        when(mockFactory.create("joularjx")).thenReturn(mockTool);
+
+        List<Stage> stages = EnergyMeasurementsModule.buildStagesFromConfig(mockFactory, mockConfig);
+
+        CloneAndCheckoutRepositoryStage cloneStage =
+                (CloneAndCheckoutRepositoryStage) stages.get(0);
+        assertEquals("test-project_measurements_123abc", cloneStage.getRepoDir());
     }
 
     /**

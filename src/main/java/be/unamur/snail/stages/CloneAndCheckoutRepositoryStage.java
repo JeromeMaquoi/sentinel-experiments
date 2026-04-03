@@ -14,10 +14,14 @@ import java.io.File;
  * desired commit
  */
 public class CloneAndCheckoutRepositoryStage implements Stage {
-    private String repoDir;
+    private final String repoDir;
 
     public CloneAndCheckoutRepositoryStage(String repoDir) {
         this.repoDir = repoDir;
+    }
+
+    public String getRepoDir() {
+        return repoDir;
     }
 
     @Override

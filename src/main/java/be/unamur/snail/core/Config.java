@@ -280,6 +280,10 @@ public class Config {
             return url;
         }
 
+        public void setUrlForTests(String url) {
+            this.url = url;
+        }
+
         /**
          * Returns the specific commit hash that should be checked out in the repository, for the analysis.
          */
@@ -452,6 +456,10 @@ public class Config {
          */
         public boolean getIgnoreSpoonFailures() {
             return ignoreSpoonFailures;
+        }
+
+        public void setIgnoreSpoonFailuresForTests(boolean ignoreSpoonFailures) {
+            this.ignoreSpoonFailures = ignoreSpoonFailures;
         }
 
         /**

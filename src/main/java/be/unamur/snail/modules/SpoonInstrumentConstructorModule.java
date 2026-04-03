@@ -25,6 +25,10 @@ public class SpoonInstrumentConstructorModule implements Module {
     private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages;
 
+    SpoonInstrumentConstructorModule(List<Stage> stages) {
+        this.stages = stages;
+    }
+
     public SpoonInstrumentConstructorModule() {
         CommandRunner runner = new SimpleCommandRunner();
         MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);

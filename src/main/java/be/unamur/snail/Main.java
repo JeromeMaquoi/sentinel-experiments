@@ -37,20 +37,12 @@ public class Main {
         Utils.setPipelineLogger(pipelineLogger);
 
         // Select module based on CLI argument
-        Module module;
-        switch (moduleArg) {
-            case "instrumentconstructor":
-                module = new SpoonInstrumentConstructorModule();
-                break;
-            case "measure":
-                module = new EnergyMeasurementsModule();
-                break;
-            case "import-measurements":
-                module = new MeasurementsImportModule();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported module type: " + moduleArg); 
-        }
+        Module module = switch (moduleArg) {
+            case "instrument-constructors" -> new SpoonInstrumentConstructorModule();
+            case "measure" -> new EnergyMeasurementsModule();
+            case "import-measurements" -> new MeasurementsImportModule();
+            default -> throw new IllegalArgumentException("Unsupported module type: " + moduleArg);
+        };
 
         Context context = new Context();
         context.setLogger(pipelineLogger);

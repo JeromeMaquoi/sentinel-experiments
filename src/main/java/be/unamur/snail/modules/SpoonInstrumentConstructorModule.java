@@ -32,13 +32,12 @@ public class SpoonInstrumentConstructorModule implements Module {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
 
         Config config = Config.getInstance();
-        String repoDir = config.getProject().getName() + "_" + config.getRepo().getCommit() + "_instrumentation";
+        String repoDir = config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
 
         this.stages = Stream.of(
                 new StopBackendStage(runner, backendFactory, databaseFactory),
                 new PrepareBackendStage(runner, backendFactory, databaseFactory),
                 new CloneAndCheckoutRepositoryStage(repoDir),
-                new CopyDirectoryStage(),
                 createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),
                 createCopyBuildFileStage(),

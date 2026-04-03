@@ -74,9 +74,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         // Generate code to create CommitSimpleInstrDTO in instrumented code
         String commitCode = generateCommitInstrDTOCode(commitSha, projectName, projectOwner);
 
-        // Get file name with <project-name>_<commit-sha>
-        String targetDir = config.getRepo().getTargetDir();
-        String fileName = getFilePath(constructor, targetDir, commitSha);
+        String fileName = getFilePath(constructor);
 
         CtLocalVariable<?> utilsVariable = utils.createThreadLocalUtilsVariable(FQCN, "utils");
         CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVariable.getReference(), false);
@@ -147,16 +145,12 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
     /**
      * Returns the file path of the constructor within the copy of the project, inside the 'project-name_commit-sha' folder
      * @param constructor Constructor for which we want to get the file path
-     * @param targetDir Target directory of the project
-     * @param commitSha SHA of the commit
      * @return The file path of the constructor
      */
-    public String getFilePath(CtConstructor<?> constructor, String targetDir, String commitSha) {
+    public String getFilePath(CtConstructor<?> constructor) {
         String fileName = "Unknown File";
         if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
-            String newTargetDir = targetDir + "_" + commitSha;
-            String srcConstructorPath = constructor.getPosition().getFile().getPath().replace(targetDir, "");
-            fileName = newTargetDir + srcConstructorPath;
+            fileName = constructor.getPosition().getFile().getPath();
         }
         return fileName;
     }

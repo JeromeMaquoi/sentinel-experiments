@@ -4,7 +4,6 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.services.MeasurementsImportService;
-import be.unamur.snail.tool.energy.*;
 import java.nio.file.Path;
 
 public class ImportMeasurementsStage implements Stage {

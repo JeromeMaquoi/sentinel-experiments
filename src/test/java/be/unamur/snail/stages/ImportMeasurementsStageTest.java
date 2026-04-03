@@ -24,6 +24,7 @@ class ImportMeasurementsStageTest {
         Path yaml = tempDir.resolve("config.yml");
         Files.writeString(yaml, """
             project:
+              name: "test-project"
               sub-project: ""
             repo:
               url: "https://example.com/repo.git"
@@ -54,10 +55,10 @@ class ImportMeasurementsStageTest {
         ImportMeasurementsStage stage = new ImportMeasurementsStage(Path.of("results"), service);
         Context context = mock(Context.class);
 
-        config.getRepo().setTargetDirForTests("/repo");
+        config.getRepo().setTargetDirForTests("/directory/");
 
         stage.execute(context);
 
-        verify(service).importMeasurements(eq(Path.of("results")), eq("/repo"), eq(context));
+        verify(service).importMeasurements(eq(Path.of("results")), eq("/directory/test-project_measurements_123abc"), eq(context));
     }
 }

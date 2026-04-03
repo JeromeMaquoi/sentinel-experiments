@@ -23,7 +23,8 @@ public class ImportMeasurementsStage implements Stage {
         if (targetDir == null || targetDir.isBlank()) {
             throw new MissingConfigKeyException("repo.target-dir");
         }
-        service.importMeasurements(resultsRoot, targetDir, context);
+        String repoDir = targetDir + config.getProject().getName() + "_measurements_" + config.getRepo().getCommit();
+        service.importMeasurements(resultsRoot, repoDir, context);
     }
 
     @Override

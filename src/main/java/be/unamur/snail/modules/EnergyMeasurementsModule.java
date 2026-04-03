@@ -28,8 +28,9 @@ public class EnergyMeasurementsModule implements Module {
         EnergyMeasurementTool tool = factory.create(toolName);
 
         List<Stage> allStages = new ArrayList<>();
-        // Clone and checkout analyzed project
-        allStages.add(new CloneAndCheckoutRepositoryStage());
+
+        String repoDir = config.getProject().getName() + "_" + config.getRepo().getCommit() + "_measurements";
+        allStages.add(new CloneAndCheckoutRepositoryStage(repoDir));
         allStages.addAll(tool.createSetupStages());
 
         // Measurement stages repeated

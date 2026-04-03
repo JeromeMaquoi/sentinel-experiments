@@ -9,7 +9,10 @@ import be.unamur.snail.stages.WarmupStage;
 import be.unamur.snail.tool.energy.EnergyMeasurementTool;
 import be.unamur.snail.tool.energy.EnergyMeasurementToolFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
@@ -35,6 +38,13 @@ class EnergyMeasurementsModuleTest {
         mockConfig = mock(Config.class);
         mockExecutionPlan = mock(Config.ExecutionPlanConfig.class);
         mockEnergyMeasurements = mock(Config.EnergyMeasurementConfig.class);
+
+        Config.ProjectConfig mockProjectConfig = mock(Config.ProjectConfig.class);
+        when(mockConfig.getProject()).thenReturn(mockProjectConfig);
+        when(mockProjectConfig.getName()).thenReturn("test-project");
+        Config.RepoConfig mockRepoConfig = mock(Config.RepoConfig.class);
+        when(mockConfig.getRepo()).thenReturn(mockRepoConfig);
+        when(mockRepoConfig.getCommit()).thenReturn("123abc");
 
         when(mockConfig.getExecutionPlan()).thenReturn(mockExecutionPlan);
         when(mockExecutionPlan.getEnergyMeasurements()).thenReturn(mockEnergyMeasurements);

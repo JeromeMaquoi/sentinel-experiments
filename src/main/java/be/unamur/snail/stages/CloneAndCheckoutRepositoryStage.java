@@ -3,7 +3,6 @@ package be.unamur.snail.stages;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.PipelineLogger;
-import be.unamur.snail.utils.Utils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -15,6 +14,12 @@ import java.io.File;
  * desired commit
  */
 public class CloneAndCheckoutRepositoryStage implements Stage {
+    private String repoDir;
+
+    public CloneAndCheckoutRepositoryStage(String repoDir) {
+        this.repoDir = repoDir;
+    }
+
     @Override
     public void execute(Context context) {
         PipelineLogger log = context.getLogger();
@@ -28,20 +33,22 @@ public class CloneAndCheckoutRepositoryStage implements Stage {
             throw new IllegalArgumentException("Config must include repo.url, repo.commit, and repo.target-dir");
         }
 
-        File targetDir = new File(targetDirStr);
+        String targetRepoDir = targetDirStr + repoDir;
+
+        File targetDir = new File(targetRepoDir);
         log.debug("targetDir is {}", targetDir.getAbsolutePath());
         if (targetDir.exists() && !config.getRepo().isOverwriteClone()) {
             // TODO: better handle the overwrite management
             log.info("Project already cloned. Skipping this step");
             context.setCommit(commit);
-            context.setRepoPath(targetDirStr);
+            context.setRepoPath(targetRepoDir);
             return;
         } else if (targetDir.exists() && config.getRepo().isOverwriteClone()) {
             deleteDirectory(targetDir);
         }
 
-        log.info("Cloning {} to {}", repoUrl, targetDirStr);
-        context.setRepoPath(targetDirStr);
+        log.info("Cloning {} to {}", repoUrl, targetRepoDir);
+        context.setRepoPath(targetRepoDir);
 
         try (Git git = Git.cloneRepository().setURI(repoUrl).setDirectory(targetDir).call()) {
             git.reset().setMode(ResetCommand.ResetType.HARD).setRef(commit).call();

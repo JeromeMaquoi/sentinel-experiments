@@ -30,10 +30,14 @@ public class SpoonInstrumentConstructorModule implements Module {
         MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);
         BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
+
+        Config config = Config.getInstance();
+        String repoDir = config.getProject().getName() + "_" + config.getRepo().getCommit() + "_instrumentation";
+
         this.stages = Stream.of(
                 new StopBackendStage(runner, backendFactory, databaseFactory),
                 new PrepareBackendStage(runner, backendFactory, databaseFactory),
-                new CloneAndCheckoutRepositoryStage(),
+                new CloneAndCheckoutRepositoryStage(repoDir),
                 new CopyDirectoryStage(),
                 createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),

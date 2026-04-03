@@ -9,7 +9,7 @@ project:
 repo:
   url: "https://github.com/apache/commons-configuration"
   commit: "525bd980b07dba983d931baeff573c0aa9880821"
-  target-dir: "/home/commun/infom125/sentinel-group/repositories/commons-configuration"
+  target-dir: "/home/commun/infom125/sentinel-group/repositories/"
   jdk: "17.0.17-tem"
   overwrite-clone: true
   overwrite-copy: true

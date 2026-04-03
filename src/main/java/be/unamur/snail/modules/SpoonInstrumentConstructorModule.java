@@ -25,16 +25,23 @@ public class SpoonInstrumentConstructorModule implements Module {
     private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages;
 
+    SpoonInstrumentConstructorModule(List<Stage> stages) {
+        this.stages = stages;
+    }
+
     public SpoonInstrumentConstructorModule() {
         CommandRunner runner = new SimpleCommandRunner();
         MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);
         BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
+
+        Config config = Config.getInstance();
+        String repoDir = config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
+
         this.stages = Stream.of(
                 new StopBackendStage(runner, backendFactory, databaseFactory),
                 new PrepareBackendStage(runner, backendFactory, databaseFactory),
-                new CloneAndCheckoutRepositoryStage(),
-                new CopyDirectoryStage(),
+                new CloneAndCheckoutRepositoryStage(repoDir),
                 createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),
                 createCopyBuildFileStage(),

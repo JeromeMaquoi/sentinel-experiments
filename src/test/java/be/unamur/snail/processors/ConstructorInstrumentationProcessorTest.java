@@ -1,6 +1,7 @@
 package be.unamur.snail.processors;
 
 import be.unamur.snail.core.Config;
+import be.unamur.snail.core.Context;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -128,21 +129,21 @@ class ConstructorInstrumentationProcessorTest {
         when(mockConstructor.getPosition()).thenReturn(position);
         File file = mock(File.class);
         when(position.getFile()).thenReturn(file);
-        when(file.getPath()).thenReturn("/path/to/testProject/constructor/file.java");
+        when(file.getPath()).thenReturn("/path/to/testProject_instrumentation_abc123/constructor/file.java");
 
-        String filePath = processor.getFilePath(mockConstructor, "/path/to/testProject", "abc123");
-        assertEquals("/path/to/testProject_abc123/constructor/file.java", filePath);
+        String filePath = processor.getFilePath(mockConstructor);
+        assertEquals("/path/to/testProject_instrumentation_abc123/constructor/file.java", filePath);
     }
 
     @Test
     void getFilePathUnknownFileTest() {
         CtConstructor<?> mockConstructor = mock(CtConstructor.class);
         when(mockConstructor.getPosition()).thenReturn(null);
-        assertEquals("Unknown File",  processor.getFilePath(mockConstructor, "testProject", "abc123"));
+        assertEquals("Unknown File",  processor.getFilePath(mockConstructor));
 
         SourcePosition position = mock(SourcePosition.class);
         when(mockConstructor.getPosition()).thenReturn(position);
         when(position.getFile()).thenReturn(null);
-        assertEquals("Unknown File",  processor.getFilePath(mockConstructor, "testProject", "abc123"));
+        assertEquals("Unknown File",  processor.getFilePath(mockConstructor));
     }
 }

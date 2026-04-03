@@ -3,6 +3,7 @@ package be.unamur.snail.modules;
 import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.ConsolePipelineLogger;
+import be.unamur.snail.stages.CloneAndCheckoutRepositoryStage;
 import be.unamur.snail.stages.SleepStage;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.stages.WarmupStage;
@@ -10,6 +11,8 @@ import be.unamur.snail.tool.energy.EnergyMeasurementTool;
 import be.unamur.snail.tool.energy.EnergyMeasurementToolFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 
@@ -36,14 +39,27 @@ class EnergyMeasurementsModuleTest {
         mockExecutionPlan = mock(Config.ExecutionPlanConfig.class);
         mockEnergyMeasurements = mock(Config.EnergyMeasurementConfig.class);
 
+        Config.ProjectConfig mockProjectConfig = mock(Config.ProjectConfig.class);
+        when(mockConfig.getProject()).thenReturn(mockProjectConfig);
+        when(mockProjectConfig.getName()).thenReturn("test-project");
+        Config.RepoConfig mockRepoConfig = mock(Config.RepoConfig.class);
+        when(mockConfig.getRepo()).thenReturn(mockRepoConfig);
+        when(mockRepoConfig.getCommit()).thenReturn("123abc");
+
         when(mockConfig.getExecutionPlan()).thenReturn(mockExecutionPlan);
         when(mockExecutionPlan.getEnergyMeasurements()).thenReturn(mockEnergyMeasurements);
     }
-
-    @Test
-    void buildStagesFromConfigWithMultipleRunsTest() {
+    
+    @ParameterizedTest(name = "{0} run(s) → {1} total stages")
+    @CsvSource({
+        "1, 4",
+        "2, 5",
+        "3, 6",
+        "5, 8"
+    })
+    void buildStagesFromConfigWithVariousRunCountsTest(int numRuns, int expectedStageCount) {
         when(mockEnergyMeasurements.getTool()).thenReturn("joularjx");
-        when(mockExecutionPlan.getNumTestRuns()).thenReturn(2);
+        when(mockExecutionPlan.getNumTestRuns()).thenReturn(numRuns);
 
         List<Stage> setupStages = List.of(mock(Stage.class));
         List<Stage> measurementStages = List.of(mock(Stage.class));
@@ -57,31 +73,25 @@ class EnergyMeasurementsModuleTest {
 
         List<Stage> stages = EnergyMeasurementsModule.buildStagesFromConfig(mockFactory, mockConfig);
 
-        // Total: 1 clone + 1 setup + (1 measurement * 2 runs) + 1 post = 5 stages
-        assertEquals(5, stages.size());
-        verify(mockTool, times(2)).createMeasurementStages();
+        // Total: 1 clone + 1 setup + (1 measurement * numRuns) + 1 post
+        assertEquals(expectedStageCount, stages.size());
+        verify(mockTool, times(numRuns)).createMeasurementStages();
     }
 
     @Test
-    void buildStagesIncludesMeasurementStagesCorrectlyTest() {
+    void repoDirIsCorrectlyFormattedTest() {
         when(mockEnergyMeasurements.getTool()).thenReturn("joularjx");
-        when(mockExecutionPlan.getNumTestRuns()).thenReturn(3);
-
-        List<Stage> setupStages = List.of(mock(Stage.class));
-        List<Stage> measurementStages = List.of(mock(Stage.class));
-        List<Stage> postStages = List.of(mock(Stage.class));
-
-        when(mockTool.createSetupStages()).thenReturn(setupStages);
-        when(mockTool.createMeasurementStages()).thenReturn(measurementStages);
-        when(mockTool.createPostProcessingStages()).thenReturn(postStages);
-
+        when(mockExecutionPlan.getNumTestRuns()).thenReturn(1);
+        when(mockTool.createSetupStages()).thenReturn(List.of());
+        when(mockTool.createMeasurementStages()).thenReturn(List.of());
+        when(mockTool.createPostProcessingStages()).thenReturn(List.of());
         when(mockFactory.create("joularjx")).thenReturn(mockTool);
 
         List<Stage> stages = EnergyMeasurementsModule.buildStagesFromConfig(mockFactory, mockConfig);
 
-        // Total: 1 clone + 1 setup + (1 measurement * 3 runs) + 1 post = 6 stages
-        assertEquals(6, stages.size());
-        verify(mockTool, times(3)).createMeasurementStages();
+        CloneAndCheckoutRepositoryStage cloneStage =
+                (CloneAndCheckoutRepositoryStage) stages.get(0);
+        assertEquals("test-project_measurements_123abc", cloneStage.getRepoDir());
     }
 
     /**
@@ -141,7 +151,7 @@ class EnergyMeasurementsModuleTest {
      * This validates that these stages are properly integrated into the measurement pipeline.
      */
     @Test
-    void pipelineCanIncludeRealWarmupAndSleepStagesTest() throws Exception {
+    void pipelineCanIncludeRealWarmupAndSleepStagesTest() {
         // Create a list of stages including real WarmupStage and SleepStage
         List<Stage> stages = List.of(
             mock(Stage.class),  // Mock setup stage
@@ -154,30 +164,6 @@ class EnergyMeasurementsModuleTest {
         assertEquals(3, stages.size());
     }
 
-    /**
-     * Test that validates single measurement run pipeline structure.
-     */
-    @Test
-    void singleMeasurementRunPipelineStructureTest() {
-        when(mockEnergyMeasurements.getTool()).thenReturn("joularjx");
-        when(mockExecutionPlan.getNumTestRuns()).thenReturn(1);
-
-        List<Stage> setupStages = List.of(mock(Stage.class));
-        List<Stage> measurementStages = List.of(mock(Stage.class));
-        List<Stage> postStages = List.of(mock(Stage.class));
-
-        when(mockTool.createSetupStages()).thenReturn(setupStages);
-        when(mockTool.createMeasurementStages()).thenReturn(measurementStages);
-        when(mockTool.createPostProcessingStages()).thenReturn(postStages);
-
-        when(mockFactory.create("joularjx")).thenReturn(mockTool);
-
-        List<Stage> stages = EnergyMeasurementsModule.buildStagesFromConfig(mockFactory, mockConfig);
-
-        // Total: 1 clone + 1 setup + (1 measurement * 1 run) + 1 post = 4 stages
-        assertEquals(4, stages.size());
-        verify(mockTool, times(1)).createMeasurementStages();
-    }
 
     // Helper methods for creating test fixtures
 

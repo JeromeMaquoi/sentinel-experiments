@@ -30,7 +30,6 @@ public class RetrieveToolReleaseStage implements Stage {
         ToolReleaseResult result = fetcher.fetchRelease();
         String toolPath = result.path() + "/" + toolName + "-" + result.version() + ".jar";
         context.setEnergyToolPath(toolPath);
-        context.setEnergyToolVersion(result.version());
 
         log.info("Retrieved release for tool {} at {}", toolName, toolPath);
     }

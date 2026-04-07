@@ -13,14 +13,13 @@ import java.util.List;
  * once all stages have finished or an exception is thrown.
  */
 public abstract class AbstractModule implements Module {
-    // Returns the ordered list of stages this module will execute
     protected abstract List<Stage> getStages();
 
     @Override
     public void run(Context context) throws Exception {
         List<Stage> stages = getStages();
         PipelineLogger log = context.getLogger();
-        ProgressBar progressBar = context.getProgressBar(); // may be null
+        ProgressBar progressBar = context.getProgressBar();
 
         if (progressBar != null) {
             progressBar.setLogger(log);
@@ -30,13 +29,13 @@ public abstract class AbstractModule implements Module {
         try {
             for (Stage stage : stages) {
                 if (progressBar != null) {
-                    progressBar.setStageName(stage.getName()); // show name before executing
+                    progressBar.setStageName(stage.getName());
                 }
                 log.stageStart(stage.getName());
                 stage.execute(context);
                 log.stageEnd(stage.getName());
                 if (progressBar != null) {
-                    progressBar.advance(stage.getName()); // increment only after completion
+                    progressBar.advance(stage.getName());
                 }
             }
         } finally {

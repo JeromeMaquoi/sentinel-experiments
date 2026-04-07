@@ -34,7 +34,7 @@ public class SpoonInstrumentConstructorModule extends AbstractModule {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
 
         Config config = Config.getInstance();
-        String repoDir = config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
+        String repoDir = buildRepoDir(config);
 
         this.stages = Stream.of(
                 new StopBackendStage(runner, backendFactory, databaseFactory),
@@ -53,6 +53,10 @@ public class SpoonInstrumentConstructorModule extends AbstractModule {
     @Override
     protected List<Stage> getStages() {
         return stages;
+    }
+
+    public static String buildRepoDir(Config config) {
+        return config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
     }
 
     protected CopyFileStage createCopyBuildFileStageForClasspath() {
@@ -111,8 +115,7 @@ public class SpoonInstrumentConstructorModule extends AbstractModule {
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
-    public String createTotalProjectPath(String projectName, String subProject) {
-        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
+    public String createTotalProjectPath(String projectName, String subProject) {        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
     }
 
     public String detectBuildFileNameOrNull(String totalProjectPath) {

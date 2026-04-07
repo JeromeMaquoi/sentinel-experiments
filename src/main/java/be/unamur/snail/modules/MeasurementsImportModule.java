@@ -33,4 +33,8 @@ public class MeasurementsImportModule extends AbstractModule {
         stages.addAll(tool.createCleanupStages());
         return stages;
     }
+
+    public static String buildRepoDir(Config config) {
+        return config.getProject().getName() + "_import_" + config.getRepo().getCommit();
+    }
 }

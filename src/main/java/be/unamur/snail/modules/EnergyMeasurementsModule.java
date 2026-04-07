@@ -57,7 +57,7 @@ public class EnergyMeasurementsModule extends AbstractModule {
         this.numTestRuns = 0;
     }
 
-    static String buildRepoDir(Config config) {
+    public static String buildRepoDir(Config config) {
         return config.getProject().getName() + "_measurements_" + config.getRepo().getCommit();
     }
 

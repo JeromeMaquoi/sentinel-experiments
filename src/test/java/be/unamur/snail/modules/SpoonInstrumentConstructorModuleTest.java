@@ -146,6 +146,21 @@ class SpoonInstrumentConstructorModuleTest {
         verify(mockStage3).execute(context);
     }
 
+    // ── buildRepoDir ─────────────────────────────────────────────────────────
+
+    @Test
+    void buildRepoDirReturnsInstrumentationNameWithCommitTest() {
+        Config config = new Config();
+        Config.ProjectConfig project = new Config.ProjectConfig();
+        project.setNameForTests("checkstyle");
+        config.setProjectForTests(project);
+        Config.RepoConfig repo = new Config.RepoConfig();
+        repo.setCommitForTests("abc123");
+        config.setRepoForTests(repo);
+
+        assertEquals("checkstyle_instrumentation_abc123", SpoonInstrumentConstructorModule.buildRepoDir(config));
+    }
+
     // ── createCopyBuildFileStage (instrumentation) ───────────────────────────
 
     @Test

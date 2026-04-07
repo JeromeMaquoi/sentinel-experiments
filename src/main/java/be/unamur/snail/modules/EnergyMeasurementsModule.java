@@ -22,8 +22,10 @@ public class EnergyMeasurementsModule extends AbstractModule {
     private final int numTestRuns;
 
     public EnergyMeasurementsModule() {
-        EnergyMeasurementToolFactory factory = new EnergyMeasurementToolFactory();
-        Config config = Config.getInstance();
+        this(new EnergyMeasurementToolFactory(), Config.getInstance());
+    }
+
+    EnergyMeasurementsModule(EnergyMeasurementToolFactory factory, Config config) {
         String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
         EnergyMeasurementTool tool = factory.create(toolName);
 
@@ -37,7 +39,7 @@ public class EnergyMeasurementsModule extends AbstractModule {
         this.measurementStagesPerRun = firstRun.size();
 
         List<Stage> allStages = new ArrayList<>();
-        allStages.add(new CloneAndCheckoutRepositoryStage());
+        allStages.add(new CloneAndCheckoutRepositoryStage(buildRepoDir(config)));
         allStages.addAll(setupStages);
         allStages.addAll(firstRun);
         for (int i = 1; i < numTestRuns; i++) {
@@ -53,6 +55,10 @@ public class EnergyMeasurementsModule extends AbstractModule {
         this.numSetupStages = 0;
         this.measurementStagesPerRun = 0;
         this.numTestRuns = 0;
+    }
+
+    static String buildRepoDir(Config config) {
+        return config.getProject().getName() + "_measurements_" + config.getRepo().getCommit();
     }
 
     @Override
@@ -87,13 +93,13 @@ public class EnergyMeasurementsModule extends AbstractModule {
             for (Stage stage : stages) {
                 String label = iterationLabel(stageIndex);
                 if (progressBar != null) {
-                    progressBar.setStageName(label + stage.getName()); // show name before executing
+                    progressBar.setStageName(label + stage.getName());
                 }
                 log.stageStart(stage.getName());
                 stage.execute(context);
                 log.stageEnd(stage.getName());
                 if (progressBar != null) {
-                    progressBar.advance(label + stage.getName()); // increment only after completion
+                    progressBar.advance(label + stage.getName());
                 }
                 stageIndex++;
             }
@@ -111,7 +117,7 @@ public class EnergyMeasurementsModule extends AbstractModule {
      * {@code "Setup ▸ "}, {@code "Run X/Y ▸ "} or {@code "Post ▸ "}.
      * Returns an empty string when metadata is unavailable (test path).
      */
-    private String iterationLabel(int stageIndex) {
+    protected String iterationLabel(int stageIndex) {
         if (measurementStagesPerRun == 0 || numTestRuns == 0) return "";
         int measurementEnd = numSetupStages + numTestRuns * measurementStagesPerRun;
         if (stageIndex < numSetupStages) {
@@ -122,32 +128,5 @@ public class EnergyMeasurementsModule extends AbstractModule {
         } else {
             return "Post \u25b8 ";
         }
-    }
-
-
-    /**
-     * Kept for backward compatibility with existing tests.
-     * Production code builds stages directly in the constructor.
-     */
-    public static List<Stage> buildStagesFromConfig(EnergyMeasurementToolFactory factory, Config config) {
-        String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
-        int numTestRuns = config.getExecutionPlan().getNumTestRuns();
-        EnergyMeasurementTool tool = factory.create(toolName);
-
-        List<Stage> allStages = new ArrayList<>();
-
-        String repoDir = config.getProject().getName() + "_measurements_" + config.getRepo().getCommit();
-        allStages.add(new CloneAndCheckoutRepositoryStage(repoDir));
-        allStages.addAll(tool.createSetupStages());
-
-        // Measurement stages repeated
-        for (int i = 0; i < numTestRuns; i++) {
-            allStages.addAll(tool.createMeasurementStages());
-        }
-
-        // Post-processing stages to run after the measurements
-        allStages.addAll(tool.createPostProcessingStages());
-
-        return allStages;
     }
 }

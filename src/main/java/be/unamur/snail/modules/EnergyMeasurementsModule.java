@@ -85,6 +85,7 @@ public class EnergyMeasurementsModule extends AbstractModule {
         ProgressBar progressBar = context.getProgressBar();
 
         if (progressBar != null) {
+            progressBar.setLogger(log);
             progressBar.start(stages.size());
         }
 

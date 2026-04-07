@@ -46,6 +46,13 @@ public class ProgressBar {
     private final ScheduledExecutorService scheduler;
     private volatile boolean              stopped = false;
 
+    /**
+     * Optional logger that receives a single summary line when {@link #stop()}
+     * is called. Set via {@link #setLogger(PipelineLogger)} before
+     * {@link #start(int)} so the total elapsed time is persisted to the log file.
+     */
+    private volatile PipelineLogger logger;
+
     // ── constructors ───────────────────────────────────────────────────────
 
     public ProgressBar() {
@@ -70,6 +77,18 @@ public class ProgressBar {
      */
     public static ProgressBar getActive() {
         return activeBar;
+    }
+
+    /**
+     * Registers the {@link PipelineLogger} that will receive a one-line
+     * completion summary (stage count and total elapsed time) when
+     * {@link #stop()} is called. Call this before {@link #start(int)}.
+     *
+     * @param logger the pipeline logger backed by the log file; may be {@code null}
+     *               to disable file logging of the summary
+     */
+    public void setLogger(PipelineLogger logger) {
+        this.logger = logger;
     }
 
     /**
@@ -123,6 +142,8 @@ public class ProgressBar {
     /**
      * Stops the refresh thread, renders a final completed frame and moves to
      * a new line so subsequent output starts cleanly below the bar.
+     * If a logger was registered via {@link #setLogger(PipelineLogger)}, a
+     * one-line completion summary is also written to the log file.
      */
     public void stop() {
         activeBar = null;
@@ -131,6 +152,12 @@ public class ProgressBar {
         synchronized (this) {
             doRender();
             out.println();
+        }
+        if (logger != null) {
+            Duration elapsed = Duration.between(startTime, Instant.now());
+            String summary = String.format("Pipeline complete: %d/%d stages  Elapsed: %s",
+                    current.get(), total, formatDuration(elapsed));
+            logger.info(summary);
         }
     }
 

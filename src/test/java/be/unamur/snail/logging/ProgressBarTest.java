@@ -3,11 +3,14 @@ package be.unamur.snail.logging;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link ProgressBar}.
@@ -172,6 +175,43 @@ class ProgressBarTest {
         bar.stop();
         assertTrue(output().contains(shortName),
                 "A short stage name should appear verbatim in the output");
+    }
+
+    // ── setLogger / stop summary ──────────────────────────────────────────────
+
+    /**
+     * When a logger is registered, {@code stop()} must call {@code logger.info()}
+     * with a message that contains the stage count and elapsed time.
+     */
+    @Test
+    void stopLogsCompletionSummaryToRegisteredLoggerTest() {
+        PipelineLogger mockLogger = mock(PipelineLogger.class);
+        bar.setLogger(mockLogger);
+        bar.start(3);
+        bar.advance("A");
+        bar.advance("B");
+        bar.advance("C");
+        bar.stop();
+
+        // stop() calls logger.info(fullyFormattedString) — capture it and assert on the content
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(mockLogger).info(captor.capture());
+
+        String message = captor.getValue();
+        assertTrue(message.contains("Elapsed:"),
+                "Completion summary must mention elapsed time");
+        assertTrue(message.contains("3/3"),
+                "Completion summary must show completed/total stage count");
+    }
+
+    /**
+     * {@code stop()} must not throw when no logger has been registered.
+     */
+    @Test
+    void stopWithoutRegisteredLoggerDoesNotThrowTest() {
+        bar.start(3);
+        assertDoesNotThrow(bar::stop,
+                "stop() must be safe when no logger was registered via setLogger()");
     }
 
     // ── null safety ───────────────────────────────────────────────────────────

@@ -23,6 +23,7 @@ public abstract class AbstractModule implements Module {
         ProgressBar progressBar = context.getProgressBar(); // may be null
 
         if (progressBar != null) {
+            progressBar.setLogger(log);
             progressBar.start(stages.size());
         }
 

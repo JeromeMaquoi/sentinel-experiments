@@ -13,16 +13,21 @@ import be.unamur.snail.tool.ToolReleaseResult;
  */
 public class RetrieveToolReleaseStage implements Stage {
     private final ToolReleaseFetcherFactory fetcherFactory;
+    private final Config config;
 
     public RetrieveToolReleaseStage() {
-        this.fetcherFactory = new ToolReleaseFetcherFactory();
+        this(new ToolReleaseFetcherFactory(), Config.getInstance());
+    }
+
+    RetrieveToolReleaseStage(ToolReleaseFetcherFactory fetcherFactory, Config config) {
+        this.fetcherFactory = fetcherFactory;
+        this.config = config;
     }
 
     @Override
     public void execute(Context context) throws Exception {
         PipelineLogger log = context.getLogger();
 
-        Config config = Config.getInstance();
         String toolName = config.getExecutionPlan().getEnergyMeasurements().getTool();
         log.debug("Retrieving release for tool {}", toolName);
 
@@ -30,7 +35,6 @@ public class RetrieveToolReleaseStage implements Stage {
         ToolReleaseResult result = fetcher.fetchRelease();
         String toolPath = result.path() + "/" + toolName + "-" + result.version() + ".jar";
         context.setEnergyToolPath(toolPath);
-        context.setEnergyToolVersion(result.version());
 
         log.info("Retrieved release for tool {} at {}", toolName, toolPath);
     }

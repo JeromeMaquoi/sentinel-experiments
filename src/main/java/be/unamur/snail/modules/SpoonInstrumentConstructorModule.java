@@ -1,8 +1,6 @@
 package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.core.Context;
-import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.stages.Stage;
 import be.unamur.snail.database.DatabasePreparerFactory;
 import be.unamur.snail.database.MongoServiceManager;
@@ -21,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class SpoonInstrumentConstructorModule implements Module {
+public class SpoonInstrumentConstructorModule extends AbstractModule {
     private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages;
 
@@ -36,7 +34,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
 
         Config config = Config.getInstance();
-        String repoDir = config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
+        String repoDir = buildRepoDir(config);
 
         this.stages = Stream.of(
                 new StopBackendStage(runner, backendFactory, databaseFactory),
@@ -53,13 +51,12 @@ public class SpoonInstrumentConstructorModule implements Module {
     }
 
     @Override
-    public void run(Context context) throws Exception {
-        PipelineLogger logger = context.getLogger();
-        for (Stage stage : stages) {
-            logger.stageStart(stage.getName());
-            stage.execute(context);
-            logger.stageEnd(stage.getName());
-        }
+    protected List<Stage> getStages() {
+        return stages;
+    }
+
+    public static String buildRepoDir(Config config) {
+        return config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
     }
 
     protected CopyFileStage createCopyBuildFileStageForClasspath() {
@@ -118,8 +115,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
-    public String createTotalProjectPath(String projectName, String subProject) {
-        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
+    public String createTotalProjectPath(String projectName, String subProject) {        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
     }
 
     public String detectBuildFileNameOrNull(String totalProjectPath) {

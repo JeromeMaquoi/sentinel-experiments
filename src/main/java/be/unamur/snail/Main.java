@@ -4,6 +4,7 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.logging.FilePipelineLogger;
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.logging.ProgressBar;
 import be.unamur.snail.modules.EnergyMeasurementsModule;
 import be.unamur.snail.modules.MeasurementsImportModule;
 import be.unamur.snail.modules.Module;
@@ -29,7 +30,7 @@ public class Main {
         Config config = Config.getInstance();
         System.setProperty("log.level", config.getLog().getLevel());
 
-        Path logFilePath = Path.of(config.getLog().getDirectory(), "pipeline.log");
+        Path logFilePath = Path.of(config.getLog().getDirectory(), buildLogFileName(moduleArg, config));
         boolean alsoLogToConsole = config.getLog().getAlsoLogToConsole();
         boolean clearPreviousLogs = config.getLog().getClearPreviousLogs();
         String configuredLevel = config.getLog().getLevel();
@@ -46,6 +47,7 @@ public class Main {
 
         Context context = new Context();
         context.setLogger(pipelineLogger);
+        context.setProgressBar(new ProgressBar());
 
         try {
             module.run(context);
@@ -53,5 +55,15 @@ public class Main {
             pipelineLogger.error("Pipeline failed: ", e);
             System.exit(1);
         }
+    }
+
+    static String buildLogFileName(String moduleArg, Config config) {
+        String baseName = switch (moduleArg) {
+            case "measure" -> EnergyMeasurementsModule.buildRepoDir(config);
+            case "instrument-constructors" -> SpoonInstrumentConstructorModule.buildRepoDir(config);
+            case "import-measurements" -> MeasurementsImportModule.buildRepoDir(config);
+            default -> config.getProject().getName() + "_" + moduleArg + "_" + config.getRepo().getCommit();
+        };
+        return baseName + ".log";
     }
 }

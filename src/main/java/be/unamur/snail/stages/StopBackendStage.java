@@ -4,13 +4,15 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.database.DatabasePreparer;
 import be.unamur.snail.database.DatabasePreparerFactory;
+import be.unamur.snail.database.MongoServiceManager;
+import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
 import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
+import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.utils.CommandRunner;
-
-import java.io.IOException;
+import be.unamur.snail.utils.SimpleCommandRunner;
 
 /**
  * Stage responsible for stopping the database and the backend services
@@ -19,6 +21,10 @@ public class StopBackendStage implements Stage {
     private final CommandRunner runner;
     private final BackendServiceManagerFactory backendFactory;
     private final DatabasePreparerFactory databaseFactory;
+
+    public StopBackendStage() {
+        this(new SimpleCommandRunner(), new SimpleBackendServiceManagerFactoryImpl(), new SimpleDatabasePreparerFactory(new MongoServiceManager()));
+    }
 
     public StopBackendStage(CommandRunner runner, BackendServiceManagerFactory backendFactory, DatabasePreparerFactory databaseFactory) {
         this.runner = runner;

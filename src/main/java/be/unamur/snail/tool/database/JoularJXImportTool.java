@@ -1,12 +1,7 @@
 package be.unamur.snail.tool.database;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.database.DatabasePreparerFactory;
-import be.unamur.snail.database.MongoServiceManager;
-import be.unamur.snail.database.SimpleDatabasePreparerFactory;
 import be.unamur.snail.files.DefaultDirectoryService;
-import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
-import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.services.MeasurementsImportService;
 import be.unamur.snail.stages.ImportMeasurementsStage;
 import be.unamur.snail.stages.PrepareBackendStage;
@@ -14,8 +9,6 @@ import be.unamur.snail.stages.Stage;
 import be.unamur.snail.stages.StopBackendStage;
 import be.unamur.snail.tool.energy.FolderProcessorFactory;
 import be.unamur.snail.tool.energy.JoularJXFolderProcessorFactory;
-import be.unamur.snail.utils.CommandRunner;
-import be.unamur.snail.utils.SimpleCommandRunner;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,14 +28,9 @@ public class JoularJXImportTool implements ImportTool {
 
     @Override
     public List<Stage> createPreparationStages() {
-        CommandRunner runner = new SimpleCommandRunner();
-        MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);
-        BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
-        DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
-
         return List.of(
-                new StopBackendStage(runner, backendFactory, databaseFactory),
-                new PrepareBackendStage(runner, backendFactory, databaseFactory)
+                new StopBackendStage(),
+                new PrepareBackendStage()
         );
     }
 

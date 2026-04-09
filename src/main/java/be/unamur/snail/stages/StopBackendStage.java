@@ -49,7 +49,7 @@ public class StopBackendStage implements Stage {
         log.info("Stopping backend in mode {}", mode);
         BackendServiceManager backendManager = backendFactory.create(mode, runner, serverPath);
         DatabasePreparer preparer = databaseFactory.create(backendManager);
-        preparer.stopBackendAndDatabase();
+        preparer.stopBackendAndDatabase(context);
     }
 
     @Override

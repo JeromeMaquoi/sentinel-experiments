@@ -52,6 +52,6 @@ public class PrepareBackendStage implements Stage {
         BackendServiceManager backendManager = backendFactory.create(mode, runner, serverPath);
         DatabasePreparer preparer = databaseFactory.create(backendManager);
 
-        preparer.prepareDatabase();
+        preparer.prepareDatabase(context);
     }
 }

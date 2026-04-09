@@ -1,6 +1,7 @@
 package be.unamur.snail.database;
 
 import be.unamur.snail.utils.CommandRunner;
+import be.unamur.snail.utils.SimpleCommandRunner;
 import be.unamur.snail.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,10 @@ public class MongoServiceManager {
     private final CommandRunner runner;
     private final int nbRetries;
     private final int delayMs;
+
+    public MongoServiceManager() {
+        this(new SimpleCommandRunner(), 5, 500);
+    }
 
     public MongoServiceManager(CommandRunner runner, int nbRetries, int delayMs) {
         this.runner = runner;

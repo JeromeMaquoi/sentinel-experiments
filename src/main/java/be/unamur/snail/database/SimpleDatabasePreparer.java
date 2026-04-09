@@ -1,14 +1,13 @@
 package be.unamur.snail.database;
 
+import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MongoServiceNotStartedException;
 import be.unamur.snail.exceptions.MongoServiceNotStoppedException;
 import be.unamur.snail.exceptions.ServerNotStartedException;
+import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.sentinelbackend.BackendServiceManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SimpleDatabasePreparer implements DatabasePreparer {
-    private static final Logger log = LoggerFactory.getLogger(SimpleDatabasePreparer.class);
     private final MongoServiceManager mongoServiceManager;
     private final BackendServiceManager backendServiceManager;
 
@@ -18,7 +17,8 @@ public class SimpleDatabasePreparer implements DatabasePreparer {
     }
 
     @Override
-    public void prepareDatabase() throws Exception {
+    public void prepareDatabase(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
         if (!mongoServiceManager.startMongoService()) {
             throw new MongoServiceNotStartedException();
         }
@@ -30,7 +30,8 @@ public class SimpleDatabasePreparer implements DatabasePreparer {
     }
 
     @Override
-    public void stopBackendAndDatabase() throws Exception {
+    public void stopBackendAndDatabase(Context context) throws Exception {
+        PipelineLogger log = context.getLogger();
         if (!backendServiceManager.stopBackend()) {
             throw new ServerNotStartedException();
         }

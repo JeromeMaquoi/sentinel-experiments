@@ -81,7 +81,7 @@ class PrepareBackendStageTest {
         prepareBackendStage.execute(context);
         verify(backendFactory).create(eq("dev"), eq(runner), eq("/server/path"));
         verify(databaseFactory).create(backendManager);
-        verify(databasePreparer).prepareDatabase();
+        verify(databasePreparer).prepareDatabase(context);
     }
 
     @Test
@@ -91,7 +91,7 @@ class PrepareBackendStageTest {
 
         verify(backendFactory).create(eq("prod"), eq(runner), eq("/server/path"));
         verify(databaseFactory).create(backendManager);
-        verify(databasePreparer).prepareDatabase();
+        verify(databasePreparer).prepareDatabase(context);
     }
 
     @Test

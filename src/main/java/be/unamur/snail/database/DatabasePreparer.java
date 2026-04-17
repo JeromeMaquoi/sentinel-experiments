@@ -1,6 +1,8 @@
 package be.unamur.snail.database;
 
+import be.unamur.snail.core.Context;
+
 public interface DatabasePreparer {
-    void prepareDatabase() throws Exception;
-    void stopBackendAndDatabase() throws Exception;
+    void prepareDatabase(Context context) throws Exception;
+    void stopBackendAndDatabase(Context context) throws Exception;
 }

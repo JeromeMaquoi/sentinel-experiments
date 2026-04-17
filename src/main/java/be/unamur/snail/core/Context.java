@@ -1,18 +1,18 @@
 package be.unamur.snail.core;
 
 import be.unamur.snail.logging.PipelineLogger;
+import be.unamur.snail.logging.ProgressBar;
 
 import java.io.File;
 import java.util.List;
 
 public class Context {
     private PipelineLogger logger;
+    private ProgressBar progressBar;
     private List<String> classPath;
     private String repoPath;
-    private String baseRepoPath;
     private String commit;
     private String energyToolPath;
-    private String energyToolVersion;
     private File initScript;
     private String javaHome;
     private String currentWorkingDir;
@@ -24,6 +24,14 @@ public class Context {
 
     public void setLogger(PipelineLogger logger) {
         this.logger = logger;
+    }
+
+    public ProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public void setProgressBar(ProgressBar progressBar) {
+        this.progressBar = progressBar;
     }
 
     public List<String> getClassPath() {
@@ -42,14 +50,6 @@ public class Context {
         this.repoPath = repoPath;
     }
 
-    public String getBaseRepoPath() {
-        return baseRepoPath;
-    }
-
-    public void setBaseRepoPath(String baseRepoPath) {
-        this.baseRepoPath = baseRepoPath;
-    }
-
     public String getCommit() {
         return commit;
     }
@@ -64,14 +64,6 @@ public class Context {
 
     public void setEnergyToolPath(String energyToolPath) {
         this.energyToolPath = energyToolPath;
-    }
-
-    public String getEnergyToolVersion() {
-        return energyToolVersion;
-    }
-
-    public void setEnergyToolVersion(String energyToolVersion) {
-        this.energyToolVersion = energyToolVersion;
     }
 
     public File getInitScript() {

@@ -30,6 +30,7 @@ public class JoularJXTool implements EnergyMeasurementTool {
     @Override
     public List<Stage> createSetupStages() {
         return List.of(
+                new StopBackendStage(),
                 new RetrieveToolReleaseStage(),
                 createCopyBuildFileStage(),
                 new UpdateBuildFileStage(),
@@ -42,9 +43,9 @@ public class JoularJXTool implements EnergyMeasurementTool {
     @Override
     public List<Stage> createMeasurementStages() {
         return List.of(
+                new SleepStage(),
                 new SetDirectoryStage(),
-                new RunProjectTestsStage(),
-                new SleepStage()
+                new RunProjectTestsStage()
         );
     }
 

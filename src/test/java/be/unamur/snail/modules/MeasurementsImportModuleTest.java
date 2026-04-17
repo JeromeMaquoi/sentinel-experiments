@@ -51,6 +51,19 @@ class MeasurementsImportModuleTest {
     }
 
     @Test
+    void buildRepoDirReturnsImportNameWithCommitTest() {
+        Config config = mock(Config.class);
+        Config.ProjectConfig project = mock(Config.ProjectConfig.class);
+        Config.RepoConfig repo = mock(Config.RepoConfig.class);
+        when(config.getProject()).thenReturn(project);
+        when(config.getRepo()).thenReturn(repo);
+        when(project.getName()).thenReturn("checkstyle");
+        when(repo.getCommit()).thenReturn("abc123");
+
+        assertEquals("checkstyle_import_abc123", MeasurementsImportModule.buildRepoDir(config));
+    }
+
+    @Test
     void buildStagesFromConfigReturnsAllStagesTest() {
         List<Stage> stages = MeasurementsImportModule.buildStagesFromConfig(factory, config);
 

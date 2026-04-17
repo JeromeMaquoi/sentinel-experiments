@@ -4,7 +4,6 @@ import be.unamur.snail.core.Config;
 import be.unamur.snail.core.Context;
 import be.unamur.snail.exceptions.MissingConfigKeyException;
 import be.unamur.snail.services.MeasurementsImportService;
-import be.unamur.snail.tool.energy.*;
 import java.nio.file.Path;
 
 public class ImportMeasurementsStage implements Stage {
@@ -23,7 +22,8 @@ public class ImportMeasurementsStage implements Stage {
         if (targetDir == null || targetDir.isBlank()) {
             throw new MissingConfigKeyException("repo.target-dir");
         }
-        service.importMeasurements(resultsRoot, targetDir, context);
+        String repoDir = targetDir + config.getProject().getName() + "_measurements_" + config.getRepo().getCommit();
+        service.importMeasurements(resultsRoot, repoDir, context);
     }
 
     @Override

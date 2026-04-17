@@ -174,6 +174,14 @@ class JoularJXPropertiesValidationTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("providePropertiesFiles")
+    @DisplayName("stack-monitoring-sample-rate is 10")
+    void stackMonitoringSampleRateTest(String filePath) {
+        Properties props = loadProperties(filePath);
+        assertEquals("10", props.getProperty("stack-monitoring-sample-rate"), "stack-monitoring-sample-rate should be '10' in " + filePath);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("providePropertiesFiles")
     @DisplayName("application-server is false")
     void applicationServerTest(String filePath) {
         Properties props = loadProperties(filePath);

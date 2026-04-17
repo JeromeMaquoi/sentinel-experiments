@@ -12,7 +12,7 @@ repo:
   # ATTENTION de ne pas supprimer le dossier joularjx-results en instrumentant
   # un projet qui a été analysé auparavant => spécifier 2 target-dir différents
   # pour l'instrumentation et les mesures
-  target-dir: "/home/commun/infom125/sentinel-group/test-repositories/commons-lang"
+  target-dir: "/home/commun/infom125/sentinel-group/repositories/"
   jdk: "17.0.18-tem"
   overwrite-clone: true
   overwrite-copy: true

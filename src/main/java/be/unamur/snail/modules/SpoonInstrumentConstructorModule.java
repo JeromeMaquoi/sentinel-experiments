@@ -1,17 +1,8 @@
 package be.unamur.snail.modules;
 
 import be.unamur.snail.core.Config;
-import be.unamur.snail.core.Context;
-import be.unamur.snail.logging.PipelineLogger;
 import be.unamur.snail.stages.Stage;
-import be.unamur.snail.database.DatabasePreparerFactory;
-import be.unamur.snail.database.MongoServiceManager;
-import be.unamur.snail.database.SimpleDatabasePreparerFactory;
-import be.unamur.snail.sentinelbackend.BackendServiceManagerFactory;
-import be.unamur.snail.sentinelbackend.SimpleBackendServiceManagerFactoryImpl;
 import be.unamur.snail.stages.*;
-import be.unamur.snail.utils.CommandRunner;
-import be.unamur.snail.utils.SimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,20 +12,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class SpoonInstrumentConstructorModule implements Module {
+public class SpoonInstrumentConstructorModule extends AbstractModule {
     private static final Logger log = LoggerFactory.getLogger(SpoonInstrumentConstructorModule.class);
     private final List<Stage> stages;
 
+    SpoonInstrumentConstructorModule(List<Stage> stages) {
+        this.stages = stages;
+    }
+
     public SpoonInstrumentConstructorModule() {
-        CommandRunner runner = new SimpleCommandRunner();
-        MongoServiceManager mongo = new MongoServiceManager(runner, 5, 500);
-        BackendServiceManagerFactory backendFactory = new SimpleBackendServiceManagerFactoryImpl();
-        DatabasePreparerFactory databaseFactory = new SimpleDatabasePreparerFactory(mongo);
+        Config config = Config.getInstance();
+        String repoDir = buildRepoDir(config);
+
         this.stages = Stream.of(
-                new StopBackendStage(runner, backendFactory, databaseFactory),
-                new PrepareBackendStage(runner, backendFactory, databaseFactory),
-                new CloneAndCheckoutRepositoryStage(),
-                new CopyDirectoryStage(),
+                new StopBackendStage(),
+                new PrepareBackendStage(),
+                new CloneAndCheckoutRepositoryStage(repoDir),
                 createCopyBuildFileStageForClasspath(),
                 new BuildClassPathStage(),
                 createCopyBuildFileStage(),
@@ -46,13 +39,12 @@ public class SpoonInstrumentConstructorModule implements Module {
     }
 
     @Override
-    public void run(Context context) throws Exception {
-        PipelineLogger logger = context.getLogger();
-        for (Stage stage : stages) {
-            logger.stageStart(stage.getName());
-            stage.execute(context);
-            logger.stageEnd(stage.getName());
-        }
+    protected List<Stage> getStages() {
+        return stages;
+    }
+
+    public static String buildRepoDir(Config config) {
+        return config.getProject().getName() + "_instrumentation_" + config.getRepo().getCommit();
     }
 
     protected CopyFileStage createCopyBuildFileStageForClasspath() {
@@ -111,8 +103,7 @@ public class SpoonInstrumentConstructorModule implements Module {
         return new CopyFileStage(sourceFile, relativeTargetPath);
     }
 
-    public String createTotalProjectPath(String projectName, String subProject) {
-        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
+    public String createTotalProjectPath(String projectName, String subProject) {        return (subProject != null && !subProject.isBlank()) ? projectName + "/" + subProject : projectName;
     }
 
     public String detectBuildFileNameOrNull(String totalProjectPath) {
